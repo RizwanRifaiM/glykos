@@ -1,0 +1,45 @@
+:root {
+  --glykos-red: #e63946;
+  --glykos-cream: #f1faee;
+  --glykos-light-blue: #a8dadc;
+  --glykos-blue: #457b9d;
+  --glykos-navy: #1d3557;
+
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--glykos-navy);
+  background: var(--glykos-cream);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+#root {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100svh;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 700;
+}
+
+button {
+  font-family: inherit;
+}
