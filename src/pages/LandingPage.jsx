@@ -1,0 +1,235 @@
+import { LinkButton } from '../components/Button'
+import { variantProps } from '../components/button-variants'
+import { useAuth } from '../contexts/auth-context'
+import InsoleIllustration from '../components/InsoleIllustration'
+import { COLORS } from '../constants/theme'
+import './Landing.css'
+
+const SENSORS = [
+  { code: 'FSR 402', label: 'Sensor Tekanan' },
+  { code: 'NTC', label: 'Sensor Suhu' },
+  { code: 'SHT30', label: 'Suhu & Kelembapan' },
+  { code: 'MPU6050', label: 'Gerak & Aktivitas' },
+]
+
+const FEATURES = [
+  {
+    icon: '⚡',
+    title: 'Pemantauan Tekanan Plantar',
+    desc: 'Sensor FSR 402 pada titik tumit, metatarsal & jari kaki mendeteksi tekanan berlebih yang berisiko memicu luka.',
+  },
+  {
+    icon: '🌡️',
+    title: 'Deteksi Selisih Suhu Kaki',
+    desc: 'Selisih suhu antar area atau antar kaki adalah salah satu prediktor dini peradangan sebelum luka terlihat kasat mata.',
+  },
+  {
+    icon: '💧',
+    title: 'Kelembapan Dalam Sepatu',
+    desc: 'Kelembapan berlebih meningkatkan risiko maserasi & infeksi jamur pada kulit yang sudah rentan.',
+  },
+  {
+    icon: '👣',
+    title: 'Aktivitas & Pola Gerak',
+    desc: 'Rekam jumlah langkah dan waktu aktif harian untuk memahami beban yang diterima kaki sepanjang hari.',
+  },
+  {
+    icon: '📊',
+    title: 'Dashboard Real-time',
+    desc: 'Semua data sensor tersaji dalam satu dashboard yang mudah dibaca, kapan saja dan di mana saja.',
+  },
+  {
+    icon: '📄',
+    title: 'Export Laporan Medis',
+    desc: 'Unduh riwayat data dalam format CSV atau PDF untuk dibawa ke konsultasi dengan dokter.',
+  },
+]
+
+const STEPS = [
+  {
+    step: '01',
+    title: 'Pakai Insole Glykos',
+    desc: 'Pasang insole pintar Glykos ke dalam sepatu seperti biasa — tidak mengubah kenyamanan sehari-hari.',
+  },
+  {
+    step: '02',
+    title: 'Sensor Merekam Kondisi Kaki',
+    desc: 'Tekanan, suhu, kelembapan & aktivitas terekam otomatis dan dikirim secara real-time.',
+  },
+  {
+    step: '03',
+    title: 'Pantau & Tindak Lanjuti',
+    desc: 'Anda, keluarga, atau dokter dapat memantau dashboard dan mengambil tindakan preventif lebih awal.',
+  },
+]
+
+export default function LandingPage() {
+  const { user } = useAuth()
+
+  return (
+    <div className="landing">
+      <header className="landing-nav">
+        <div className="landing-nav__inner">
+          <div className="landing-nav__brand">
+            <svg viewBox="0 0 48 48" width="32" height="32" aria-hidden="true">
+              <circle cx="24" cy="24" r="22" fill={COLORS.navy} />
+              <path
+                d="M24 8c-2 6-8 10-8 16a8 8 0 0016 0c0-6-6-10-8-16z"
+                fill={COLORS.lightBlue}
+              />
+              <path
+                d="M18 32c2 4 6 6 6 6s4-2 6-6"
+                stroke={COLORS.cream}
+                strokeWidth="2"
+                fill="none"
+                strokeLinecap="round"
+              />
+            </svg>
+            <span>Glykos</span>
+          </div>
+
+          <nav className="landing-nav__links">
+            <a href="#fitur">Fitur</a>
+            <a href="#cara-kerja">Cara Kerja</a>
+            <a href="#tentang">Tentang</a>
+          </nav>
+
+          <div className="landing-nav__actions">
+            {user ? (
+              <LinkButton to="/dashboard" variant="primary">
+                Buka Dashboard
+              </LinkButton>
+            ) : (
+              <>
+                <LinkButton to="/login" variant="outline">
+                  Masuk
+                </LinkButton>
+                <LinkButton to="/register" variant="primary">
+                  Daftar Gratis
+                </LinkButton>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section className="hero">
+          <div className="hero__content">
+            <span className="hero__badge">Wearable Health-Tech</span>
+            <h1 className="hero__title">
+              Sepatu Pintar Pendeteksi Dini Risiko Ulkus Diabetik
+            </h1>
+            <p className="hero__subtitle">
+              Glykos adalah insole pintar yang memantau tekanan, suhu, kelembapan, dan
+              aktivitas kaki secara real-time — membantu penderita diabetes dengan
+              neuropati mendeteksi tanda awal luka sebelum menjadi masalah serius.
+            </p>
+            <div className="hero__actions">
+              <LinkButton to="/register" variant="primary" className="hero__cta">
+                Daftar Sekarang
+              </LinkButton>
+              <a href="#cara-kerja" {...variantProps('outline', false, 'hero__cta')}>
+                Lihat Cara Kerja
+              </a>
+            </div>
+            <div className="hero__sensors">
+              {SENSORS.map((sensor) => (
+                <div key={sensor.code} className="hero__sensor">
+                  <span className="hero__sensor-code">{sensor.code}</span>
+                  <span className="hero__sensor-label">{sensor.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="hero__visual">
+            <InsoleIllustration />
+          </div>
+        </section>
+
+        <section className="problem" id="tentang">
+          <div className="problem__intro">
+            <h2>Mengapa Kaki Diabetes Butuh Perhatian Ekstra?</h2>
+            <p>
+              Banyak penderita diabetes mengalami <strong>neuropati</strong> — mati rasa
+              pada saraf kaki — sehingga tidak menyadari tekanan berlebih atau peradangan
+              dini yang berisiko menjadi ulkus diabetik. Glykos hadir sebagai
+              &ldquo;indera pengganti&rdquo; yang bekerja diam-diam di dalam sepatu.
+            </p>
+          </div>
+          <div className="problem__grid">
+            <div className="problem__card">
+              <h3>Sulit Disadari Sejak Dini</h3>
+              <p>
+                Neuropati membuat tanda-tanda awal luka — tekanan berlebih, panas, dan
+                lembap — sulit dirasakan langsung oleh penderita.
+              </p>
+            </div>
+            <div className="problem__card">
+              <h3>Berisiko Menjadi Luka Kronis</h3>
+              <p>
+                Tanpa deteksi dini, cedera kecil dapat berkembang menjadi luka yang sulit
+                sembuh dan berisiko komplikasi lebih lanjut.
+              </p>
+            </div>
+            <div className="problem__card">
+              <h3>Perlu Pemantauan Berkelanjutan</h3>
+              <p>
+                Pemantauan rutin membantu pasien, keluarga, dan dokter mengambil tindakan
+                preventif sebelum kondisi memburuk.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="features" id="fitur">
+          <div className="section-heading">
+            <h2>Semua yang Dibutuhkan untuk Memantau Kaki</h2>
+            <p>Empat sensor, satu dashboard, dipantau kapan saja.</p>
+          </div>
+          <div className="features__grid">
+            {FEATURES.map((feature) => (
+              <div key={feature.title} className="feature-card">
+                <span className="feature-card__icon">{feature.icon}</span>
+                <h3>{feature.title}</h3>
+                <p>{feature.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="how-it-works" id="cara-kerja">
+          <div className="section-heading">
+            <h2>Cara Kerja Glykos</h2>
+            <p>Tiga langkah sederhana menuju kaki yang lebih terpantau.</p>
+          </div>
+          <div className="how-it-works__grid">
+            {STEPS.map((item) => (
+              <div key={item.step} className="step-card">
+                <span className="step-card__number">{item.step}</span>
+                <h3>{item.title}</h3>
+                <p>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="cta-banner">
+          <h2>Mulai Pantau Kesehatan Kaki Anda Hari Ini</h2>
+          <p>Gratis untuk mendaftar — hubungkan perangkat Glykos Anda dalam hitungan menit.</p>
+          <LinkButton to="/register" variant="primary" className="cta-banner__btn">
+            Daftar Sekarang
+          </LinkButton>
+        </section>
+      </main>
+
+      <footer className="landing-footer">
+        <p>Glykos · ESP32 DevKit V1 · FSR 402 · NTC · SHT30 · MPU6050</p>
+        <p className="landing-footer__disclaimer">
+          Glykos adalah alat bantu pemantauan, bukan pengganti diagnosis atau perawatan
+          medis profesional.
+        </p>
+      </footer>
+    </div>
+  )
+}

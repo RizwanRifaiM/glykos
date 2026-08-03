@@ -55,7 +55,7 @@ export function PressureCard({ pressure }) {
 
   return (
     <MetricCard
-      icon=""
+      icon="⚡"
       title="Tekanan Puncak"
       value={peak}
       unit="kPa"
@@ -98,7 +98,7 @@ export function TemperatureCard({ temperature }) {
 
   return (
     <MetricCard
-      icon=""
+      icon="🌡️"
       title="Suhu Tertinggi"
       value={highest}
       unit="°C"
@@ -142,7 +142,7 @@ export function HumidityCard({ humidity }) {
 
   return (
     <MetricCard
-      icon=""
+      icon="💧"
       title="Kelembapan Sepatu"
       value={rh}
       unit="% RH"

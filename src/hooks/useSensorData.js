@@ -1,8 +1,5 @@
 // src/hooks/useSensorData.js
-import { useEffect, useRef, useState } from 'react'
-import { ref, onValue } from 'firebase/database'
-import { collection, addDoc } from 'firebase/firestore'
-import { rtdb, db } from "../services/firebase"
+import { useMemo, useState } from 'react'
 
 const DEVICES = {
   'ESP32-001': { name: 'Insole Kiri — Budi', foot: 'left' }
@@ -19,7 +16,7 @@ const DEFAULT_JSON = {
   waktu: '15:30:00',
 }
 
-function parseRTDBReading(raw, deviceId) {
+function parseSensorReading(raw, deviceId) {
   const dataRaw = raw || DEFAULT_JSON
 
   // Format JSON Konsisten:
@@ -54,8 +51,8 @@ function parseRTDBReading(raw, deviceId) {
     deviceId: id,
     device: DEVICES[id] || DEVICES['ESP32-001'],
     connection: {
-      wifi: true,
-      signalStrength: -65,
+      wifi: false,
+      signalStrength: -100,
       lastUpdate: new Date(),
     },
     pressure: {
@@ -85,68 +82,18 @@ function parseRTDBReading(raw, deviceId) {
   }
 }
 
+// TODO: pembacaan sensor live akan datang dari BLE (belum diimplementasikan).
+// Untuk sementara hook ini hanya menyediakan data contoh statis.
 export function useSensorData(deviceId = 'ESP32-001') {
-  const [data, setData] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const lastSavedTimestampRef = useRef(null)
+  const [refreshedAt, setRefreshedAt] = useState(() => Date.now())
 
-  useEffect(() => {
-    if (!deviceId) return
+  const data = useMemo(() => {
+    const reading = parseSensorReading(DEFAULT_JSON, deviceId)
+    reading.connection.lastUpdate = new Date(refreshedAt)
+    return reading
+  }, [deviceId, refreshedAt])
 
-    setIsLoading(true)
-    // 1. Dapatkan ref dari Realtime Database: devices/{deviceId}
-    const sensorRef = ref(rtdb, `devices/${deviceId}`)
+  const refresh = () => setRefreshedAt(Date.now())
 
-    // 2. Listener Realtime Data dari RTDB
-    const unsubscribe = onValue(
-      sensorRef,
-      async (snapshot) => {
-        const raw = snapshot.val()
-        const parsedData = parseRTDBReading(raw, deviceId)
-        setData(parsedData)
-        setIsLoading(false)
-
-        // 3. Simpan data ke Firestore dengan struktur JSON konsisten:
-        // {"id": "ESP32-001","humidity": 55.0,"temperature": 32.5,"pressure1": 180.5,"pressure2": 210.2,"pressure3": 90.0,"tanggal": "2026-07-30","waktu": "15:30:00"}
-        const currentDataKey = `${parsedData.tanggal}_${parsedData.waktu}`
-        if (lastSavedTimestampRef.current !== currentDataKey) {
-          lastSavedTimestampRef.current = currentDataKey
-
-          try {
-            const historyRef = collection(db, 'devices', deviceId, 'history')
-            await addDoc(historyRef, {
-              id: parsedData.id,
-              humidity: parsedData.humidity,
-              temperature: parsedData.temperature,
-              pressure1: parsedData.pressure1,
-              pressure2: parsedData.pressure2,
-              pressure3: parsedData.pressure3,
-              tanggal: parsedData.tanggal,
-              waktu: parsedData.waktu,
-              createdAt: Date.now(),
-            })
-          } catch (err) {
-            console.error('Gagal menyimpan histori ke Firestore:', err)
-          }
-        }
-      },
-      (error) => {
-        console.error('RTDB Listener Error:', error)
-        // Fallback ke default data jika RTDB listener mengalami error
-        const fallbackData = parseRTDBReading(DEFAULT_JSON, deviceId)
-        setData(fallbackData)
-        setIsLoading(false)
-      }
-    )
-
-    return () => unsubscribe()
-  }, [deviceId])
-
-  const refresh = () => {
-    if (data) {
-      setData({ ...data })
-    }
-  }
-
-  return { data, isLoading, refresh, devices: DEVICES }
+  return { data, isLoading: false, refresh, devices: DEVICES }
 }

@@ -7,10 +7,9 @@ export default function DeviceSelector({ devices, selectedId, onSelect }) {
     <section className="panel device-selector">
       <h2 className="panel__title">Perangkat &amp; Pengguna</h2>
       <div className="device-selector__list">
-        {entries.map(([id, device], index) => (
+        {entries.map(([id, device]) => (
           <Button
             key={id}
-            variantIndex={index}
             active={selectedId === id}
             onClick={() => onSelect(id)}
             className="device-selector__btn"

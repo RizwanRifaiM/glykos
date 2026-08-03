@@ -23,12 +23,10 @@ export default function Header() {
         <div>
           <h1 className="header__title">Glykos</h1>
           <p className="header__tagline">
-            
+            Smart Insole Monitoring &middot; Deteksi Dini Risiko Ulkus Diabetik
           </p>
         </div>
       </div>
-      
-      
     </header>
   )
 }

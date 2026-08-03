@@ -1,36 +1,30 @@
-import { BUTTON_VARIANTS, COLORS } from '../constants/theme'
-
-const variantStyles = {
-  navy: { bg: COLORS.navy, text: COLORS.cream, border: COLORS.navy },
-  blue: { bg: COLORS.blue, text: COLORS.cream, border: COLORS.blue },
-  lightBlue: { bg: COLORS.lightBlue, text: COLORS.navy, border: COLORS.blue },
-  red: { bg: COLORS.red, text: COLORS.cream, border: COLORS.red },
-  cream: { bg: COLORS.cream, text: COLORS.navy, border: COLORS.blue },
-}
+import { Link } from 'react-router-dom'
+import { variantProps } from './button-variants'
 
 export default function Button({
   children,
-  variant,
-  variantIndex = 0,
+  variant = 'chip',
   active = false,
   className = '',
   ...props
 }) {
-  const resolved = variant ?? BUTTON_VARIANTS[variantIndex % BUTTON_VARIANTS.length]
-  const style = variantStyles[resolved]
-
   return (
-    <button
-      type="button"
-      className={`glykos-btn ${active ? 'glykos-btn--active' : ''} ${className}`}
-      style={{
-        '--btn-bg': style.bg,
-        '--btn-text': style.text,
-        '--btn-border': style.border,
-      }}
-      {...props}
-    >
+    <button type="button" {...variantProps(variant, active, className)} {...props}>
       {children}
     </button>
+  )
+}
+
+export function LinkButton({
+  children,
+  variant = 'chip',
+  active = false,
+  className = '',
+  ...props
+}) {
+  return (
+    <Link {...variantProps(variant, active, className)} {...props}>
+      {children}
+    </Link>
   )
 }

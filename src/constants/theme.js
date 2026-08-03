@@ -4,6 +4,5 @@ export const COLORS = {
   lightBlue: '#a8dadc',
   blue: '#457b9d',
   navy: '#1d3557',
+  warning: '#e9c46a',
 }
-
-export const BUTTON_VARIANTS = ['navy', 'blue', 'lightBlue', 'red', 'cream']
