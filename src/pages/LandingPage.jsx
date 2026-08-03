@@ -53,6 +53,27 @@ const FEATURES = [
   },
 ]
 
+// `photo` kosong dulu — begitu foto anggota tersedia, isi dengan path
+// gambarnya (mis. '/team/arkanara.jpg') dan kartu otomatis menampilkan
+// foto tersebut menggantikan avatar inisial.
+const TEAM = [
+  { name: 'Arkanara Romanza Andiwa', role: 'CEO', photo: null },
+  { name: 'Anya Parisya Rivendra', role: 'CFO', photo: null },
+  { name: 'Khadijah Subagyo', role: 'CTO', photo: null },
+  { name: 'Radinka Danastria Ramadhanti Bima Puteri', role: 'COO', photo: null },
+  { name: 'Raiqa Mazaya Fatin Muqofa', role: 'CMO', photo: null },
+]
+
+function initials(name) {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join('')
+    .toUpperCase()
+}
+
 const STEPS = [
   {
     step: '01',
@@ -100,6 +121,7 @@ export default function LandingPage() {
             <a href="#fitur">Fitur</a>
             <a href="#cara-kerja">Cara Kerja</a>
             <a href="#tentang">Tentang</a>
+            <a href="#tim">Tim</a>
           </nav>
 
           <div className="landing-nav__actions">
@@ -219,6 +241,28 @@ export default function LandingPage() {
                 <span className="step-card__number">{item.step}</span>
                 <h3>{item.title}</h3>
                 <p>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="team" id="tim">
+          <div className="section-heading">
+            <h2>Tim di Balik Glykos</h2>
+            <p>Tim inti yang membangun Glykos dari riset hingga produk.</p>
+          </div>
+          <div className="team__grid">
+            {TEAM.map((member) => (
+              <div key={member.name} className="team-card">
+                <div className="team-card__avatar">
+                  {member.photo ? (
+                    <img src={member.photo} alt={member.name} />
+                  ) : (
+                    <span>{initials(member.name)}</span>
+                  )}
+                </div>
+                <h3>{member.name}</h3>
+                <p>{member.role}</p>
               </div>
             ))}
           </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { COLORS } from '../constants/theme'
 import DeviceSelector from '../components/DeviceSelector'
@@ -13,22 +13,20 @@ import {
   IconShieldAlert,
   IconIdCard,
   IconLogOut,
-  IconMenu,
-  IconX,
 } from '../components/icons'
 import '../App.css'
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Ringkasan', end: true, icon: IconLayoutDashboard },
-  { to: '/dashboard/history', label: 'Riwayat Data', icon: IconHistory },
-  { to: '/dashboard/alerts', label: 'Riwayat Peringatan', icon: IconShieldAlert },
-  { to: '/dashboard/profile', label: 'Profil Pasien', icon: IconIdCard },
+  { to: '/dashboard/history', label: 'Riwayat', icon: IconHistory },
+  { to: '/dashboard/alerts', label: 'Peringatan', icon: IconShieldAlert },
+  { to: '/dashboard/profile', label: 'Profil', icon: IconIdCard },
 ]
 
 function Brand() {
   return (
-    <div className="app-sidebar__brand">
-      <svg viewBox="0 0 48 48" width="30" height="30" aria-hidden="true">
+    <div className="app-topbar__brand">
+      <svg viewBox="0 0 48 48" width="26" height="26" aria-hidden="true">
         <circle cx="24" cy="24" r="22" fill={COLORS.navy} />
         <path d="M24 8c-2 6-8 10-8 16a8 8 0 0016 0c0-6-6-10-8-16z" fill={COLORS.lightBlue} />
         <path
@@ -44,42 +42,32 @@ function Brand() {
   )
 }
 
-function SidebarUser({ onNavigate }) {
+function TopbarUser() {
   const { user, logout } = useAuth()
   const label = user?.displayName || user?.email || 'Pengguna'
   const initial = label.charAt(0).toUpperCase()
 
   return (
-    <div className="app-sidebar__user">
+    <button
+      type="button"
+      className="app-topbar__user"
+      onClick={logout}
+      title={`Keluar (${label})`}
+      aria-label="Keluar"
+    >
       {user?.photoURL ? (
-        <img className="app-sidebar__avatar" src={user.photoURL} alt="" />
+        <img className="app-topbar__avatar" src={user.photoURL} alt="" />
       ) : (
-        <span className="app-sidebar__avatar app-sidebar__avatar--fallback">{initial}</span>
+        <span className="app-topbar__avatar app-topbar__avatar--fallback">{initial}</span>
       )}
-      <div className="app-sidebar__user-info">
-        <strong>{label}</strong>
-        <span>{user?.email}</span>
-      </div>
-      <button
-        type="button"
-        className="app-sidebar__logout"
-        onClick={() => {
-          onNavigate?.()
-          logout()
-        }}
-        title="Keluar"
-        aria-label="Keluar"
-      >
-        <IconLogOut size={18} />
-      </button>
-    </div>
+      <IconLogOut size={16} />
+    </button>
   )
 }
 
 export default function DashboardLayout() {
   const [deviceId, setDeviceId] = useState('ESP32-001')
   const [historyRange, setHistoryRange] = useState('7d')
-  const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   const { data, refresh, devices, isLive } = useSensorData(deviceId)
   const { history, isLoading: historyLoading } = useHistoryData(deviceId, historyRange)
@@ -87,107 +75,69 @@ export default function DashboardLayout() {
 
   useAlertMonitor(deviceId, data)
 
-  useEffect(() => {
-    document.body.style.overflow = mobileNavOpen ? 'hidden' : ''
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [mobileNavOpen])
-
   return (
     <div className="app-shell">
-      <aside className={`app-sidebar ${mobileNavOpen ? 'app-sidebar--open' : ''}`}>
-        <div className="app-sidebar__header">
-          <Brand />
-          <button
-            type="button"
-            className="app-sidebar__close"
-            onClick={() => setMobileNavOpen(false)}
-            aria-label="Tutup menu"
-          >
-            <IconX size={20} />
-          </button>
-        </div>
+      <header className="app-topbar">
+        <Brand />
 
-        <nav className="app-sidebar__nav" aria-label="Navigasi dashboard">
-          {NAV_ITEMS.map(({ to, label, end, icon: ItemIcon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) =>
-                `app-sidebar__link ${isActive ? 'app-sidebar__link--active' : ''}`
-              }
-              onClick={() => setMobileNavOpen(false)}
-            >
-              <ItemIcon size={18} />
-              <span>{label}</span>
-              {to === '/dashboard/alerts' && alerts.length > 0 && (
-                <span className="app-sidebar__badge">{alerts.length}</span>
-              )}
-            </NavLink>
-          ))}
-        </nav>
+        <DeviceSelector devices={devices} selectedId={deviceId} onSelect={setDeviceId} />
 
-        <SidebarUser />
-      </aside>
+        <div className="app-topbar__spacer" />
 
-      {mobileNavOpen && (
-        <button
-          type="button"
-          className="app-sidebar-overlay"
-          aria-label="Tutup menu"
-          onClick={() => setMobileNavOpen(false)}
-        />
-      )}
-
-      <div className="app-content">
-        <header className="app-topbar">
-          <button
-            type="button"
-            className="app-topbar__menu"
-            onClick={() => setMobileNavOpen(true)}
-            aria-label="Buka menu navigasi"
-          >
-            <IconMenu size={20} />
-          </button>
-
-          <DeviceSelector devices={devices} selectedId={deviceId} onSelect={setDeviceId} />
-
-          <div className="app-topbar__spacer" />
-
-          <ConnectionBar
-            connection={
-              data?.connection || {
-                wifi: false,
-                signalStrength: -100,
-                lastUpdate: new Date(),
-              }
+        <ConnectionBar
+          connection={
+            data?.connection || {
+              wifi: false,
+              signalStrength: -100,
+              lastUpdate: new Date(),
             }
-          />
-        </header>
+          }
+        />
 
-        <main className="app-main">
-          <Outlet
-            context={{
-              deviceId,
-              data,
-              isLive,
-              refresh,
-              history,
-              historyLoading,
-              historyRange,
-              setHistoryRange,
-              alerts,
-              alertsLoading,
-            }}
-          />
-        </main>
+        <TopbarUser />
+      </header>
 
-        <footer className="footer app-footer">
-          <p>Glykos · ESP32 DevKit V1 · FSR 402 · NTC · SHT30 · MPU6050</p>
-        </footer>
-      </div>
+      <main className="app-main">
+        <Outlet
+          context={{
+            deviceId,
+            data,
+            isLive,
+            refresh,
+            history,
+            historyLoading,
+            historyRange,
+            setHistoryRange,
+            alerts,
+            alertsLoading,
+          }}
+        />
+      </main>
+
+      <footer className="footer app-footer">
+        <p>Glykos · ESP32 DevKit V1 · FSR 402 · NTC · SHT30 · MPU6050</p>
+      </footer>
+
+      <nav className="app-bottom-nav" aria-label="Navigasi dashboard">
+        {NAV_ITEMS.map(({ to, label, end, icon: ItemIcon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={end}
+            className={({ isActive }) =>
+              `app-bottom-nav__link ${isActive ? 'app-bottom-nav__link--active' : ''}`
+            }
+          >
+            <span className="app-bottom-nav__icon">
+              <ItemIcon size={20} />
+              {to === '/dashboard/alerts' && alerts.length > 0 && (
+                <span className="app-bottom-nav__badge">{alerts.length}</span>
+              )}
+            </span>
+            <span>{label}</span>
+          </NavLink>
+        ))}
+      </nav>
     </div>
   )
 }

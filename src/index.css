@@ -30,6 +30,17 @@
   --shadow-md: 0 4px 16px rgba(29, 53, 87, 0.08);
   --shadow-lg: 0 16px 40px rgba(29, 53, 87, 0.14);
 
+  /* Glassmorphism surfaces */
+  --glass-bg: rgba(255, 255, 255, 0.62);
+  --glass-bg-strong: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --glass-blur: blur(20px) saturate(180%);
+
+  /* Status glow shadows (paired with --shadow-sm / --shadow-md) */
+  --glow-safe: 0 12px 32px -10px rgba(69, 123, 157, 0.45);
+  --glow-warning: 0 12px 32px -8px rgba(233, 196, 106, 0.55);
+  --glow-danger: 0 12px 36px -6px rgba(230, 57, 70, 0.5);
+
   /* App shell */
   --sidebar-width: 260px;
   --topbar-height: 68px;
