@@ -1,8 +1,8 @@
 export const COLORS = {
-  red: '#e63946',
-  cream: '#f1faee',
-  lightBlue: '#a8dadc',
-  blue: '#457b9d',
-  navy: '#1d3557',
-  warning: '#e9c46a',
+  red: '#6e1936',
+  cream: '#fefdeb',
+  lightBlue: '#86a788',
+  blue: '#81a283',
+  navy: '#446a45',
+  warning: '#e4aec5',
 }

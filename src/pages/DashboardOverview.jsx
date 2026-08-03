@@ -2,6 +2,7 @@ import { useOutletContext } from 'react-router-dom'
 import { PressureCard, TemperatureCard, HumidityCard } from '../components/MetricCards'
 import ActivityPanel from '../components/ActivityPanel'
 import HistoryChart from '../components/HistoryChart'
+import InsoleIllustration from '../components/InsoleIllustration'
 import Button, { LinkButton } from '../components/Button'
 import { IconDownload, IconFileText, IconRefreshCw } from '../components/icons'
 import { exportToCsv, exportToPdf } from '../utils/exportData'
@@ -15,6 +16,20 @@ export default function DashboardOverview() {
         <PressureCard pressure={data.pressure} />
         <TemperatureCard temperature={data.temperatureObj} />
         <HumidityCard humidity={data.humidity} />
+      </section>
+
+      <section className="panel foot-map-panel">
+        <h2 className="panel__title">Peta Sensor Insole</h2>
+        <p className="panel__subtitle">
+          Visualisasi titik tekanan, suhu &amp; aktivitas pada kaki secara real-time
+        </p>
+        <div className="foot-map-panel__visual">
+          <InsoleIllustration
+            pressure={data.pressure?.peak ?? 0}
+            temperature={data.temperatureObj?.highest ?? 0}
+            steps={data.activity?.steps ?? 0}
+          />
+        </div>
       </section>
 
       <div className="info-callout">

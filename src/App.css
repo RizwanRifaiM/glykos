@@ -72,7 +72,7 @@
 }
 
 .glykos-btn--outline:hover:not(:disabled) {
-  background: rgba(29, 53, 87, 0.05);
+  background: rgba(68, 106, 69, 0.05);
 }
 
 .glykos-btn--chip {
@@ -83,7 +83,7 @@
 }
 
 .glykos-btn--chip:hover:not(:disabled) {
-  background: rgba(69, 123, 157, 0.1);
+  background: rgba(129, 162, 131, 0.1);
   box-shadow: none;
   transform: none;
 }
@@ -111,9 +111,9 @@
   flex-direction: column;
   min-height: 100vh;
   background:
-    radial-gradient(680px circle at 6% -8%, rgba(168, 218, 220, 0.55), transparent 60%),
-    radial-gradient(620px circle at 100% 0%, rgba(69, 123, 157, 0.32), transparent 55%),
-    radial-gradient(820px circle at 46% 115%, rgba(29, 53, 87, 0.14), transparent 60%),
+    radial-gradient(680px circle at 6% -8%, rgba(134, 167, 136, 0.5), transparent 60%),
+    radial-gradient(620px circle at 100% 0%, rgba(228, 174, 197, 0.4), transparent 55%),
+    radial-gradient(820px circle at 46% 115%, rgba(68, 106, 69, 0.14), transparent 60%),
     var(--bg);
   background-attachment: fixed;
 }
@@ -163,8 +163,8 @@
 }
 
 .app-topbar__user:hover {
-  background: rgba(230, 57, 70, 0.08);
-  border-color: rgba(230, 57, 70, 0.25);
+  background: rgba(110, 25, 54, 0.08);
+  border-color: rgba(110, 25, 54, 0.25);
   color: var(--red);
 }
 
@@ -210,7 +210,7 @@
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border-top: 1px solid var(--glass-border);
-  box-shadow: 0 -8px 30px -12px rgba(29, 53, 87, 0.25);
+  box-shadow: 0 -8px 30px -12px rgba(68, 106, 69, 0.25);
   padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
 }
 
@@ -350,7 +350,7 @@
 }
 
 .device-picker__option:hover {
-  background: rgba(69, 123, 157, 0.08);
+  background: rgba(129, 162, 131, 0.08);
 }
 
 .device-picker__option-label {
@@ -389,16 +389,16 @@
 
 .connection-pill--online {
   color: var(--blue);
-  background: rgba(69, 123, 157, 0.14);
-  border-color: rgba(69, 123, 157, 0.3);
-  box-shadow: 0 0 16px rgba(69, 123, 157, 0.35);
+  background: rgba(129, 162, 131, 0.14);
+  border-color: rgba(129, 162, 131, 0.3);
+  box-shadow: 0 0 16px rgba(129, 162, 131, 0.35);
 }
 
 .connection-pill--offline {
   color: var(--red);
-  background: rgba(230, 57, 70, 0.1);
-  border-color: rgba(230, 57, 70, 0.25);
-  box-shadow: 0 0 14px rgba(230, 57, 70, 0.3);
+  background: rgba(110, 25, 54, 0.1);
+  border-color: rgba(110, 25, 54, 0.25);
+  box-shadow: 0 0 14px rgba(110, 25, 54, 0.3);
 }
 
 .connection-pill__time {
@@ -407,10 +407,24 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Foot sensor map */
+
+.foot-map-panel__visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 4px;
+}
+
+.foot-map-panel__visual .hero-illustration {
+  width: 100%;
+  max-width: 460px;
+}
+
 /* Info callout */
 
 .info-callout {
-  background: rgba(168, 218, 220, 0.2);
+  background: rgba(134, 167, 136, 0.2);
   border-left: 4px solid var(--blue);
   border-radius: var(--radius-md);
   padding: 20px 24px;
@@ -484,7 +498,7 @@
     box-shadow: var(--shadow-sm), var(--glow-danger);
   }
   50% {
-    box-shadow: var(--shadow-sm), 0 14px 42px -4px rgba(230, 57, 70, 0.7);
+    box-shadow: var(--shadow-sm), 0 14px 42px -4px rgba(110, 25, 54, 0.7);
   }
 }
 
@@ -508,17 +522,17 @@
   height: 44px;
   flex-shrink: 0;
   border-radius: var(--radius-sm);
-  background: rgba(69, 123, 157, 0.1);
+  background: rgba(129, 162, 131, 0.1);
   color: var(--blue);
 }
 
 .metric-card--warning .metric-card__icon {
-  background: rgba(233, 196, 106, 0.22);
-  color: #92680a;
+  background: rgba(228, 174, 197, 0.22);
+  color: var(--navy);
 }
 
 .metric-card--danger .metric-card__icon {
-  background: rgba(230, 57, 70, 0.1);
+  background: rgba(110, 25, 54, 0.1);
   color: var(--red);
 }
 
@@ -565,7 +579,7 @@
   font-size: 13px;
   color: var(--red);
   font-weight: 600;
-  background: rgba(230, 57, 70, 0.08);
+  background: rgba(110, 25, 54, 0.08);
   padding: 8px 10px;
   border-radius: 8px;
 }
@@ -581,21 +595,21 @@
 }
 
 .status-pill--safe {
-  background: rgba(69, 123, 157, 0.15);
+  background: rgba(129, 162, 131, 0.15);
   color: var(--blue);
-  box-shadow: 0 0 0 1px rgba(69, 123, 157, 0.15);
+  box-shadow: 0 0 0 1px rgba(129, 162, 131, 0.15);
 }
 
 .status-pill--warning {
-  background: rgba(233, 196, 106, 0.25);
-  color: #92680a;
-  box-shadow: 0 0 14px rgba(233, 196, 106, 0.4);
+  background: rgba(228, 174, 197, 0.25);
+  color: var(--navy);
+  box-shadow: 0 0 14px rgba(228, 174, 197, 0.4);
 }
 
 .status-pill--danger {
-  background: rgba(230, 57, 70, 0.12);
+  background: rgba(110, 25, 54, 0.12);
   color: var(--red);
-  box-shadow: 0 0 14px rgba(230, 57, 70, 0.4);
+  box-shadow: 0 0 14px rgba(110, 25, 54, 0.4);
 }
 
 .point-grid {
@@ -637,8 +651,8 @@
 }
 
 .temp-compare > div.highlight {
-  background: rgba(230, 57, 70, 0.1);
-  border: 1px solid rgba(230, 57, 70, 0.3);
+  background: rgba(110, 25, 54, 0.1);
+  border: 1px solid rgba(110, 25, 54, 0.3);
 }
 
 .temp-compare span {
@@ -717,7 +731,7 @@
   height: 44px;
   flex-shrink: 0;
   border-radius: var(--radius-sm);
-  background: rgba(69, 123, 157, 0.1);
+  background: rgba(129, 162, 131, 0.1);
   color: var(--blue);
 }
 
@@ -847,14 +861,14 @@
 
 .alerts-list__item--danger {
   border-left-color: var(--red);
-  background: rgba(230, 57, 70, 0.07);
-  box-shadow: 0 0 20px -6px rgba(230, 57, 70, 0.45);
+  background: rgba(110, 25, 54, 0.07);
+  box-shadow: 0 0 20px -6px rgba(110, 25, 54, 0.45);
 }
 
 .alerts-list__item--warning {
   border-left-color: var(--warning);
-  background: rgba(233, 196, 106, 0.12);
-  box-shadow: 0 0 20px -6px rgba(233, 196, 106, 0.4);
+  background: rgba(228, 174, 197, 0.12);
+  box-shadow: 0 0 20px -6px rgba(228, 174, 197, 0.4);
 }
 
 .alerts-list__body {

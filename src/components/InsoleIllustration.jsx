@@ -1,6 +1,10 @@
 import { COLORS } from '../constants/theme'
 
-export default function InsoleIllustration() {
+export default function InsoleIllustration({
+  pressure = 210.2,
+  temperature = 32.5,
+  steps = 1250,
+}) {
   return (
     <svg
       viewBox="0 0 850 640"
@@ -36,25 +40,27 @@ export default function InsoleIllustration() {
 
       {/* Chip: Tekanan */}
       <g>
-        <rect x="10" y="277" width="190" height="46" rx="14" fill="#ffffff" stroke="#dbe4ea" />
+        <rect x="10" y="277" width="190" height="46" rx="14" fill="#ffffff" stroke="#c9d9c5" />
         <text x="26" y="307" fontSize="20">⚡</text>
-        <text x="56" y="299" fontSize="14" fontWeight="800" fill={COLORS.navy}>210.2 kPa</text>
+        <text x="56" y="299" fontSize="14" fontWeight="800" fill={COLORS.navy}>{pressure} kPa</text>
         <text x="56" y="313" fontSize="10" fill={COLORS.blue}>Tekanan Puncak</text>
       </g>
 
       {/* Chip: Suhu */}
       <g>
-        <rect x="630" y="95" width="190" height="46" rx="14" fill="#ffffff" stroke="#dbe4ea" />
+        <rect x="630" y="95" width="190" height="46" rx="14" fill="#ffffff" stroke="#c9d9c5" />
         <text x="646" y="125" fontSize="20">🌡️</text>
-        <text x="676" y="117" fontSize="14" fontWeight="800" fill={COLORS.navy}>32.5°C</text>
+        <text x="676" y="117" fontSize="14" fontWeight="800" fill={COLORS.navy}>{temperature}°C</text>
         <text x="676" y="131" fontSize="10" fill={COLORS.blue}>Suhu Tertinggi</text>
       </g>
 
       {/* Chip: Aktivitas */}
       <g>
-        <rect x="630" y="477" width="190" height="46" rx="14" fill="#ffffff" stroke="#dbe4ea" />
+        <rect x="630" y="477" width="190" height="46" rx="14" fill="#ffffff" stroke="#c9d9c5" />
         <text x="646" y="507" fontSize="20">👣</text>
-        <text x="676" y="499" fontSize="14" fontWeight="800" fill={COLORS.navy}>1.250</text>
+        <text x="676" y="499" fontSize="14" fontWeight="800" fill={COLORS.navy}>
+          {steps.toLocaleString('id-ID')}
+        </text>
         <text x="676" y="513" fontSize="10" fill={COLORS.blue}>Langkah Hari Ini</text>
       </g>
     </svg>

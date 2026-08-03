@@ -87,16 +87,16 @@ export function exportToPdf(data, history = []) {
   <meta charset="UTF-8" />
   <title>Glykos Report</title>
   <style>
-    body { font-family: system-ui, sans-serif; color: #1d3557; padding: 32px; }
-    h1 { color: #1d3557; margin-bottom: 4px; }
-    .subtitle { color: #457b9d; margin-bottom: 24px; }
+    body { font-family: system-ui, sans-serif; color: #446a45; padding: 32px; }
+    h1 { color: #446a45; margin-bottom: 4px; }
+    .subtitle { color: #81a283; margin-bottom: 24px; }
     table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-    th, td { border: 1px solid #a8dadc; padding: 8px 12px; text-align: left; }
-    th { background: #1d3557; color: #f1faee; }
-    tr:nth-child(even) { background: #f1faee; }
+    th, td { border: 1px solid #86a788; padding: 8px 12px; text-align: left; }
+    th { background: #446a45; color: #fefdeb; }
+    tr:nth-child(even) { background: #fefdeb; }
     .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 24px 0; }
-    .metric { background: #a8dadc33; padding: 16px; border-radius: 8px; border-left: 4px solid #457b9d; }
-    .metric strong { display: block; font-size: 24px; color: #1d3557; }
+    .metric { background: #86a78833; padding: 16px; border-radius: 8px; border-left: 4px solid #81a283; }
+    .metric strong { display: block; font-size: 24px; color: #446a45; }
   </style>
 </head>
 <body>

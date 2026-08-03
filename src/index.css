@@ -1,11 +1,14 @@
 :root {
   /* Brand palette */
-  --glykos-red: #e63946;
-  --glykos-cream: #f1faee;
-  --glykos-light-blue: #a8dadc;
-  --glykos-blue: #457b9d;
-  --glykos-navy: #1d3557;
-  --glykos-warning: #e9c46a;
+  --glykos-red: #6e1936;
+  --glykos-cream: #fefdeb;
+  --glykos-light-blue: #86a788;
+  --glykos-blue: #81a283;
+  --glykos-navy: #446a45;
+  --glykos-warning: #e4aec5;
+  --glykos-pink-1: #fec4dd;
+  --glykos-pink-2: #fecece;
+  --glykos-pink-3: #ffe3e2;
 
   /* Semantic aliases used throughout components */
   --navy: var(--glykos-navy);
@@ -14,10 +17,13 @@
   --red: var(--glykos-red);
   --cream: var(--glykos-cream);
   --warning: var(--glykos-warning);
+  --pink-1: var(--glykos-pink-1);
+  --pink-2: var(--glykos-pink-2);
+  --pink-3: var(--glykos-pink-3);
 
-  --bg: #eef3f6;
+  --bg: #f6f3e6;
   --surface: #ffffff;
-  --border: rgba(29, 53, 57, 0.1);
+  --border: rgba(68, 106, 69, 0.1);
   --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 
   /* Elevation & radius scale */
@@ -26,9 +32,9 @@
   --radius-lg: 24px;
   --radius-xl: 28px;
 
-  --shadow-sm: 0 1px 2px rgba(29, 53, 87, 0.06);
-  --shadow-md: 0 4px 16px rgba(29, 53, 87, 0.08);
-  --shadow-lg: 0 16px 40px rgba(29, 53, 87, 0.14);
+  --shadow-sm: 0 1px 2px rgba(68, 106, 69, 0.06);
+  --shadow-md: 0 4px 16px rgba(68, 106, 69, 0.08);
+  --shadow-lg: 0 16px 40px rgba(68, 106, 69, 0.14);
 
   /* Glassmorphism surfaces */
   --glass-bg: rgba(255, 255, 255, 0.62);
@@ -37,9 +43,9 @@
   --glass-blur: blur(20px) saturate(180%);
 
   /* Status glow shadows (paired with --shadow-sm / --shadow-md) */
-  --glow-safe: 0 12px 32px -10px rgba(69, 123, 157, 0.45);
-  --glow-warning: 0 12px 32px -8px rgba(233, 196, 106, 0.55);
-  --glow-danger: 0 12px 36px -6px rgba(230, 57, 70, 0.5);
+  --glow-safe: 0 12px 32px -10px rgba(129, 162, 131, 0.45);
+  --glow-warning: 0 12px 32px -8px rgba(228, 174, 197, 0.55);
+  --glow-danger: 0 12px 36px -6px rgba(110, 25, 54, 0.5);
 
   /* App shell */
   --sidebar-width: 260px;

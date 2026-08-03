@@ -47,8 +47,8 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--red);
-  background: rgba(230, 57, 70, 0.08);
-  border: 1px solid rgba(230, 57, 70, 0.25);
+  background: rgba(110, 25, 54, 0.08);
+  border: 1px solid rgba(110, 25, 54, 0.25);
   border-radius: var(--radius-sm);
   padding: 10px 14px;
   margin-bottom: 18px;
