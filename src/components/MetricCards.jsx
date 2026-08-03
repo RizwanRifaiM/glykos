@@ -6,6 +6,7 @@ import {
   LOCATION_LABELS,
   TEMP_DELTA_WARNING,
 } from '../constants/thresholds'
+import { IconGauge, IconThermometer, IconDroplet } from './icons'
 
 function StatusPill({ status }) {
   const labels = {
@@ -55,7 +56,7 @@ export function PressureCard({ pressure }) {
 
   return (
     <MetricCard
-      icon="⚡"
+      icon={<IconGauge size={22} />}
       title="Tekanan Puncak"
       value={peak}
       unit="kPa"
@@ -98,7 +99,7 @@ export function TemperatureCard({ temperature }) {
 
   return (
     <MetricCard
-      icon="🌡️"
+      icon={<IconThermometer size={22} />}
       title="Suhu Tertinggi"
       value={highest}
       unit="°C"
@@ -142,7 +143,7 @@ export function HumidityCard({ humidity }) {
 
   return (
     <MetricCard
-      icon="💧"
+      icon={<IconDroplet size={22} />}
       title="Kelembapan Sepatu"
       value={rh}
       unit="% RH"

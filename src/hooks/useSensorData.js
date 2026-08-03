@@ -1,5 +1,7 @@
 // src/hooks/useSensorData.js
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { doc, onSnapshot } from 'firebase/firestore'
+import { db } from '../services/firebase'
 
 const DEVICES = {
   'ESP32-001': { name: 'Insole Kiri — Budi', foot: 'left' }
@@ -82,18 +84,45 @@ function parseSensorReading(raw, deviceId) {
   }
 }
 
-// TODO: pembacaan sensor live akan datang dari BLE (belum diimplementasikan).
-// Untuk sementara hook ini hanya menyediakan data contoh statis.
+// Membaca dokumen "live" (devices/{deviceId}/live/current) secara realtime via
+// onSnapshot. Selama firmware ESP32 belum mengirim ke path ini (BLE/WiFi belum
+// diimplementasikan di perangkat), dokumen tidak akan ada dan hook otomatis
+// jatuh ke DEFAULT_JSON — begitu perangkat mulai menulis, UI update sendiri
+// tanpa perlu refresh manual.
 export function useSensorData(deviceId = 'ESP32-001') {
+  const [raw, setRaw] = useState(null)
+  const [isLive, setIsLive] = useState(false)
   const [refreshedAt, setRefreshedAt] = useState(() => Date.now())
 
+  useEffect(() => {
+    const ref = doc(db, 'devices', deviceId, 'live', 'current')
+    const unsubscribe = onSnapshot(
+      ref,
+      (snap) => {
+        if (snap.exists()) {
+          setRaw(snap.data())
+          setIsLive(true)
+        } else {
+          setRaw(null)
+          setIsLive(false)
+        }
+      },
+      () => {
+        setRaw(null)
+        setIsLive(false)
+      },
+    )
+    return unsubscribe
+  }, [deviceId])
+
   const data = useMemo(() => {
-    const reading = parseSensorReading(DEFAULT_JSON, deviceId)
-    reading.connection.lastUpdate = new Date(refreshedAt)
+    const reading = parseSensorReading(raw || DEFAULT_JSON, deviceId)
+    reading.connection.wifi = isLive
+    reading.connection.lastUpdate = isLive ? new Date() : new Date(refreshedAt)
     return reading
-  }, [deviceId, refreshedAt])
+  }, [raw, isLive, deviceId, refreshedAt])
 
   const refresh = () => setRefreshedAt(Date.now())
 
-  return { data, isLoading: false, refresh, devices: DEVICES }
+  return { data, isLoading: false, refresh, devices: DEVICES, isLive }
 }

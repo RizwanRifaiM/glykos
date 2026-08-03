@@ -4,7 +4,11 @@ import ProtectedRoute from './components/ProtectedRoute'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
-import DashboardPage from './pages/DashboardPage'
+import DashboardLayout from './pages/DashboardLayout'
+import DashboardOverview from './pages/DashboardOverview'
+import HistoryPage from './pages/HistoryPage'
+import AlertsPage from './pages/AlertsPage'
+import ProfilePage from './pages/ProfilePage'
 
 function App() {
   return (
@@ -17,10 +21,15 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <DashboardPage />
+              <DashboardLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<DashboardOverview />} />
+          <Route path="history" element={<HistoryPage />} />
+          <Route path="alerts" element={<AlertsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+        </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>

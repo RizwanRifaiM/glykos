@@ -1,3 +1,5 @@
+import { IconActivity, IconClock } from './icons'
+
 export default function ActivityPanel({ activity }) {
   const hours = Math.floor(activity.activeMinutes / 60)
   const mins = activity.activeMinutes % 60
@@ -8,14 +10,18 @@ export default function ActivityPanel({ activity }) {
       <p className="panel__subtitle">Data dari MPU6050 — pola tekanan &amp; gerak</p>
       <div className="activity-panel__grid">
         <div className="activity-stat">
-          <span className="activity-stat__icon">👣</span>
+          <span className="activity-stat__icon">
+            <IconActivity size={22} />
+          </span>
           <div>
             <strong>{activity.steps.toLocaleString('id-ID')}</strong>
             <span>Total Langkah</span>
           </div>
         </div>
         <div className="activity-stat">
-          <span className="activity-stat__icon">⏱️</span>
+          <span className="activity-stat__icon">
+            <IconClock size={22} />
+          </span>
           <div>
             <strong>
               {hours > 0 ? `${hours}j ` : ''}

@@ -3,6 +3,14 @@ import { variantProps } from '../components/button-variants'
 import { useAuth } from '../contexts/auth-context'
 import InsoleIllustration from '../components/InsoleIllustration'
 import { COLORS } from '../constants/theme'
+import {
+  IconGauge,
+  IconThermometer,
+  IconDroplet,
+  IconActivity,
+  IconLayoutDashboard,
+  IconFileText,
+} from '../components/icons'
 import './Landing.css'
 
 const SENSORS = [
@@ -14,32 +22,32 @@ const SENSORS = [
 
 const FEATURES = [
   {
-    icon: '⚡',
+    icon: IconGauge,
     title: 'Pemantauan Tekanan Plantar',
     desc: 'Sensor FSR 402 pada titik tumit, metatarsal & jari kaki mendeteksi tekanan berlebih yang berisiko memicu luka.',
   },
   {
-    icon: '🌡️',
+    icon: IconThermometer,
     title: 'Deteksi Selisih Suhu Kaki',
     desc: 'Selisih suhu antar area atau antar kaki adalah salah satu prediktor dini peradangan sebelum luka terlihat kasat mata.',
   },
   {
-    icon: '💧',
+    icon: IconDroplet,
     title: 'Kelembapan Dalam Sepatu',
     desc: 'Kelembapan berlebih meningkatkan risiko maserasi & infeksi jamur pada kulit yang sudah rentan.',
   },
   {
-    icon: '👣',
+    icon: IconActivity,
     title: 'Aktivitas & Pola Gerak',
     desc: 'Rekam jumlah langkah dan waktu aktif harian untuk memahami beban yang diterima kaki sepanjang hari.',
   },
   {
-    icon: '📊',
+    icon: IconLayoutDashboard,
     title: 'Dashboard Real-time',
     desc: 'Semua data sensor tersaji dalam satu dashboard yang mudah dibaca, kapan saja dan di mana saja.',
   },
   {
-    icon: '📄',
+    icon: IconFileText,
     title: 'Export Laporan Medis',
     desc: 'Unduh riwayat data dalam format CSV atau PDF untuk dibawa ke konsultasi dengan dokter.',
   },
@@ -190,7 +198,9 @@ export default function LandingPage() {
           <div className="features__grid">
             {FEATURES.map((feature) => (
               <div key={feature.title} className="feature-card">
-                <span className="feature-card__icon">{feature.icon}</span>
+                <span className="feature-card__icon">
+                  <feature.icon size={22} />
+                </span>
                 <h3>{feature.title}</h3>
                 <p>{feature.desc}</p>
               </div>

@@ -1,10 +1,5 @@
 import { COLORS } from '../constants/theme'
-
-export const HISTORY_METRICS_CONFIG = {
-  pressure: { label: 'Tekanan (kPa)', color: COLORS.red, max: 300 },
-  temperature: { label: 'Suhu (°C)', color: COLORS.blue, max: 38 },
-  humidity: { label: 'Kelembapan (%)', color: COLORS.navy, max: 100 },
-}
+import { HISTORY_METRICS_CONFIG } from '../constants/historyMetrics'
 
 function buildPath(values, width, height, max) {
   if (values.length === 0) return ''

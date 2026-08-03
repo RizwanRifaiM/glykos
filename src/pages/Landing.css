@@ -287,8 +287,14 @@
 
 .feature-card__icon {
   display: inline-flex;
-  font-size: 26px;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
   margin-bottom: 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(69, 123, 157, 0.1);
+  color: var(--blue);
 }
 
 .feature-card h3 {
