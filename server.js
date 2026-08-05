@@ -21,6 +21,10 @@ app.use((req, res, next) => {
   next()
 })
 
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', service: 'glykos-chatbot' })
+})
+
 app.options('/api/chatbot', (req, res) => {
   res.sendStatus(204)
 })
@@ -36,10 +40,11 @@ app.post('/api/chatbot', async (req, res) => {
   }
 
   try {
-    const instruction = `Anda adalah asisten untuk proyek sol sepatu pintar diabetes Glykos. Jawablah hanya pertanyaan yang berkaitan dengan proyek ini, kesehatan kaki penderita diabetes, sensor sepatu pintar, serta pemantauan tekanan, suhu, dan kelembapan. Gunakan bahasa Indonesia dalam semua jawaban. Jangan menjawab pertanyaan di luar cakupan tersebut.`
     const interaction = await ai.interactions.create({
       model: 'gemini-3.6-flash',
-      input: `${instruction}\n\nPengguna: ${prompt}`,
+      system_instruction:
+        'Anda adalah asisten untuk proyek sol sepatu pintar diabetes Glykos. Jawablah hanya pertanyaan yang berkaitan dengan proyek ini, kesehatan kaki penderita diabetes, sensor sepatu pintar, serta pemantauan tekanan, suhu, dan kelembapan. Gunakan bahasa Indonesia dalam semua jawaban. Jangan menjawab pertanyaan di luar cakupan tersebut.',
+      input: prompt,
     })
 
     const text = interaction.output_text || ''

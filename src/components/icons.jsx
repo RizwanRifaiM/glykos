@@ -233,3 +233,29 @@ export function IconX(props) {
     </Icon>
   )
 }
+
+export function IconMessageCircle(props) {
+  return (
+    <Icon {...props}>
+      <path d="M7.9 20.9 3 22l1.1-4.9A9 9 0 1 1 7.9 20.9Z" />
+    </Icon>
+  )
+}
+
+export function IconSend(props) {
+  return (
+    <Icon {...props}>
+      <path d="M22 2 11 13" />
+      <path d="M22 2 15 22l-4-9-9-4Z" />
+    </Icon>
+  )
+}
+
+export function IconSparkles(props) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3v4M12 17v4M3 12h4M17 12h4" />
+      <path d="M12 8.5 13.4 11 16 12l-2.6 1L12 15.5 10.6 13 8 12l2.6-1Z" />
+    </Icon>
+  )
+}
