@@ -13,11 +13,13 @@ import {
   IconShieldAlert,
   IconIdCard,
   IconLogOut,
+  IconActivity,
 } from '../components/icons'
 import '../App.css'
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Ringkasan', end: true, icon: IconLayoutDashboard },
+  { to: '/dashboard/chatbot', label: 'Chatbot', icon: IconActivity },
   { to: '/dashboard/history', label: 'Riwayat', icon: IconHistory },
   { to: '/dashboard/alerts', label: 'Peringatan', icon: IconShieldAlert },
   { to: '/dashboard/profile', label: 'Profil', icon: IconIdCard },

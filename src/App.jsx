@@ -9,6 +9,7 @@ import DashboardOverview from './pages/DashboardOverview'
 import HistoryPage from './pages/HistoryPage'
 import AlertsPage from './pages/AlertsPage'
 import ProfilePage from './pages/ProfilePage'
+import ChatbotPage from './pages/ChatbotPage'
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           }
         >
           <Route index element={<DashboardOverview />} />
+          <Route path="chatbot" element={<ChatbotPage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="alerts" element={<AlertsPage />} />
           <Route path="profile" element={<ProfilePage />} />
