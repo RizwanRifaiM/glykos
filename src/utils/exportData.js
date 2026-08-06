@@ -26,7 +26,7 @@ export function exportToCsv(data, history = [], filename = 'glykos-report') {
   const rows = [
     ['Glykos — Laporan Monitoring Kaki Diabetes'],
     ['Diekspor', new Date().toLocaleString('id-ID')],
-    ['Perangkat', data?.device?.name ?? data?.deviceId ?? 'ESP32-001'],
+    ['Perangkat', data?.device?.name ?? data?.deviceId ?? 'glykos-device'],
     [],
     ['Parameter Saat Ini'],
     ['Tekanan Puncak (kPa)', peakPressure],
@@ -101,7 +101,7 @@ export function exportToPdf(data, history = []) {
 </head>
 <body>
   <h1>Glykos — Laporan Monitoring</h1>
-  <p class="subtitle">${data?.device?.name ?? data?.deviceId ?? 'ESP32-001'} · ${new Date().toLocaleString('id-ID')}</p>
+  <p class="subtitle">${data?.device?.name ?? data?.deviceId ?? 'glykos-device'} · ${new Date().toLocaleString('id-ID')}</p>
   <div class="metrics">
     <div class="metric"><span>Tekanan Puncak</span><strong>${peakPressure} kPa</strong><small>${pressureLocation}</small></div>
     <div class="metric"><span>Suhu Tertinggi</span><strong>${highestTemp}°C</strong><small>${tempLocation}</small></div>

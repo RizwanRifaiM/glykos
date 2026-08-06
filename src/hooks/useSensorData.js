@@ -4,11 +4,11 @@ import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '../services/firebase'
 
 const DEVICES = {
-  'ESP32-001': { name: 'Insole Kiri — Budi', foot: 'left' }
+  'glykos-device': { name: 'Glykos Device', foot: 'left' }
 }
 
 const DEFAULT_JSON = {
-  id: 'ESP32-001',
+  id: 'glykos-device',
   humidity: 55.0,
   temperature: 32.5,
   pressure1: 180.5,
@@ -22,8 +22,8 @@ function parseSensorReading(raw, deviceId) {
   const dataRaw = raw || DEFAULT_JSON
 
   // Format JSON Konsisten:
-  // {"id": "ESP32-001","humidity": 55.0,"temperature": 32.5,"pressure1": 180.5,"pressure2": 210.2,"pressure3": 90.0,"tanggal": "2026-07-30","waktu": "15:30:00"}
-  const id = dataRaw.id || deviceId || 'ESP32-001'
+  // {"id": "glykos-device","humidity": 55.0,"temperature": 32.5,"pressure1": 180.5,"pressure2": 210.2,"pressure3": 90.0,"tanggal": "2026-07-30","waktu": "15:30:00"}
+  const id = dataRaw.id || deviceId || 'glykos-device'
   const p1 = Number(dataRaw.pressure1 ?? 0)
   const p2 = Number(dataRaw.pressure2 ?? 0)
   const p3 = Number(dataRaw.pressure3 ?? 0)
@@ -51,7 +51,7 @@ function parseSensorReading(raw, deviceId) {
 
     // UI Helper / Derived fields:
     deviceId: id,
-    device: DEVICES[id] || DEVICES['ESP32-001'],
+    device: DEVICES[id] || DEVICES['glykos-device'],
     connection: {
       wifi: false,
       signalStrength: -100,
@@ -89,7 +89,7 @@ function parseSensorReading(raw, deviceId) {
 // diimplementasikan di perangkat), dokumen tidak akan ada dan hook otomatis
 // jatuh ke DEFAULT_JSON — begitu perangkat mulai menulis, UI update sendiri
 // tanpa perlu refresh manual.
-export function useSensorData(deviceId = 'ESP32-001') {
+export function useSensorData(deviceId = 'glykos-device') {
   const [raw, setRaw] = useState(null)
   const [isLive, setIsLive] = useState(false)
   const [refreshedAt, setRefreshedAt] = useState(() => Date.now())

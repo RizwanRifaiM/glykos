@@ -57,7 +57,7 @@ function buildPoints(groupedByDate, start, days) {
   return points
 }
 
-export function useHistoryData(deviceId = 'ESP32-001', range = '7d') {
+export function useHistoryData(deviceId = 'glykos-device', range = '7d') {
   const [history, setHistory] = useState([])
   const [loadedKey, setLoadedKey] = useState(null)
   const days = range === '30d' ? 30 : 7

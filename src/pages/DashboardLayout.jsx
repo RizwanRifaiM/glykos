@@ -3,7 +3,9 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { COLORS } from '../constants/theme'
 import DeviceSelector from '../components/DeviceSelector'
 import ConnectionBar from '../components/ConnectionBar'
+import BleConnectButton from '../components/BleConnectButton'
 import { useSensorData } from '../hooks/useSensorData'
+import { useBleSensor } from '../hooks/useBleSensor'
 import { useHistoryData } from '../hooks/useHistoryData'
 import { useAlerts, useAlertMonitor } from '../hooks/useAlerts'
 import { useAuth } from '../contexts/auth-context'
@@ -68,12 +70,24 @@ function TopbarUser() {
 }
 
 export default function DashboardLayout() {
-  const [deviceId, setDeviceId] = useState('ESP32-001')
+  const [deviceId, setDeviceId] = useState('glykos-device')
   const [historyRange, setHistoryRange] = useState('7d')
 
-  const { data, refresh, devices, isLive } = useSensorData(deviceId)
+  const {
+    data: firestoreData,
+    refresh,
+    devices,
+    isLive: firestoreLive,
+  } = useSensorData(deviceId)
+  const ble = useBleSensor()
   const { history, isLoading: historyLoading } = useHistoryData(deviceId, historyRange)
   const { alerts, isLoading: alertsLoading } = useAlerts(deviceId)
+
+  // Saat perangkat BLE terhubung dan sudah mengirim paket, datanya jadi sumber
+  // live yang meng-override data Firestore/cadangan.
+  const bleActive = ble.isConnected && ble.reading
+  const data = bleActive ? ble.reading : firestoreData
+  const isLive = bleActive ? true : firestoreLive
 
   useAlertMonitor(deviceId, data)
 
@@ -85,6 +99,15 @@ export default function DashboardLayout() {
         <DeviceSelector devices={devices} selectedId={deviceId} onSelect={setDeviceId} />
 
         <div className="app-topbar__spacer" />
+
+        <BleConnectButton
+          supported={ble.supported}
+          status={ble.status}
+          isConnected={ble.isConnected}
+          deviceName={ble.deviceName}
+          onConnect={ble.connect}
+          onDisconnect={ble.disconnect}
+        />
 
         <ConnectionBar
           connection={
@@ -98,6 +121,12 @@ export default function DashboardLayout() {
 
         <TopbarUser />
       </header>
+
+      {ble.error && (
+        <p className="ble-error" role="alert">
+          Bluetooth: {ble.error}
+        </p>
+      )}
 
       <main className="app-main">
         <Outlet
