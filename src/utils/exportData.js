@@ -20,8 +20,8 @@ export function exportToCsv(data, history = [], filename = 'glykos-report') {
       : 'Metatarsal'
 
   const humidity = Number(data?.humidity || 0)
-  const steps = data?.activity?.steps ?? 1250
-  const activeMins = data?.activity?.activeMinutes ?? 45
+  const steps = data?.activity?.steps ?? 0
+  const activeMins = data?.activity?.activeMinutes ?? 0
 
   const rows = [
     ['Glykos — Laporan Monitoring Kaki Diabetes'],

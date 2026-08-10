@@ -2,48 +2,46 @@ import { useOutletContext } from 'react-router-dom'
 import { PressureCard, TemperatureCard, HumidityCard } from '../components/MetricCards'
 import ActivityPanel from '../components/ActivityPanel'
 import HistoryChart from '../components/HistoryChart'
-import InsoleIllustration from '../components/InsoleIllustration'
+import SensorFootMap from '../components/SensorFootMap'
+import PageHeader from '../components/PageHeader'
+import StatusBanner from '../components/StatusBanner'
 import Button, { LinkButton } from '../components/Button'
 import { IconDownload, IconFileText, IconRefreshCw } from '../components/icons'
 import { exportToCsv, exportToPdf } from '../utils/exportData'
 
 export default function DashboardOverview() {
-  const { data, refresh, history } = useOutletContext()
+  const { data, isLive, refresh, history, fatigue } = useOutletContext()
 
   return (
     <div className="dashboard-overview">
-      <section className="metrics-grid">
-        <PressureCard pressure={data.pressure} />
-        <TemperatureCard temperature={data.temperatureObj} />
-        <HumidityCard humidity={data.humidity} />
-      </section>
+      <PageHeader
+        title="Ringkasan"
+        subtitle="Kondisi kaki & insole secara real-time"
+      />
+
+      <StatusBanner data={data} isLive={isLive} />
 
       <section className="panel foot-map-panel">
         <h2 className="panel__title">Peta Sensor Insole</h2>
         <p className="panel__subtitle">
-          Visualisasi titik tekanan, suhu &amp; aktivitas pada kaki secara real-time
+          Titik tekanan &amp; suhu per sensor pada insole secara real-time
         </p>
         <div className="foot-map-panel__visual">
-          <InsoleIllustration
-            pressure={data.pressure?.peak ?? 0}
-            temperature={data.temperatureObj?.highest ?? 0}
-            steps={data.activity?.steps ?? 0}
+          <SensorFootMap
+            pressurePoints={data.pressure?.points}
+            temperaturePoints={data.temperatureObj?.points}
           />
         </div>
       </section>
 
-      <div className="info-callout">
-        <p className="info-callout__text">
-          Banyak penderita diabetes mengalami <strong>neuropati</strong> (mati rasa pada saraf kaki),
-          sehingga mereka tidak menyadari adanya tekanan berlebih atau peradangan dini yang berisiko
-          menjadi ulkus diabetik. <strong>Glykos</strong> hadir sebagai &ldquo;indera pengganti&rdquo; untuk mencegah luka yang sulit sembuh tersebut.
-          Hasil akan dikirim secara <em>real-time</em> ke <em>dashboard</em> ini agar pasien, keluarga, maupun dokter
-          dapat memantau kondisi kaki kapan saja untuk tindakan preventif.
-        </p>
-      </div>
+      <section className="metrics-grid">
+        <PressureCard pressure={data.pressure} history={history} />
+        <TemperatureCard temperature={data.temperatureObj} history={history} />
+        <HumidityCard humidity={data.humidity} history={history} airTemperature={data.airTemperature} />
+      </section>
 
       <div className="dashboard__row">
-        <ActivityPanel activity={data.activity} />
+        <ActivityPanel activity={data.activity} accel={data.accel} fatigue={fatigue} />
 
         <section className="panel export-panel">
           <h2 className="panel__title">Export Laporan</h2>

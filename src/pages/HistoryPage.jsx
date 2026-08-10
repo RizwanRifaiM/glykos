@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import Button from '../components/Button'
 import HistoryChart from '../components/HistoryChart'
+import PageHeader from '../components/PageHeader'
 import { IconDownload, IconFileText } from '../components/icons'
 import { exportToCsv, exportToPdf } from '../utils/exportData'
 
@@ -34,6 +35,11 @@ export default function HistoryPage() {
 
   return (
     <div className="history-page">
+      <PageHeader
+        title="Riwayat"
+        subtitle="Data historis tekanan, suhu & kelembapan insole"
+      />
+
       <section className="panel history-panel">
         <div className="history-panel__header">
           <div>

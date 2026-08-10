@@ -7,22 +7,25 @@ const DEVICES = {
   'glykos-device': { name: 'Glykos Device', foot: 'left' }
 }
 
+// Ditampilkan hanya saat BELUM ADA perangkat tersambung & belum ada data live
+// di Firestore — sengaja nol semua, BUKAN data dummy/simulasi, supaya
+// dashboard tidak menyesatkan seolah ada pembacaan sensor nyata.
 const DEFAULT_JSON = {
   id: 'glykos-device',
-  humidity: 55.0,
-  temperature: 32.5,
-  pressure1: 180.5,
-  pressure2: 210.2,
-  pressure3: 90.0,
-  tanggal: '2026-07-30',
-  waktu: '15:30:00',
+  humidity: 0,
+  temperature: 0,
+  pressure1: 0,
+  pressure2: 0,
+  pressure3: 0,
+  tanggal: new Date().toISOString().slice(0, 10),
+  waktu: new Date().toLocaleTimeString('id-ID'),
 }
 
 function parseSensorReading(raw, deviceId) {
   const dataRaw = raw || DEFAULT_JSON
 
-  // Format JSON Konsisten:
-  // {"id": "glykos-device","humidity": 55.0,"temperature": 32.5,"pressure1": 180.5,"pressure2": 210.2,"pressure3": 90.0,"tanggal": "2026-07-30","waktu": "15:30:00"}
+  // Format JSON Konsisten (ditulis oleh useFirestoreSync.js selama BLE tersambung):
+  // {"id": "glykos-device","humidity": 55.0,"temperature": 32.5,"pressure1": 120.0,"pressure2": 210.2,"pressure3": 90.0,"tanggal": "2026-08-10","waktu": "15:30:00"}
   const id = dataRaw.id || deviceId || 'glykos-device'
   const p1 = Number(dataRaw.pressure1 ?? 0)
   const p2 = Number(dataRaw.pressure2 ?? 0)
@@ -78,17 +81,17 @@ function parseSensorReading(raw, deviceId) {
       delta: 0,
     },
     activity: dataRaw.activity || {
-      steps: 1250,
-      activeMinutes: 45,
+      steps: 0,
+      activeMinutes: 0,
     },
   }
 }
 
 // Membaca dokumen "live" (devices/{deviceId}/live/current) secara realtime via
-// onSnapshot. Selama firmware ESP32 belum mengirim ke path ini (BLE/WiFi belum
-// diimplementasikan di perangkat), dokumen tidak akan ada dan hook otomatis
-// jatuh ke DEFAULT_JSON — begitu perangkat mulai menulis, UI update sendiri
-// tanpa perlu refresh manual.
+// onSnapshot. Firmware ESP32 tidak menulis ke path ini langsung (tidak ada
+// WiFi di perangkat) — yang menulis adalah WEB APP ini sendiri lewat
+// useFirestoreSync.js selama BLE tersambung. Selama belum pernah ada sesi BLE
+// sama sekali, dokumen tidak ada dan hook jatuh ke DEFAULT_JSON (nol semua).
 export function useSensorData(deviceId = 'glykos-device') {
   const [raw, setRaw] = useState(null)
   const [isLive, setIsLive] = useState(false)

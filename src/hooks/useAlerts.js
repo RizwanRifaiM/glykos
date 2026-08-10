@@ -17,11 +17,12 @@ import {
   getHumidityStatus,
   TEMP_DELTA_WARNING,
 } from '../constants/thresholds'
+import { FATIGUE_LABELS } from '../constants/fatigue'
 import { notify } from '../utils/notifications'
 
-const STATUS_RANK = { safe: 0, warning: 1, danger: 2 }
+export const STATUS_RANK = { safe: 0, warning: 1, danger: 2 }
 
-function evaluateMetrics(data) {
+export function evaluateMetrics(data) {
   const peak = data.pressure?.peak ?? 0
   const pressureStatus = getPressureStatus(peak)
 
@@ -63,6 +64,27 @@ function evaluateMetrics(data) {
   ]
 }
 
+// Indikasi kelelahan (useFatigueMonitor.js) bukan bagian dari `data` sensor,
+// jadi dievaluasi terpisah lalu digabung ke daftar item yang sama supaya
+// mengikuti jalur logAlert/notifikasi/badge yang sudah ada — tidak
+// menduplikasi logikanya.
+function fatigueMetricItem(fatigue) {
+  if (!fatigue?.sessionActive) return null
+
+  const label = FATIGUE_LABELS[fatigue.level] ?? fatigue.level
+  return {
+    metric: 'fatigue',
+    label: 'Kelelahan',
+    status: fatigue.level,
+    value: label,
+    location: null,
+    message:
+      fatigue.reasons.length > 0
+        ? fatigue.reasons.join('; ')
+        : `Indikasi kelelahan: ${label}`,
+  }
+}
+
 async function logAlert(deviceId, item) {
   try {
     await addDoc(collection(db, 'devices', deviceId, 'alerts'), {
@@ -85,7 +107,7 @@ async function logAlert(deviceId, item) {
 // di sisi klien selama dashboard terbuka — untuk peringatan saat aplikasi
 // tertutup diperlukan pemantauan sisi server (Cloud Function + push),
 // yang belum diaktifkan pada proyek ini.
-export function useAlertMonitor(deviceId, data) {
+export function useAlertMonitor(deviceId, data, fatigue) {
   const lastStatus = useRef({})
 
   useEffect(() => {
@@ -95,7 +117,11 @@ export function useAlertMonitor(deviceId, data) {
   useEffect(() => {
     if (!deviceId || !data) return
 
-    evaluateMetrics(data).forEach((item) => {
+    const items = evaluateMetrics(data)
+    const fatigueItem = fatigueMetricItem(fatigue)
+    if (fatigueItem) items.push(fatigueItem)
+
+    items.forEach((item) => {
       const prevStatus = lastStatus.current[item.metric] ?? 'safe'
       const prevRank = STATUS_RANK[prevStatus]
       const currRank = STATUS_RANK[item.status]
@@ -109,7 +135,7 @@ export function useAlertMonitor(deviceId, data) {
 
       lastStatus.current[item.metric] = item.status
     })
-  }, [deviceId, data])
+  }, [deviceId, data, fatigue])
 }
 
 export function useAlerts(deviceId, max = 50) {

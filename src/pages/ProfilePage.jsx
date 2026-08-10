@@ -5,6 +5,7 @@ import { db } from '../services/firebase'
 import { useAuth } from '../contexts/auth-context'
 import Button from '../components/Button'
 import { IconBell } from '../components/icons'
+import PageHeader from '../components/PageHeader'
 import {
   getNotificationPermission,
   isNotificationSupported,
@@ -73,10 +74,15 @@ export default function ProfilePage() {
 
   return (
     <div className="profile-page">
+      <PageHeader
+        title="Profil"
+        subtitle={user?.displayName || user?.email}
+      />
+
       <section className="panel profile-panel">
         <h2 className="panel__title">Profil Pasien</h2>
         <p className="panel__subtitle">
-          {user?.displayName || user?.email} · Perangkat terpasang: {data?.device?.name ?? deviceId}
+          Perangkat terpasang: {data?.device?.name ?? deviceId}
         </p>
 
         {isLoading ? (
@@ -107,7 +113,7 @@ export default function ProfilePage() {
               />
             </label>
 
-            <label className="profile-field">
+            <label className="profile-field profile-field--full">
               <span>Riwayat Luka / Ulkus</span>
               <textarea
                 rows={3}
@@ -117,7 +123,7 @@ export default function ProfilePage() {
               />
             </label>
 
-            <label className="profile-field">
+            <label className="profile-field profile-field--full">
               <span>Kontak Darurat</span>
               <input
                 type="text"
@@ -127,7 +133,7 @@ export default function ProfilePage() {
               />
             </label>
 
-            <div className="profile-form__actions">
+            <div className="profile-form__actions profile-field--full">
               <Button type="submit" variant="primary" disabled={isSaving}>
                 {isSaving ? 'Menyimpan…' : 'Simpan Profil'}
               </Button>

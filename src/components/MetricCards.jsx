@@ -6,7 +6,14 @@ import {
   LOCATION_LABELS,
   TEMP_DELTA_WARNING,
 } from '../constants/thresholds'
+import { HISTORY_METRICS_CONFIG } from '../constants/historyMetrics'
 import { IconGauge, IconThermometer, IconDroplet } from './icons'
+import Sparkline from './Sparkline'
+
+function trendValues(history, key) {
+  if (!Array.isArray(history)) return []
+  return history.map((row) => Number(row[key])).filter((v) => !isNaN(v))
+}
 
 function StatusPill({ status }) {
   const labels = {
@@ -17,7 +24,7 @@ function StatusPill({ status }) {
   return <span className={`status-pill status-pill--${status}`}>{labels[status]}</span>
 }
 
-function MetricCard({ icon, title, value, unit, status, detail, children }) {
+function MetricCard({ icon, title, value, unit, status, detail, trend, children }) {
   return (
     <article className={`metric-card metric-card--${status}`}>
       <div className="metric-card__header">
@@ -28,6 +35,7 @@ function MetricCard({ icon, title, value, unit, status, detail, children }) {
           <h3 className="metric-card__title">{title}</h3>
           <StatusPill status={status} />
         </div>
+        {trend && <div className="metric-card__trend">{trend}</div>}
       </div>
       <div className="metric-card__value">
         <strong>{value}</strong>
@@ -39,7 +47,7 @@ function MetricCard({ icon, title, value, unit, status, detail, children }) {
   )
 }
 
-export function PressureCard({ pressure }) {
+export function PressureCard({ pressure, history }) {
   const pObj =
     typeof pressure === 'object' && pressure !== null
       ? pressure
@@ -53,6 +61,7 @@ export function PressureCard({ pressure }) {
   const status = getPressureStatus(peak)
   const location = LOCATION_LABELS[pObj.location] ?? pObj.location ?? 'Metatarsal'
   const points = pObj.points || {}
+  const trendValuesArr = trendValues(history, 'pressure')
 
   return (
     <MetricCard
@@ -62,6 +71,13 @@ export function PressureCard({ pressure }) {
       unit="kPa"
       status={status}
       detail={`Titik tertinggi: ${location} · ${getPressureLabel(status)}`}
+      trend={
+        <Sparkline
+          values={trendValuesArr}
+          max={HISTORY_METRICS_CONFIG.pressure.max}
+          color={HISTORY_METRICS_CONFIG.pressure.color}
+        />
+      }
     >
       <div className="point-grid">
         {Object.entries(points).map(([key, val]) => (
@@ -78,7 +94,7 @@ export function PressureCard({ pressure }) {
   )
 }
 
-export function TemperatureCard({ temperature }) {
+export function TemperatureCard({ temperature, history }) {
   const tObj =
     typeof temperature === 'object' && temperature !== null
       ? temperature
@@ -88,6 +104,7 @@ export function TemperatureCard({ temperature }) {
           points: { metatarsal: Number(temperature || 0) },
           leftFoot: Number(temperature || 0),
           rightFoot: Number(temperature || 0),
+          lateralFoot: Number(temperature || 0),
           delta: 0,
         }
 
@@ -96,6 +113,7 @@ export function TemperatureCard({ temperature }) {
   const status = delta >= TEMP_DELTA_WARNING ? 'warning' : getTemperatureStatus(highest)
   const location = LOCATION_LABELS[tObj.location] ?? tObj.location ?? 'Metatarsal'
   const points = tObj.points || {}
+  const trendValuesArr = trendValues(history, 'temperature')
 
   return (
     <MetricCard
@@ -105,6 +123,13 @@ export function TemperatureCard({ temperature }) {
       unit="°C"
       status={status}
       detail={`Area terpanas: ${location}`}
+      trend={
+        <Sparkline
+          values={trendValuesArr}
+          max={HISTORY_METRICS_CONFIG.temperature.max}
+          color={HISTORY_METRICS_CONFIG.temperature.color}
+        />
+      }
     >
       <div className="point-grid">
         {Object.entries(points).map(([key, val]) => (
@@ -123,6 +148,10 @@ export function TemperatureCard({ temperature }) {
           <span>Kaki Kanan</span>
           <strong>{tObj.rightFoot ?? highest}°C</strong>
         </div>
+        <div>
+          <span>Lateral</span>
+          <strong>{tObj.lateralFoot ?? highest}°C</strong>
+        </div>
         <div className={delta >= TEMP_DELTA_WARNING ? 'highlight' : ''}>
           <span>Selisih</span>
           <strong>{delta.toFixed(1)}°C</strong>
@@ -137,9 +166,10 @@ export function TemperatureCard({ temperature }) {
   )
 }
 
-export function HumidityCard({ humidity }) {
+export function HumidityCard({ humidity, history, airTemperature }) {
   const rh = Number(humidity || 0)
   const status = getHumidityStatus(rh)
+  const trendValuesArr = trendValues(history, 'humidity')
 
   return (
     <MetricCard
@@ -149,6 +179,13 @@ export function HumidityCard({ humidity }) {
       unit="% RH"
       status={status}
       detail="Sensor SHT30 / AHT20"
+      trend={
+        <Sparkline
+          values={trendValuesArr}
+          max={HISTORY_METRICS_CONFIG.humidity.max}
+          color={HISTORY_METRICS_CONFIG.humidity.color}
+        />
+      }
     >
       <div className="humidity-bar">
         <div className="humidity-bar__track">
@@ -167,6 +204,11 @@ export function HumidityCard({ humidity }) {
       <p className="metric-card__note">
         &gt;70% RH meningkatkan risiko maserasi, jamur &amp; infeksi
       </p>
+      {typeof airTemperature === 'number' && (
+        <p className="metric-card__note metric-card__note--secondary">
+          Suhu udara sekitar: {airTemperature}°C (sensor SHT30)
+        </p>
+      )}
     </MetricCard>
   )
 }

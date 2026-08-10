@@ -33,18 +33,28 @@ function normalizeBleReading(raw, receivedAt, isConnected) {
   if (peak === heel) location = 'heel'
   else if (peak === toe) location = 'toe'
 
-  // Suhu NTC: T1 = forefoot, T2 = tumit. Selisih keduanya adalah prediktor
-  // pre-ulkus (dipakai oleh threshold TEMP_DELTA_WARNING).
+  // Suhu NTC: T1 = forefoot, T2 = tumit, T3 = lateral. Selisih terbesar antar
+  // area yang tersedia adalah prediktor pre-ulkus (dipakai oleh threshold
+  // TEMP_DELTA_WARNING).
   const t1 = typeof raw.T1 === 'number' ? round1(raw.T1) : null
   const t2 = typeof raw.T2 === 'number' ? round1(raw.T2) : null
-  const temps = [t1, t2].filter((v) => v !== null)
+  const t3 = typeof raw.T3 === 'number' ? round1(raw.T3) : null
+  const tempAreas = [
+    { key: 'Forefoot', value: t1 },
+    { key: 'Tumit', value: t2 },
+    { key: 'Lateral', value: t3 },
+  ].filter((area) => area.value !== null)
+
+  const temps = tempAreas.map((area) => area.value)
   const highest = temps.length ? Math.max(...temps) : 0
-  const delta = t1 !== null && t2 !== null ? round1(Math.abs(t1 - t2)) : 0
-  const tempLocation = t1 !== null && t2 !== null && t2 > t1 ? 'Tumit' : 'Forefoot'
+  const lowest = temps.length ? Math.min(...temps) : 0
+  const delta = temps.length >= 2 ? round1(highest - lowest) : 0
+  const tempLocation = tempAreas.find((area) => area.value === highest)?.key ?? 'Forefoot'
 
   const tempPoints = {}
-  if (t1 !== null) tempPoints.Forefoot = t1
-  if (t2 !== null) tempPoints.Tumit = t2
+  tempAreas.forEach((area) => {
+    tempPoints[area.key] = area.value
+  })
 
   const humidity = typeof raw.RH === 'number' ? round1(raw.RH) : 0
   const now = receivedAt ? new Date(receivedAt) : new Date()
@@ -85,6 +95,7 @@ function normalizeBleReading(raw, receivedAt, isConnected) {
       points: tempPoints,
       leftFoot: t1 ?? highest, // forefoot
       rightFoot: t2 ?? highest, // tumit
+      lateralFoot: t3 ?? highest, // lateral
       delta,
     },
     // Firmware hanya mengirim akselerasi mentah (AX/AY/AZ), belum langkah kaki.

@@ -1,6 +1,102 @@
 import { IconActivity, IconClock } from './icons'
+import { FATIGUE_LABELS } from '../constants/fatigue'
 
-export default function ActivityPanel({ activity }) {
+function AccelBlock({ accel }) {
+  const hasData = accel && (accel.x !== null || accel.y !== null || accel.z !== null)
+  if (!hasData) return null
+
+  const x = accel.x ?? 0
+  const y = accel.y ?? 0
+  const z = accel.z ?? 0
+  const magnitude = Math.sqrt(x * x + y * y + z * z)
+
+  return (
+    <div className="fatigue-block">
+      <h3 className="fatigue-block__title">Akselerasi (MPU6050)</h3>
+      <div className="temp-compare">
+        <div>
+          <span>X</span>
+          <strong>{x.toFixed(2)} g</strong>
+        </div>
+        <div>
+          <span>Y</span>
+          <strong>{y.toFixed(2)} g</strong>
+        </div>
+        <div>
+          <span>Z</span>
+          <strong>{z.toFixed(2)} g</strong>
+        </div>
+        <div>
+          <span>Total</span>
+          <strong>{magnitude.toFixed(2)} g</strong>
+        </div>
+      </div>
+      <p className="metric-card__note">
+        ~1 g saat diam (gravitasi) — naik saat kaki bergerak/melangkah.
+      </p>
+    </div>
+  )
+}
+
+function FatigueBlock({ fatigue }) {
+  if (!fatigue?.sessionActive) {
+    return (
+      <div className="fatigue-block">
+        <h3 className="fatigue-block__title">Indikasi Kelelahan</h3>
+        <p className="metric-card__note">Belum ada data sesi pemakaian.</p>
+      </div>
+    )
+  }
+
+  const { level, sustainedMinutes, reasons } = fatigue
+  const label = FATIGUE_LABELS[level] ?? level
+
+  return (
+    <div className="fatigue-block">
+      <div className="fatigue-block__header">
+        <h3 className="fatigue-block__title">Indikasi Kelelahan</h3>
+        <span className={`status-pill status-pill--${level}`}>{label}</span>
+      </div>
+
+      {sustainedMinutes >= 1 && (
+        <p className="metric-card__note">
+          Beban tinggi berkelanjutan: {Math.round(sustainedMinutes)} menit
+        </p>
+      )}
+
+      {reasons.length > 0 ? (
+        <ul className="fatigue-reasons">
+          {reasons.map((reason) => (
+            <li key={reason}>{reason}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="metric-card__note">Belum ada indikasi kelelahan berarti.</p>
+      )}
+
+      <p className="metric-card__note metric-card__note--secondary">
+        Estimasi berbasis pola sensor, bukan pengukuran klinis kelelahan otot.
+      </p>
+    </div>
+  )
+}
+
+export default function ActivityPanel({ activity, accel, fatigue }) {
+  if (!activity) {
+    return (
+      <section className="panel activity-panel">
+        <h2 className="panel__title">Aktivitas Harian</h2>
+        <p className="panel__subtitle">Data dari MPU6050 — pola tekanan &amp; gerak</p>
+        <p className="metric-card__note">
+          Belum ada data langkah dari perangkat ini — sensor MPU6050 belum terdeteksi atau
+          belum mengirim data akselerasi.
+        </p>
+        <AccelBlock accel={accel} />
+        <FatigueBlock fatigue={fatigue} />
+      </section>
+    )
+  }
+
   const hours = Math.floor(activity.activeMinutes / 60)
   const mins = activity.activeMinutes % 60
 
@@ -31,6 +127,15 @@ export default function ActivityPanel({ activity }) {
           </div>
         </div>
       </div>
+      {accel && (accel.x !== null || accel.y !== null || accel.z !== null) && (
+        <p className="metric-card__note">
+          Langkah dihitung langsung di web app dari akselerasi MPU6050 (bukan dari firmware) —
+          estimasi, bisa meleset (undercount) saat jalan cepat/lari karena keterbatasan laju
+          kirim data BLE.
+        </p>
+      )}
+      <AccelBlock accel={accel} />
+      <FatigueBlock fatigue={fatigue} />
     </section>
   )
 }

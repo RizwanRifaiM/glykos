@@ -34,22 +34,21 @@ function buildPoints(groupedByDate, start, days) {
       points.push({
         date: dateKey,
         label: d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
-        pressure: pressures.length > 0 ? Math.max(...pressures) : 210.2,
-        temperature: temperatures.length > 0 ? Math.max(...temperatures) : 32.5,
+        pressure: pressures.length > 0 ? Math.max(...pressures) : 0,
+        temperature: temperatures.length > 0 ? Math.max(...temperatures) : 0,
         humidity:
           humidities.length > 0
             ? Math.round((humidities.reduce((a, b) => a + b, 0) / humidities.length) * 10) / 10
-            : 55.0,
+            : 0,
       })
     } else {
-      // Data simulasi baseline konsisten jika hari tersebut belum ada log di Firestore
-      const variance = (i % 3) * 2 - 2
+      // Belum ada log Firestore untuk hari ini — nol, BUKAN data simulasi.
       points.push({
         date: dateKey,
         label: d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
-        pressure: Number((210.2 + variance * 1.5).toFixed(1)),
-        temperature: Number((32.5 + variance * 0.2).toFixed(1)),
-        humidity: Number((55.0 + variance * 0.8).toFixed(1)),
+        pressure: 0,
+        temperature: 0,
+        humidity: 0,
       })
     }
   }

@@ -8,6 +8,9 @@ import { useSensorData } from '../hooks/useSensorData'
 import { useBleSensor } from '../hooks/useBleSensor'
 import { useHistoryData } from '../hooks/useHistoryData'
 import { useAlerts, useAlertMonitor } from '../hooks/useAlerts'
+import { useFatigueMonitor } from '../hooks/useFatigueMonitor'
+import { useStepCounter } from '../hooks/useStepCounter'
+import { useFirestoreSync } from '../hooks/useFirestoreSync'
 import { useAuth } from '../contexts/auth-context'
 import {
   IconLayoutDashboard,
@@ -86,68 +89,121 @@ export default function DashboardLayout() {
   // Saat perangkat BLE terhubung dan sudah mengirim paket, datanya jadi sumber
   // live yang meng-override data Firestore/cadangan.
   const bleActive = ble.isConnected && ble.reading
-  const data = bleActive ? ble.reading : firestoreData
+  const rawData = bleActive ? ble.reading : firestoreData
   const isLive = bleActive ? true : firestoreLive
 
-  useAlertMonitor(deviceId, data)
+  // Firmware tidak punya WiFi — web app ini yang menuliskan pembacaan BLE ke
+  // Firestore (live/current + history) selama perangkat tersambung.
+  useFirestoreSync(deviceId, ble.reading, bleActive)
+
+  // Firmware BLE tidak menghitung langkah sendiri (hanya kirim AX/AY/AZ
+  // mentah) — dihitung di web app lewat useStepCounter, lalu dipakai
+  // menggantikan `activity: null` bawaan useBleSensor supaya ActivityPanel
+  // menampilkannya lewat jalur yang sama seperti data Firestore.
+  const stepCounter = useStepCounter(deviceId, rawData, isLive)
+  const data =
+    bleActive && !rawData.activity && stepCounter.sessionActive
+      ? {
+          ...rawData,
+          activity: {
+            steps: stepCounter.steps,
+            activeMinutes: Math.round(stepCounter.activeMinutes),
+          },
+        }
+      : rawData
+
+  const fatigue = useFatigueMonitor(deviceId, data, isLive, stepCounter.steps)
+  useAlertMonitor(deviceId, data, fatigue)
 
   return (
     <div className="app-shell">
-      <header className="app-topbar">
+      <aside className="app-sidebar">
         <Brand />
 
-        <DeviceSelector devices={devices} selectedId={deviceId} onSelect={setDeviceId} />
+        <nav className="app-sidebar__nav" aria-label="Navigasi dashboard">
+          {NAV_ITEMS.map(({ to, label, end, icon: ItemIcon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              className={({ isActive }) =>
+                `app-sidebar__link ${isActive ? 'app-sidebar__link--active' : ''}`
+              }
+            >
+              <span className="app-sidebar__icon">
+                <ItemIcon size={20} />
+                {to === '/dashboard/alerts' && alerts.length > 0 && (
+                  <span className="app-sidebar__badge">{alerts.length}</span>
+                )}
+              </span>
+              <span>{label}</span>
+            </NavLink>
+          ))}
+        </nav>
 
-        <div className="app-topbar__spacer" />
+        <div className="app-sidebar__footer">
+          <TopbarUser />
+        </div>
+      </aside>
 
-        <BleConnectButton
-          supported={ble.supported}
-          status={ble.status}
-          isConnected={ble.isConnected}
-          deviceName={ble.deviceName}
-          onConnect={ble.connect}
-          onDisconnect={ble.disconnect}
-        />
+      <div className="app-content">
+        <header className="app-topbar">
+          <Brand />
 
-        <ConnectionBar
-          connection={
-            data?.connection || {
-              wifi: false,
-              signalStrength: -100,
-              lastUpdate: new Date(),
+          <DeviceSelector devices={devices} selectedId={deviceId} onSelect={setDeviceId} />
+
+          <div className="app-topbar__spacer" />
+
+          <BleConnectButton
+            supported={ble.supported}
+            status={ble.status}
+            isConnected={ble.isConnected}
+            deviceName={ble.deviceName}
+            onConnect={ble.connect}
+            onDisconnect={ble.disconnect}
+          />
+
+          <ConnectionBar
+            connection={
+              data?.connection || {
+                wifi: false,
+                signalStrength: -100,
+                lastUpdate: new Date(),
+              }
             }
-          }
-        />
+          />
 
-        <TopbarUser />
-      </header>
+          <TopbarUser />
+        </header>
 
-      {ble.error && (
-        <p className="ble-error" role="alert">
-          Bluetooth: {ble.error}
-        </p>
-      )}
+        {ble.error && (
+          <p className="ble-error" role="alert">
+            Bluetooth: {ble.error}
+          </p>
+        )}
 
-      <main className="app-main">
-        <Outlet
-          context={{
-            deviceId,
-            data,
-            isLive,
-            refresh,
-            history,
-            historyLoading,
-            historyRange,
-            setHistoryRange,
-            alerts,
-            alertsLoading,
-          }}
-        />
-      </main>
+        <main className="app-main">
+          <Outlet
+            context={{
+              deviceId,
+              data,
+              isLive,
+              refresh,
+              history,
+              historyLoading,
+              historyRange,
+              setHistoryRange,
+              alerts,
+              alertsLoading,
+              fatigue,
+            }}
+          />
+        </main>
 
-      <footer className="footer app-footer">
-        <p>Glykos · ESP32 DevKit V1 · FSR 402 · NTC · SHT30 · MPU6050</p>
-      </footer>
+        <footer className="footer app-footer">
+          <p>Glykos · ESP32 DevKit V1 · FSR 402 · NTC · SHT30 · MPU6050</p>
+        </footer>
+      </div>
 
       <nav className="app-bottom-nav" aria-label="Navigasi dashboard">
         {NAV_ITEMS.map(({ to, label, end, icon: ItemIcon }) => (
