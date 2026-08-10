@@ -1,10 +1,10 @@
 import { COLORS } from '../constants/theme'
 
-export default function InsoleIllustration({
-  pressure = 210.2,
-  temperature = 32.5,
-  steps = 1250,
-}) {
+export default function InsoleIllustration({ pressurePoints = {} }) {
+  const toePressure = Number(pressurePoints.toe ?? 0)
+  const metatarsalPressure = Number(pressurePoints.metatarsal ?? 0)
+  const heelPressure = Number(pressurePoints.heel ?? 0)
+
   return (
     <svg
       viewBox="0 0 850 640"
@@ -38,30 +38,28 @@ export default function InsoleIllustration({
         />
       </g>
 
-      {/* Chip: Tekanan */}
+      {/* Chip: Tekanan Jari Kaki */}
       <g>
-        <rect x="10" y="277" width="190" height="46" rx="14" fill="#ffffff" stroke="#c9d9c5" />
+        <rect x="10" y="277" width="190" height="46" rx="14" fill="#414141" stroke="#c9d9c5" />
         <text x="26" y="307" fontSize="20">⚡</text>
-        <text x="56" y="299" fontSize="14" fontWeight="800" fill={COLORS.navy}>{pressure} kPa</text>
-        <text x="56" y="313" fontSize="10" fill={COLORS.blue}>Tekanan Puncak</text>
+        <text x="56" y="299" fontSize="14" fontWeight="800" fill={COLORS.navy}>{toePressure.toFixed(1)} kPa</text>
+        <text x="56" y="313" fontSize="10" fill={COLORS.blue}>Jari Kaki</text>
       </g>
 
-      {/* Chip: Suhu */}
+      {/* Chip: Tekanan Metatarsal */}
       <g>
         <rect x="630" y="95" width="190" height="46" rx="14" fill="#ffffff" stroke="#c9d9c5" />
-        <text x="646" y="125" fontSize="20">🌡️</text>
-        <text x="676" y="117" fontSize="14" fontWeight="800" fill={COLORS.navy}>{temperature}°C</text>
-        <text x="676" y="131" fontSize="10" fill={COLORS.blue}>Suhu Tertinggi</text>
+        <text x="646" y="125" fontSize="20">⚡</text>
+        <text x="676" y="117" fontSize="14" fontWeight="800" fill={COLORS.navy}>{metatarsalPressure.toFixed(1)} kPa</text>
+        <text x="676" y="131" fontSize="10" fill={COLORS.blue}>Metatarsal</text>
       </g>
 
-      {/* Chip: Aktivitas */}
+      {/* Chip: Tekanan Tumit */}
       <g>
         <rect x="630" y="477" width="190" height="46" rx="14" fill="#ffffff" stroke="#c9d9c5" />
-        <text x="646" y="507" fontSize="20">👣</text>
-        <text x="676" y="499" fontSize="14" fontWeight="800" fill={COLORS.navy}>
-          {steps.toLocaleString('id-ID')}
-        </text>
-        <text x="676" y="513" fontSize="10" fill={COLORS.blue}>Langkah Hari Ini</text>
+        <text x="646" y="507" fontSize="20">⚡</text>
+        <text x="676" y="499" fontSize="14" fontWeight="800" fill={COLORS.navy}>{heelPressure.toFixed(1)} kPa</text>
+        <text x="676" y="513" fontSize="10" fill={COLORS.blue}>Tumit</text>
       </g>
     </svg>
   )

@@ -1,33 +1,63 @@
 // src/hooks/useSensorData.js
 import { useEffect, useMemo, useState } from 'react'
-import { doc, onSnapshot } from 'firebase/firestore'
-import { db } from '../services/firebase'
+import { addDoc, collection, onSnapshot, serverTimestamp } from 'firebase/firestore'
+import { ref, onValue } from 'firebase/database'
+import { db, rtdb } from '../services/firebase'
 
 const DEVICES = {
-  'glykos-device': { name: 'Glykos Device', foot: 'left' }
+  'ESP32-001': { name: 'ESP32-001', foot: 'right' },
+  'glykos-device': { name: 'Glykos Device', foot: 'right' },
 }
 
-const DEFAULT_JSON = {
-  id: 'glykos-device',
-  humidity: 55.0,
-  temperature: 32.5,
-  pressure1: 180.5,
-  pressure2: 210.2,
-  pressure3: 90.0,
-  tanggal: '2026-07-30',
-  waktu: '15:30:00',
+function getTimestampValue(doc = {}) {
+  if (doc.createdAt) {
+    if (typeof doc.createdAt.toMillis === 'function') return doc.createdAt.toMillis()
+    if (typeof doc.createdAt === 'number') return doc.createdAt
+    if (typeof doc.createdAt === 'string') {
+      const parsed = Date.parse(doc.createdAt)
+      if (!Number.isNaN(parsed)) return parsed
+    }
+  }
+
+  const date = doc.tanggal || doc.date
+  const time = doc.waktu || ''
+  if (date) {
+    const value = Date.parse(`${date}T${time}`)
+    if (!Number.isNaN(value)) return value
+  }
+
+  return 0
 }
 
-function parseSensorReading(raw, deviceId) {
-  const dataRaw = raw || DEFAULT_JSON
+function normalizeId(value) {
+  return typeof value === 'string' ? value.trim().toLowerCase() : ''
+}
+
+function parseSensorReading(raw = {}, deviceId) {
+  const dataRaw = raw
 
   // Format JSON Konsisten:
-  // {"id": "glykos-device","humidity": 55.0,"temperature": 32.5,"pressure1": 180.5,"pressure2": 210.2,"pressure3": 90.0,"tanggal": "2026-07-30","waktu": "15:30:00"}
+  // {
+  //   "id": "ESP32-001",
+  //   "humidity": 55.0,
+  //   "temperature1": 32.5,
+  //   "temperature2": 32.5,
+  //   "temperature3": 32.5,
+  //   "pressure1": 180.5,
+  //   "pressure2": 210.2,
+  //   "pressure3": 90.0,
+  //   "tanggal": "2026-07-30",
+  //   "waktu": "15:30:00",
+  //   "langkah": 2000
+  // }
   const id = dataRaw.id || deviceId || 'glykos-device'
   const p1 = Number(dataRaw.pressure1 ?? 0)
   const p2 = Number(dataRaw.pressure2 ?? 0)
   const p3 = Number(dataRaw.pressure3 ?? 0)
-  const temperatureVal = Number(dataRaw.temperature ?? 0)
+  const t1 = Number(dataRaw.temperature1 ?? 0)
+  const t2 = Number(dataRaw.temperature2 ?? 0)
+  const t3 = Number(dataRaw.temperature3 ?? 0)
+  const temperatureVal = Math.max(t1, t2, t3, 0)
   const humidityVal = Number(dataRaw.humidity ?? 0)
   const tanggal = dataRaw.tanggal || new Date().toISOString().slice(0, 10)
   const waktu = dataRaw.waktu || new Date().toLocaleTimeString('id-ID')
@@ -77,10 +107,7 @@ function parseSensorReading(raw, deviceId) {
       rightFoot: temperatureVal,
       delta: 0,
     },
-    activity: dataRaw.activity || {
-      steps: 1250,
-      activeMinutes: 45,
-    },
+    activity: dataRaw.activity ?? null,
   }
 }
 
@@ -91,36 +118,71 @@ function parseSensorReading(raw, deviceId) {
 // tanpa perlu refresh manual.
 export function useSensorData(deviceId = 'glykos-device') {
   const [raw, setRaw] = useState(null)
+  const [rawFirestore, setRawFirestore] = useState(null)
   const [isLive, setIsLive] = useState(false)
   const [refreshedAt, setRefreshedAt] = useState(() => Date.now())
 
   useEffect(() => {
-    const ref = doc(db, 'devices', deviceId, 'live', 'current')
-    const unsubscribe = onSnapshot(
-      ref,
-      (snap) => {
-        if (snap.exists()) {
-          setRaw(snap.data())
+    const dbRef = ref(rtdb, `devices/${deviceId}/live/current`)
+    const unsubscribeRtdb = onValue(
+      dbRef,
+      async (snap) => {
+        const data = snap.exists() ? snap.val() : null
+        if (data) {
+          setRaw(data)
           setIsLive(true)
+          try {
+            await addDoc(collection(db, 'devices'), {
+              ...data,
+              createdAt: serverTimestamp(),
+            })
+          } catch (err) {
+            console.error('Failed to write live sensor data to Firestore:', err)
+          }
         } else {
           setRaw(null)
           setIsLive(false)
         }
       },
-      () => {
+      (error) => {
+        console.error('Realtime DB listener error:', error)
         setRaw(null)
         setIsLive(false)
       },
     )
-    return unsubscribe
+
+    return () => unsubscribeRtdb()
+  }, [deviceId])
+
+  useEffect(() => {
+    const firestoreRef = collection(db, 'devices')
+    const normalizedDeviceId = normalizeId(deviceId)
+    const unsubscribeFirestore = onSnapshot(
+      firestoreRef,
+      (snapshot) => {
+        const docs = snapshot.docs
+          .map((docSnap) => ({ ...docSnap.data(), _docId: docSnap.id }))
+          .filter((doc) => normalizeId(doc.id) === normalizedDeviceId)
+          .sort((a, b) => getTimestampValue(b) - getTimestampValue(a))
+
+        setRawFirestore(docs[0] || null)
+      },
+      (error) => {
+        console.error('Firestore listener error:', error)
+        setRawFirestore(null)
+      },
+    )
+
+    return unsubscribeFirestore
   }, [deviceId])
 
   const data = useMemo(() => {
-    const reading = parseSensorReading(raw || DEFAULT_JSON, deviceId)
+    const source = rawFirestore ?? raw ?? {}
+    const reading = parseSensorReading(source, deviceId)
     reading.connection.wifi = isLive
     reading.connection.lastUpdate = isLive ? new Date() : new Date(refreshedAt)
     return reading
-  }, [raw, isLive, deviceId, refreshedAt])
+  }, [raw, rawFirestore, isLive, deviceId, refreshedAt])
 
   const refresh = () => setRefreshedAt(Date.now())
 

@@ -4,7 +4,6 @@ import {
   getHumidityStatus,
   getTemperatureStatus,
   LOCATION_LABELS,
-  TEMP_DELTA_WARNING,
 } from '../constants/thresholds'
 import { IconGauge, IconThermometer, IconDroplet } from './icons'
 
@@ -53,6 +52,11 @@ export function PressureCard({ pressure }) {
   const status = getPressureStatus(peak)
   const location = LOCATION_LABELS[pObj.location] ?? pObj.location ?? 'Metatarsal'
   const points = pObj.points || {}
+  const pressurePoints = [
+    { key: 'heel', value: points.heel ?? 0 },
+    { key: 'metatarsal', value: points.metatarsal ?? 0 },
+    { key: 'toe', value: points.toe ?? 0 },
+  ]
 
   return (
     <MetricCard
@@ -64,10 +68,10 @@ export function PressureCard({ pressure }) {
       detail={`Titik tertinggi: ${location} · ${getPressureLabel(status)}`}
     >
       <div className="point-grid">
-        {Object.entries(points).map(([key, val]) => (
+        {pressurePoints.map(({ key, value }) => (
           <div key={key} className="point-grid__item">
             <span>{LOCATION_LABELS[key] ?? key}</span>
-            <strong>{val} kPa</strong>
+            <strong>{value} kPa</strong>
           </div>
         ))}
       </div>
@@ -92,10 +96,26 @@ export function TemperatureCard({ temperature }) {
         }
 
   const highest = tObj.highest ?? 0
-  const delta = tObj.delta ?? 0
-  const status = delta >= TEMP_DELTA_WARNING ? 'warning' : getTemperatureStatus(highest)
+  const status = getTemperatureStatus(highest)
   const location = LOCATION_LABELS[tObj.location] ?? tObj.location ?? 'Metatarsal'
   const points = tObj.points || {}
+  const temperaturePoints = [
+    {
+      key: 'heel',
+      label: 'Tumit',
+      value: points.Tumit ?? points.heel ?? tObj.rightFoot ?? highest,
+    },
+    {
+      key: 'metatarsal',
+      label: 'Metatarsal',
+      value: points.metatarsal ?? highest,
+    },
+    {
+      key: 'toe',
+      label: 'Jari Kaki',
+      value: points.toe ?? points.Forefoot ?? tObj.leftFoot ?? highest,
+    },
+  ]
 
   return (
     <MetricCard
@@ -107,32 +127,13 @@ export function TemperatureCard({ temperature }) {
       detail={`Area terpanas: ${location}`}
     >
       <div className="point-grid">
-        {Object.entries(points).map(([key, val]) => (
+        {temperaturePoints.map(({ key, label, value }) => (
           <div key={key} className="point-grid__item">
-            <span>{LOCATION_LABELS[key] ?? key}</span>
-            <strong>{val}°C</strong>
+            <span>{label}</span>
+            <strong>{value}°C</strong>
           </div>
         ))}
       </div>
-      <div className="temp-compare">
-        <div>
-          <span>Kaki Kiri</span>
-          <strong>{tObj.leftFoot ?? highest}°C</strong>
-        </div>
-        <div>
-          <span>Kaki Kanan</span>
-          <strong>{tObj.rightFoot ?? highest}°C</strong>
-        </div>
-        <div className={delta >= TEMP_DELTA_WARNING ? 'highlight' : ''}>
-          <span>Selisih</span>
-          <strong>{delta.toFixed(1)}°C</strong>
-        </div>
-      </div>
-      {delta >= TEMP_DELTA_WARNING && (
-        <p className="metric-card__alert">
-          Selisih suhu &gt;2,2°C — prediktor kuat pre-ulkus
-        </p>
-      )}
     </MetricCard>
   )
 }

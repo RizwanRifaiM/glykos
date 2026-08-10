@@ -16,12 +16,7 @@ import {
 } from '../components/icons'
 import './Landing.css'
 
-const SENSORS = [
-  { code: 'FSR 402', label: 'Sensor Tekanan', accent: 'wine' },
-  { code: 'NTC', label: 'Sensor Suhu', accent: 'blush' },
-  { code: 'SHT30', label: 'Suhu & Kelembapan', accent: 'sage' },
-  { code: 'MPU6050', label: 'Gerak & Aktivitas', accent: 'forest' },
-]
+
 
 const FEATURES = [
   {
@@ -34,7 +29,7 @@ const FEATURES = [
     icon: IconThermometer,
     accent: 'green',
     title: 'Deteksi Selisih Suhu Kaki',
-    desc: 'Selisih suhu antar area atau antar kaki adalah salah satu prediktor dini peradangan sebelum luka terlihat kasat mata.',
+    desc: 'Selisih suhu antar area adalah salah satu prediktor dini peradangan sebelum luka terlihat kasat mata.',
   },
   {
     icon: IconDroplet,
@@ -248,14 +243,7 @@ export default function LandingPage() {
                 Lihat Cara Kerja
               </a>
             </div>
-            <div className="hero__sensors">
-              {SENSORS.map((sensor) => (
-                <div key={sensor.code} className={`hero__sensor hero__sensor--${sensor.accent}`}>
-                  <span className="hero__sensor-code">{sensor.code}</span>
-                  <span className="hero__sensor-label">{sensor.label}</span>
-                </div>
-              ))}
-            </div>
+            
           </div>
           <div className="hero__visual">
             <InsoleIllustration />
@@ -368,11 +356,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="landing-footer">
-        <p>Glykos · ESP32 DevKit V1 · FSR 402 · NTC · SHT30 · MPU6050</p>
-        <p className="landing-footer__disclaimer">
-          Glykos adalah alat bantu pemantauan, bukan pengganti diagnosis atau perawatan
-          medis profesional.
-        </p>
+        <p>Glykos</p>
       </footer>
     </div>
   )

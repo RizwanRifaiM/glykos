@@ -70,7 +70,7 @@ function TopbarUser() {
 }
 
 export default function DashboardLayout() {
-  const [deviceId, setDeviceId] = useState('glykos-device')
+  const [deviceId, setDeviceId] = useState('ESP32-001')
   const [historyRange, setHistoryRange] = useState('7d')
 
   const {
@@ -146,7 +146,7 @@ export default function DashboardLayout() {
       </main>
 
       <footer className="footer app-footer">
-        <p>Glykos · ESP32 DevKit V1 · FSR 402 · NTC · SHT30 · MPU6050</p>
+        <p>Glykos</p>
       </footer>
 
       <nav className="app-bottom-nav" aria-label="Navigasi dashboard">

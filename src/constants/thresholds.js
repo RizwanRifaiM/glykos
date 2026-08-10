@@ -41,8 +41,5 @@ export const LOCATION_LABELS = {
   heel: 'Tumit',
   metatarsal: 'Metatarsal',
   toe: 'Jari Kaki',
-  pressure1: 'Titik 1 (P1)',
-  pressure2: 'Titik 2 (P2)',
-  pressure3: 'Titik 3 (P3)',
 }
 

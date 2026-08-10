@@ -5,4 +5,5 @@ export const COLORS = {
   blue: '#81a283',
   navy: '#446a45',
   warning: '#e4aec5',
+  pink: '#ff7373',
 }

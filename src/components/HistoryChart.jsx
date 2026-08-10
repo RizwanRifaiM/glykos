@@ -61,7 +61,7 @@ export default function HistoryChart({
 
         {visibleMetrics.map((key) => {
           const config = HISTORY_METRICS_CONFIG[key]
-          const values = history.map((d) => d[key])
+          const values = history.map((d) => (typeof d[key] === 'number' && !Number.isNaN(d[key]) ? d[key] : 0))
           const path = buildPath(values, width, height, config.max)
           const stepX = width / (values.length - 1 || 1)
 
@@ -76,6 +76,7 @@ export default function HistoryChart({
                 strokeLinejoin="round"
               />
               {values.map((val, i) => {
+                if (!Number.isFinite(val)) return null
                 const x = i * stepX
                 const y = height - (val / config.max) * (height - 8) - 4
                 return (

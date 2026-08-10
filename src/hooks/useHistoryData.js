@@ -3,58 +3,67 @@ import { useEffect, useState } from 'react'
 import { collection, onSnapshot } from 'firebase/firestore'
 import { db } from '../services/firebase'
 
-function buildPoints(groupedByDate, start, days) {
-  const points = []
-  for (let i = 0; i < days; i++) {
-    const d = new Date(start)
-    d.setDate(d.getDate() + i)
-    const dateKey = d.toISOString().slice(0, 10)
+function getEntryPressure(entry) {
+  if (typeof entry.pressure === 'number' && !Number.isNaN(entry.pressure)) return entry.pressure
+  const p1 = Number(entry.pressure1 ?? 0)
+  const p2 = Number(entry.pressure2 ?? 0)
+  const p3 = Number(entry.pressure3 ?? 0)
+  return Math.max(p1, p2, p3)
+}
 
-    const dayEntries = groupedByDate[dateKey] || []
+function getEntryTemperature(entry) {
+  if (typeof entry.temperature === 'number' && !Number.isNaN(entry.temperature)) return entry.temperature
+  const t1 = Number(entry.temperature1 ?? 0)
+  const t2 = Number(entry.temperature2 ?? 0)
+  const t3 = Number(entry.temperature3 ?? 0)
+  return Math.max(t1, t2, t3)
+}
 
-    if (dayEntries.length > 0) {
-      const pressures = dayEntries
-        .map((e) => {
-          if (typeof e.pressure === 'number') return e.pressure
-          const p1 = Number(e.pressure1 ?? 0)
-          const p2 = Number(e.pressure2 ?? 0)
-          const p3 = Number(e.pressure3 ?? 0)
-          return Math.max(p1, p2, p3)
-        })
-        .filter((v) => typeof v === 'number' && !isNaN(v) && v > 0)
+function getEntrySteps(entry) {
+  const steps = Number(entry.activity?.steps ?? entry.steps ?? entry.langkah ?? 0)
+  return typeof steps === 'number' && !Number.isNaN(steps) ? steps : 0
+}
 
-      const temperatures = dayEntries
-        .map((e) => Number(e.temperature))
-        .filter((v) => typeof v === 'number' && !isNaN(v) && v > 0)
+function getEntryHumidity(entry) {
+  const humidity = Number(entry.humidity ?? entry.hum ?? 0)
+  return typeof humidity === 'number' && !Number.isNaN(humidity) ? humidity : 0
+}
 
-      const humidities = dayEntries
-        .map((e) => Number(e.humidity))
-        .filter((v) => typeof v === 'number' && !isNaN(v) && v > 0)
-
-      points.push({
-        date: dateKey,
-        label: d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
-        pressure: pressures.length > 0 ? Math.max(...pressures) : 210.2,
-        temperature: temperatures.length > 0 ? Math.max(...temperatures) : 32.5,
-        humidity:
-          humidities.length > 0
-            ? Math.round((humidities.reduce((a, b) => a + b, 0) / humidities.length) * 10) / 10
-            : 55.0,
-      })
-    } else {
-      // Data simulasi baseline konsisten jika hari tersebut belum ada log di Firestore
-      const variance = (i % 3) * 2 - 2
-      points.push({
-        date: dateKey,
-        label: d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
-        pressure: Number((210.2 + variance * 1.5).toFixed(1)),
-        temperature: Number((32.5 + variance * 0.2).toFixed(1)),
-        humidity: Number((55.0 + variance * 0.8).toFixed(1)),
-      })
+function parseEntryTimestamp(entry) {
+  const createdAt = entry.createdAt
+  if (createdAt) {
+    if (typeof createdAt.toMillis === 'function') return createdAt.toMillis()
+    if (typeof createdAt === 'number') return createdAt
+    if (typeof createdAt === 'string') {
+      const parsed = Date.parse(createdAt)
+      if (!Number.isNaN(parsed)) return parsed
     }
   }
 
-  return points
+  const date = entry.tanggal || entry.date
+  const time = entry.waktu || ''
+  if (date) {
+    const parsed = Date.parse(`${date}T${time}`)
+    if (!Number.isNaN(parsed)) return parsed
+  }
+
+  return 0
+}
+
+function normalizeHistoryEntry(entry, docId) {
+  const dateKey = entry.tanggal || entry.date
+  const timestamp = parseEntryTimestamp(entry)
+  return {
+    _docId: docId,
+    date: dateKey,
+    label: dateKey ? new Date(dateKey).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : 'Unknown',
+    timestamp,
+    pressure: getEntryPressure(entry),
+    temperature: getEntryTemperature(entry),
+    humidity: getEntryHumidity(entry),
+    steps: getEntrySteps(entry),
+    raw: entry,
+  }
 }
 
 export function useHistoryData(deviceId = 'glykos-device', range = '7d') {
@@ -70,31 +79,26 @@ export function useHistoryData(deviceId = 'glykos-device', range = '7d') {
     start.setDate(end.getDate() - (days - 1))
     start.setHours(0, 0, 0, 0)
 
-    const historyRef = collection(db, 'devices', deviceId, 'history')
+    const historyRef = collection(db, 'devices')
 
     const unsubscribe = onSnapshot(
       historyRef,
       (snapshot) => {
-        const groupedByDate = {}
-        snapshot.forEach((docSnap) => {
-          const entry = docSnap.data()
-          if (!entry) return
+        const normalizedDeviceId = deviceId?.trim().toLowerCase()
+        const entries = snapshot.docs
+          .map((docSnap) => ({ entry: docSnap.data(), _docId: docSnap.id }))
+          .filter(({ entry }) => entry && typeof entry.id === 'string')
+          .filter(({ entry }) => entry.id.trim().toLowerCase() === normalizedDeviceId)
+          .map(({ entry, _docId }) => normalizeHistoryEntry(entry, _docId))
+          .filter((item) => item.timestamp >= start.getTime() && item.timestamp <= end.getTime())
+          .sort((a, b) => b.timestamp - a.timestamp)
 
-          const dateKey = entry.tanggal || entry.date
-          if (!dateKey) return
-
-          if (!groupedByDate[dateKey]) {
-            groupedByDate[dateKey] = []
-          }
-          groupedByDate[dateKey].push(entry)
-        })
-
-        setHistory(buildPoints(groupedByDate, start, days))
+        setHistory(entries)
         setLoadedKey(key)
       },
       (err) => {
-        console.warn('Gagal membaca Firestore, menggunakan data default tren:', err)
-        setHistory(buildPoints({}, start, days))
+        console.warn('Gagal membaca Firestore untuk histori:', err)
+        setHistory([])
         setLoadedKey(key)
       },
     )

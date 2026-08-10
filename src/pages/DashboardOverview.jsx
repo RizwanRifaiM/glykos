@@ -24,23 +24,11 @@ export default function DashboardOverview() {
           Visualisasi titik tekanan, suhu &amp; aktivitas pada kaki secara real-time
         </p>
         <div className="foot-map-panel__visual">
-          <InsoleIllustration
-            pressure={data.pressure?.peak ?? 0}
-            temperature={data.temperatureObj?.highest ?? 0}
-            steps={data.activity?.steps ?? 0}
-          />
+          <InsoleIllustration pressurePoints={data.pressure?.points ?? {}} />
         </div>
       </section>
 
-      <div className="info-callout">
-        <p className="info-callout__text">
-          Banyak penderita diabetes mengalami <strong>neuropati</strong> (mati rasa pada saraf kaki),
-          sehingga mereka tidak menyadari adanya tekanan berlebih atau peradangan dini yang berisiko
-          menjadi ulkus diabetik. <strong>Glykos</strong> hadir sebagai &ldquo;indera pengganti&rdquo; untuk mencegah luka yang sulit sembuh tersebut.
-          Hasil akan dikirim secara <em>real-time</em> ke <em>dashboard</em> ini agar pasien, keluarga, maupun dokter
-          dapat memantau kondisi kaki kapan saja untuk tindakan preventif.
-        </p>
-      </div>
+
 
       <div className="dashboard__row">
         <ActivityPanel activity={data.activity} />

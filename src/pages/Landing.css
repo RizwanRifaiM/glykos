@@ -187,7 +187,7 @@
 }
 
 .hero__title-accent {
-  color: var(--red);
+  color: #961f1f;
 }
 
 .hero__subtitle {
@@ -516,7 +516,7 @@
 
 .step-card {
   position: relative;
-  background: var(--surface);
+  background: #fdcece;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 32px 28px 28px;
@@ -527,7 +527,7 @@
   display: inline-block;
   font-size: 13px;
   font-weight: 800;
-  color: var(--cream);
+  color: var(--bg);
   padding: 4px 12px;
   border-radius: 999px;
   margin-bottom: 16px;
@@ -652,10 +652,10 @@
   max-width: 1200px;
   margin: 0 auto 56px;
   text-align: center;
-  background: linear-gradient(135deg, var(--navy) 0%, var(--red) 100%);
+  background: #fdcece;
   border-radius: var(--radius-xl);
   padding: 56px 24px;
-  color: var(--cream);
+  color: black;
   box-shadow: var(--shadow-lg);
 }
 

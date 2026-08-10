@@ -1,8 +1,9 @@
 import { IconActivity, IconClock } from './icons'
 
-export default function ActivityPanel({ activity }) {
-  const hours = Math.floor(activity.activeMinutes / 60)
-  const mins = activity.activeMinutes % 60
+export default function ActivityPanel({ activity = { steps: 0, activeMinutes: 0 } }) {
+  const safeActivity = activity || { steps: 0, activeMinutes: 0 }
+  const hours = Math.floor((safeActivity.activeMinutes ?? 0) / 60)
+  const mins = (safeActivity.activeMinutes ?? 0) % 60
 
   return (
     <section className="panel activity-panel">
@@ -14,7 +15,7 @@ export default function ActivityPanel({ activity }) {
             <IconActivity size={22} />
           </span>
           <div>
-            <strong>{activity.steps.toLocaleString('id-ID')}</strong>
+            <strong>{(safeActivity.steps ?? 0).toLocaleString('id-ID')}</strong>
             <span>Total Langkah</span>
           </div>
         </div>
