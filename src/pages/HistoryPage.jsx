@@ -29,7 +29,10 @@ export default function HistoryPage() {
 
   const sortedHistory = useMemo(() => {
     const rows = [...history]
-    rows.sort((a, b) => (sortDesc ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date)))
+    rows.sort((a, b) => {
+      if (sortDesc) return (b.timestamp || 0) - (a.timestamp || 0)
+      return (a.timestamp || 0) - (b.timestamp || 0)
+    })
     return rows
   }, [history, sortDesc])
 
@@ -106,20 +109,22 @@ export default function HistoryPage() {
                 <th>Tekanan (kPa)</th>
                 <th>Suhu (°C)</th>
                 <th>Kelembapan (%RH)</th>
+                <th>Langkah</th>
               </tr>
             </thead>
             <tbody>
               {sortedHistory.map((row) => (
-                <tr key={row.date}>
+                <tr key={row._docId ?? row.date}>
                   <td>{row.label}</td>
                   <td>{row.pressure}</td>
                   <td>{row.temperature}</td>
                   <td>{row.humidity}</td>
+                  <td>{row.steps?.toLocaleString('id-ID') ?? 0}</td>
                 </tr>
               ))}
               {sortedHistory.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="data-table__empty">
+                  <td colSpan={5} className="data-table__empty">
                     {historyLoading ? 'Memuat…' : 'Belum ada data histori.'}
                   </td>
                 </tr>
