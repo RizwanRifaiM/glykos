@@ -994,6 +994,11 @@
 
 /* Foot sensor map */
 
+.foot-map-panel {
+  background: #fdcece;
+  border-color: rgba(253, 206, 206, 0.7);
+}
+
 .foot-map-panel__visual {
   display: flex;
   align-items: center;
@@ -1777,6 +1782,15 @@
 
   .connection-pill__time {
     display: none;
+  }
+
+  .alerts-list__item {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .alerts-list__time {
+    align-self: flex-start;
   }
 }
 
