@@ -1,111 +1,197 @@
-import { COLORS } from '../constants/theme'
+import { useId, useRef, useState } from 'react'
 import { HISTORY_METRICS_CONFIG } from '../constants/historyMetrics'
 
-function buildPath(values, width, height, max) {
-  if (values.length === 0) return ''
-  const stepX = width / (values.length - 1 || 1)
+const WIDTH = 320
+const HEIGHT = 176
+const PAD = { top: 14, right: 14, bottom: 22, left: 34 }
+const PLOT_W = WIDTH - PAD.left - PAD.right
+const PLOT_H = HEIGHT - PAD.top - PAD.bottom
 
+function xFor(index, count) {
+  if (count <= 1) return PAD.left
+  return PAD.left + (index / (count - 1)) * PLOT_W
+}
+
+function yFor(value, max) {
+  const clamped = Math.min(Math.max(value, 0), max)
+  return PAD.top + PLOT_H - (clamped / max) * PLOT_H
+}
+
+function linePath(values, max) {
   return values
-    .map((val, i) => {
-      const x = i * stepX
-      const y = height - (val / max) * (height - 8) - 4
-      return `${i === 0 ? 'M' : 'L'} ${x} ${y}`
-    })
+    .map((v, i) => `${i === 0 ? 'M' : 'L'} ${xFor(i, values.length)} ${yFor(v, max)}`)
     .join(' ')
 }
 
-export default function HistoryChart({
-  history,
-  metrics = ['pressure', 'temperature', 'humidity'],
-}) {
-  const width = 600
-  const height = 160
+function areaPath(values, max) {
+  if (values.length === 0) return ''
+  const top = linePath(values, max)
+  const baseline = yFor(0, max)
+  const lastX = xFor(values.length - 1, values.length)
+  const firstX = xFor(0, values.length)
+  return `${top} L ${lastX} ${baseline} L ${firstX} ${baseline} Z`
+}
+
+function nearestIndex(values, clientX, svgEl) {
+  const rect = svgEl.getBoundingClientRect()
+  const relX = ((clientX - rect.left) / rect.width) * WIDTH
+  let best = 0
+  let bestDist = Infinity
+  values.forEach((_, i) => {
+    const dist = Math.abs(xFor(i, values.length) - relX)
+    if (dist < bestDist) {
+      bestDist = dist
+      best = i
+    }
+  })
+  return best
+}
+
+function MetricChart({ metricKey, config, history }) {
+  const gradientId = useId()
+  const svgRef = useRef(null)
+  const [hoverIndex, setHoverIndex] = useState(null)
+
+  const values = history.map((d) =>
+    typeof d[metricKey] === 'number' && !Number.isNaN(d[metricKey]) ? d[metricKey] : 0,
+  )
+  const hasData = values.some((v) => v > 0)
+  const { max, color, label, unit } = config
+  const ticks = [0, max / 2, max]
+
+  const lastIndex = values.length - 1
+  const activeIndex = hoverIndex ?? lastIndex
+  const activeValue = values[activeIndex]
+  const activePoint = history[activeIndex]
+
+  const xLabelStep = Math.max(1, Math.ceil(history.length / 5))
+  const xLabels = history.filter(
+    (_, i) => i === 0 || i === history.length - 1 || i % xLabelStep === 0,
+  )
+
+  function handlePointerMove(e) {
+    if (!svgRef.current || values.length === 0) return
+    setHoverIndex(nearestIndex(values, e.clientX, svgRef.current))
+  }
+
+  return (
+    <article className={`history-chart-card history-chart-card--${metricKey}`}>
+      <header className="history-chart-card__header">
+        <span className="history-chart-card__key" style={{ background: color }} aria-hidden="true" />
+        <div className="history-chart-card__title-group">
+          <h3 className="history-chart-card__title">{label}</h3>
+          <span className="history-chart-card__unit">{unit}</span>
+        </div>
+        {hasData && (
+          <div className="history-chart-card__readout">
+            <strong>{activeValue}</strong>
+            <span>{unit}</span>
+          </div>
+        )}
+      </header>
+
+      {hasData ? (
+        <div className="history-chart-card__plot">
+          <svg
+            ref={svgRef}
+            viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+            className="history-chart-card__svg"
+            role="img"
+            aria-label={`Grafik ${label} — nilai terakhir ${values[lastIndex]} ${unit}`}
+            onPointerMove={handlePointerMove}
+            onPointerLeave={() => setHoverIndex(null)}
+          >
+            <defs>
+              <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={color} stopOpacity="0.22" />
+                <stop offset="100%" stopColor={color} stopOpacity="0" />
+              </linearGradient>
+            </defs>
+
+            {ticks.map((t) => (
+              <g key={t}>
+                <line
+                  x1={PAD.left}
+                  x2={WIDTH - PAD.right}
+                  y1={yFor(t, max)}
+                  y2={yFor(t, max)}
+                  className="history-chart-card__gridline"
+                />
+                <text
+                  x={PAD.left - 8}
+                  y={yFor(t, max)}
+                  className="history-chart-card__tick"
+                  textAnchor="end"
+                  dominantBaseline="middle"
+                >
+                  {Math.round(t)}
+                </text>
+              </g>
+            ))}
+
+            <path d={areaPath(values, max)} fill={`url(#${gradientId})`} stroke="none" />
+            <path
+              d={linePath(values, max)}
+              fill="none"
+              stroke={color}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+
+            {hoverIndex !== null && (
+              <line
+                x1={xFor(hoverIndex, values.length)}
+                x2={xFor(hoverIndex, values.length)}
+                y1={PAD.top}
+                y2={HEIGHT - PAD.bottom}
+                className="history-chart-card__crosshair"
+              />
+            )}
+
+            <circle
+              cx={xFor(activeIndex, values.length)}
+              cy={yFor(activeValue, max)}
+              r="4"
+              fill={color}
+              stroke="var(--surface)"
+              strokeWidth="2"
+            />
+          </svg>
+
+          {hoverIndex !== null && (
+            <div
+              className="history-chart-card__tooltip"
+              style={{ left: `${Math.min(88, Math.max(12, (xFor(hoverIndex, values.length) / WIDTH) * 100))}%` }}
+            >
+              <span className="history-chart-card__tooltip-date">{activePoint.label}</span>
+              <span className="history-chart-card__tooltip-value">
+                {activeValue} {unit}
+              </span>
+            </div>
+          )}
+
+          <div className="history-chart-card__x-labels">
+            {xLabels.map((d) => (
+              <span key={d.date}>{d.label}</span>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <p className="history-chart-card__empty">Belum ada data pada rentang ini.</p>
+      )}
+    </article>
+  )
+}
+
+export default function HistoryChart({ history, metrics = ['pressure', 'temperature', 'humidity'] }) {
   const visibleMetrics = metrics.filter((key) => HISTORY_METRICS_CONFIG[key])
 
   return (
-    <div className="history-chart">
-      {visibleMetrics.length > 0 && (
-        <div className="history-chart__legend" aria-hidden="true">
-          {visibleMetrics.map((key) => {
-            const config = HISTORY_METRICS_CONFIG[key]
-            return (
-              <span key={key} className="history-chart__legend-item">
-                <span
-                  className="history-chart__legend-dot"
-                  style={{ background: config.color }}
-                />
-                {config.label}
-              </span>
-            )
-          })}
-        </div>
-      )}
-
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        className="history-chart__svg"
-        role="img"
-        aria-label={`Grafik histori: ${visibleMetrics.map((k) => HISTORY_METRICS_CONFIG[k].label).join(', ')}`}
-      >
-        {[0.25, 0.5, 0.75].map((ratio) => (
-          <line
-            key={ratio}
-            x1="0"
-            y1={height * ratio}
-            x2={width}
-            y2={height * ratio}
-            stroke={`${COLORS.lightBlue}66`}
-            strokeDasharray="4 4"
-          />
-        ))}
-
-        {visibleMetrics.map((key) => {
-          const config = HISTORY_METRICS_CONFIG[key]
-          const values = history.map((d) => (typeof d[key] === 'number' && !Number.isNaN(d[key]) ? d[key] : 0))
-          const path = buildPath(values, width, height, config.max)
-          const stepX = width / (values.length - 1 || 1)
-
-          return (
-            <g key={key}>
-              <path
-                d={path}
-                fill="none"
-                stroke={config.color}
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              {values.map((val, i) => {
-                if (!Number.isFinite(val)) return null
-                const x = i * stepX
-                const y = height - (val / config.max) * (height - 8) - 4
-                return (
-                  <circle
-                    key={`${key}-${history[i].date}`}
-                    cx={x}
-                    cy={y}
-                    r="3.5"
-                    fill={config.color}
-                  />
-                )
-              })}
-            </g>
-          )
-        })}
-      </svg>
-
-      <div className="history-chart__labels">
-        {history
-          .filter(
-            (_, i) =>
-              i === 0 ||
-              i === history.length - 1 ||
-              i % Math.ceil(history.length / 6) === 0,
-          )
-          .map((d) => (
-            <span key={d.date}>{d.label}</span>
-          ))}
-      </div>
+    <div className="history-chart-grid">
+      {visibleMetrics.map((key) => (
+        <MetricChart key={key} metricKey={key} config={HISTORY_METRICS_CONFIG[key]} history={history} />
+      ))}
     </div>
   )
 }

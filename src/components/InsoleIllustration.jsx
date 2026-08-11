@@ -14,20 +14,21 @@ export default function InsoleIllustration({ pressurePoints = {} }) {
     >
       <ellipse cx="455" cy="325" rx="170" ry="300" fill={COLORS.lightBlue} opacity="0.18" />
 
-      {/* Leader lines */}
-      <path d="M450,130 L630,118" stroke={COLORS.blue} strokeWidth="1.5" strokeDasharray="4 5" opacity="0.55" />
-      <path d="M450,300 L200,300" stroke={COLORS.blue} strokeWidth="1.5" strokeDasharray="4 5" opacity="0.55" />
-      <path d="M455,500 L630,500" stroke={COLORS.blue} strokeWidth="1.5" strokeDasharray="4 5" opacity="0.55" />
+      {/* Leader lines — titik anchor disamakan persis dengan PRESSURE_ANCHORS
+          di SensorFootMap.jsx (dashboard), yang sudah diverifikasi anatomis. */}
+      <path d="M387,109 L200,109" stroke={COLORS.blue} strokeWidth="1.5" strokeDasharray="4 5" opacity="0.55" />
+      <path d="M390,223 L630,223" stroke={COLORS.blue} strokeWidth="1.5" strokeDasharray="4 5" opacity="0.55" />
+      <path d="M467,540 L630,540" stroke={COLORS.blue} strokeWidth="1.5" strokeDasharray="4 5" opacity="0.55" />
 
       {/* Sensor points */}
-      <circle cx="450" cy="130" r="7" fill={COLORS.navy} />
-      <circle className="hero-pulse" cx="450" cy="130" r="7" fill="none" stroke={COLORS.navy} strokeWidth="2" />
+      <circle cx="387" cy="109" r="7" fill={COLORS.navy} />
+      <circle className="hero-pulse" cx="387" cy="109" r="7" fill="none" stroke={COLORS.navy} strokeWidth="2" />
 
-      <circle cx="450" cy="300" r="7" fill={COLORS.navy} />
-      <circle className="hero-pulse hero-pulse--delay1" cx="450" cy="300" r="7" fill="none" stroke={COLORS.navy} strokeWidth="2" />
+      <circle cx="390" cy="223" r="7" fill={COLORS.navy} />
+      <circle className="hero-pulse hero-pulse--delay1" cx="390" cy="223" r="7" fill="none" stroke={COLORS.navy} strokeWidth="2" />
 
-      <circle cx="455" cy="500" r="7" fill={COLORS.navy} />
-      <circle className="hero-pulse hero-pulse--delay2" cx="455" cy="500" r="7" fill="none" stroke={COLORS.navy} strokeWidth="2" />
+      <circle cx="467" cy="540" r="7" fill={COLORS.navy} />
+      <circle className="hero-pulse hero-pulse--delay2" cx="467" cy="540" r="7" fill="none" stroke={COLORS.navy} strokeWidth="2" />
 
       {/* Traced foot sketch (toes up, heel down) */}
       <g transform="translate(150,20)">
@@ -38,28 +39,28 @@ export default function InsoleIllustration({ pressurePoints = {} }) {
         />
       </g>
 
-      {/* Chip: Tekanan Jari Kaki */}
+      {/* Chip: Tekanan Jari Kaki — sejajar titik toe (y=109) */}
       <g>
-        <rect x="10" y="277" width="190" height="46" rx="14" fill="#414141" stroke="#c9d9c5" />
-        <text x="26" y="307" fontSize="20">⚡</text>
-        <text x="56" y="299" fontSize="14" fontWeight="800" fill={COLORS.navy}>{toePressure.toFixed(1)} kPa</text>
-        <text x="56" y="313" fontSize="10" fill={COLORS.blue}>Jari Kaki</text>
+        <rect x="10" y="86" width="190" height="46" rx="14" fill="#414141" stroke="#c9d9c5" />
+        <text x="26" y="116" fontSize="20">⚡</text>
+        <text x="56" y="108" fontSize="14" fontWeight="800" fill={COLORS.navy}>{toePressure.toFixed(1)} kPa</text>
+        <text x="56" y="122" fontSize="10" fill={COLORS.blue}>Jari Kaki</text>
       </g>
 
-      {/* Chip: Tekanan Metatarsal */}
+      {/* Chip: Tekanan Metatarsal — sejajar titik metatarsal (y=223) */}
       <g>
-        <rect x="630" y="95" width="190" height="46" rx="14" fill="#ffffff" stroke="#c9d9c5" />
-        <text x="646" y="125" fontSize="20">⚡</text>
-        <text x="676" y="117" fontSize="14" fontWeight="800" fill={COLORS.navy}>{metatarsalPressure.toFixed(1)} kPa</text>
-        <text x="676" y="131" fontSize="10" fill={COLORS.blue}>Metatarsal</text>
+        <rect x="630" y="200" width="190" height="46" rx="14" fill="#ffffff" stroke="#c9d9c5" />
+        <text x="646" y="230" fontSize="20">⚡</text>
+        <text x="676" y="222" fontSize="14" fontWeight="800" fill={COLORS.navy}>{metatarsalPressure.toFixed(1)} kPa</text>
+        <text x="676" y="236" fontSize="10" fill={COLORS.blue}>Metatarsal</text>
       </g>
 
-      {/* Chip: Tekanan Tumit */}
+      {/* Chip: Tekanan Tumit — sejajar titik heel (y=540) */}
       <g>
-        <rect x="630" y="477" width="190" height="46" rx="14" fill="#ffffff" stroke="#c9d9c5" />
-        <text x="646" y="507" fontSize="20">⚡</text>
-        <text x="676" y="499" fontSize="14" fontWeight="800" fill={COLORS.navy}>{heelPressure.toFixed(1)} kPa</text>
-        <text x="676" y="513" fontSize="10" fill={COLORS.blue}>Tumit</text>
+        <rect x="630" y="517" width="190" height="46" rx="14" fill="#ffffff" stroke="#c9d9c5" />
+        <text x="646" y="547" fontSize="20">⚡</text>
+        <text x="676" y="539" fontSize="14" fontWeight="800" fill={COLORS.navy}>{heelPressure.toFixed(1)} kPa</text>
+        <text x="676" y="553" fontSize="10" fill={COLORS.blue}>Tumit</text>
       </g>
     </svg>
   )

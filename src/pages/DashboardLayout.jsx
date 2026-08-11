@@ -196,6 +196,7 @@ export default function DashboardLayout() {
               alerts,
               alertsLoading,
               fatigue,
+              ble,
             }}
           />
         </main>

@@ -34,6 +34,7 @@ function buildPoints(groupedByDate, start, days) {
       points.push({
         date: dateKey,
         label: d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
+        timestamp: d.getTime(),
         pressure: pressures.length > 0 ? Math.max(...pressures) : 0,
         temperature: temperatures.length > 0 ? Math.max(...temperatures) : 0,
         humidity:
@@ -46,6 +47,7 @@ function buildPoints(groupedByDate, start, days) {
       points.push({
         date: dateKey,
         label: d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
+        timestamp: d.getTime(),
         pressure: 0,
         temperature: 0,
         humidity: 0,

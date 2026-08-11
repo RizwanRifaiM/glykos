@@ -4,6 +4,7 @@ import { doc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore'
 import { db } from '../services/firebase'
 import { useAuth } from '../contexts/auth-context'
 import Button from '../components/Button'
+import FaqAccordion from '../components/FaqAccordion'
 import { IconBell } from '../components/icons'
 import PageHeader from '../components/PageHeader'
 import {
@@ -164,6 +165,14 @@ export default function ProfilePage() {
             Aktifkan Notifikasi
           </Button>
         )}
+      </section>
+
+      <section className="panel profile-panel">
+        <h2 className="panel__title">Bantuan &amp; Pertanyaan Umum</h2>
+        <p className="panel__subtitle">
+          Masalah yang sering dialami pengguna seputar koneksi perangkat dan fitur aplikasi.
+        </p>
+        <FaqAccordion />
       </section>
     </div>
   )

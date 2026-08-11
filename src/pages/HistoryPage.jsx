@@ -2,20 +2,20 @@ import { useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import Button from '../components/Button'
 import HistoryChart from '../components/HistoryChart'
+import HistorySummaryCards from '../components/HistorySummaryCards'
 import PageHeader from '../components/PageHeader'
-import { IconDownload, IconFileText } from '../components/icons'
+import { IconDownload, IconFileText, IconHistory } from '../components/icons'
 import { exportToCsv, exportToPdf } from '../utils/exportData'
+import { getPressureLabel, getPressureStatus } from '../constants/thresholds'
+import { HISTORY_METRICS_CONFIG } from '../constants/historyMetrics'
 
-const METRICS = [
-  { key: 'pressure', label: 'Tekanan' },
-  { key: 'temperature', label: 'Suhu' },
-  { key: 'humidity', label: 'Kelembapan' },
-]
+const METRIC_KEYS = Object.keys(HISTORY_METRICS_CONFIG)
 
 export default function HistoryPage() {
   const { data, history, historyLoading, historyRange, setHistoryRange } = useOutletContext()
-  const [visibleMetrics, setVisibleMetrics] = useState(METRICS.map((m) => m.key))
+  const [visibleMetrics, setVisibleMetrics] = useState(METRIC_KEYS)
   const [sortDesc, setSortDesc] = useState(true)
+  const rangeText = historyRange === '7d' ? '7 hari' : '30 hari'
 
   function toggleMetric(key) {
     setVisibleMetrics((prev) => {
@@ -41,38 +41,49 @@ export default function HistoryPage() {
       <PageHeader
         title="Riwayat"
         subtitle="Data historis tekanan, suhu & kelembapan insole"
+        actions={
+          <div className="btn-group" role="group" aria-label="Rentang waktu">
+            <Button active={historyRange === '7d'} onClick={() => setHistoryRange('7d')}>
+              7 Hari
+            </Button>
+            <Button active={historyRange === '30d'} onClick={() => setHistoryRange('30d')}>
+              30 Hari
+            </Button>
+          </div>
+        }
+      />
+
+      <HistorySummaryCards
+        history={history}
+        rangeLabel={historyRange === '7d' ? '7 Hari Terakhir' : '30 Hari Terakhir'}
       />
 
       <section className="panel history-panel">
         <div className="history-panel__header">
           <div>
-            <h2 className="panel__title">Histori Tren</h2>
+            <h2 className="panel__title">Tren Historis</h2>
             <p className="panel__subtitle">
-              Pola tekanan, suhu &amp; kelembapan —{' '}
-              {historyRange === '7d' ? '7 hari' : '30 hari'} terakhir
+              Pola tekanan, suhu &amp; kelembapan — {rangeText} terakhir
             </p>
           </div>
-          <div className="history-panel__controls">
-            <div className="btn-group">
-              <Button active={historyRange === '7d'} onClick={() => setHistoryRange('7d')}>
-                7 Hari
-              </Button>
-              <Button active={historyRange === '30d'} onClick={() => setHistoryRange('30d')}>
-                30 Hari
-              </Button>
-            </div>
-            <div className="btn-group btn-group--metric">
-              {METRICS.map(({ key, label }) => (
-                <Button
+          <div className="metric-toggle-group" role="group" aria-label="Tampilkan metrik">
+            {METRIC_KEYS.map((key) => {
+              const config = HISTORY_METRICS_CONFIG[key]
+              const active = visibleMetrics.includes(key)
+              return (
+                <button
                   key={key}
-                  active={visibleMetrics.includes(key)}
+                  type="button"
+                  className={`metric-toggle ${active ? 'metric-toggle--active' : ''}`}
                   onClick={() => toggleMetric(key)}
-                  disabled={visibleMetrics.length === 1 && visibleMetrics.includes(key)}
+                  disabled={visibleMetrics.length === 1 && active}
+                  aria-pressed={active}
                 >
-                  {label}
-                </Button>
-              ))}
-            </div>
+                  <span className="metric-toggle__dot" style={{ background: config.color }} aria-hidden="true" />
+                  {config.label}
+                </button>
+              )
+            })}
           </div>
         </div>
         <HistoryChart history={history} metrics={visibleMetrics} />
@@ -83,13 +94,14 @@ export default function HistoryPage() {
           <div>
             <h2 className="panel__title">Tabel Data</h2>
             <p className="panel__subtitle">
-              {historyLoading ? 'Memuat data…' : `${sortedHistory.length} entri`}
+              {historyLoading ? 'Memuat data…' : `${sortedHistory.length} entri dalam ${rangeText} terakhir`}
             </p>
           </div>
           <div className="export-panel__actions">
             <Button variant="outline" onClick={() => setSortDesc((v) => !v)}>
               Urutkan: {sortDesc ? 'Terbaru' : 'Terlama'}
             </Button>
+            <span className="action-divider" aria-hidden="true" />
             <Button variant="outline" onClick={() => exportToCsv(data, history)}>
               <IconFileText size={16} />
               Export CSV
@@ -106,25 +118,38 @@ export default function HistoryPage() {
             <thead>
               <tr>
                 <th>Tanggal</th>
-                <th>Tekanan (kPa)</th>
-                <th>Suhu (°C)</th>
-                <th>Kelembapan (%RH)</th>
-                <th>Langkah</th>
+                <th className="data-table__num">Tekanan (kPa)</th>
+                <th className="data-table__num">Suhu (°C)</th>
+                <th className="data-table__num">Kelembapan (%RH)</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
-              {sortedHistory.map((row) => (
-                <tr key={row._docId ?? row.date}>
-                  <td>{row.label}</td>
-                  <td>{row.pressure}</td>
-                  <td>{row.temperature}</td>
-                  <td>{row.humidity}</td>
-                  <td>{row.steps?.toLocaleString('id-ID') ?? 0}</td>
-                </tr>
-              ))}
+              {sortedHistory.map((row) => {
+                const hasEntry = row.pressure > 0 || row.temperature > 0 || row.humidity > 0
+                const status = hasEntry ? getPressureStatus(row.pressure) : null
+                return (
+                  <tr key={row.date} className={status ? `data-table__row--${status}` : ''}>
+                    <td>{row.label}</td>
+                    <td className="data-table__num">{hasEntry ? row.pressure : '—'}</td>
+                    <td className="data-table__num">{hasEntry ? row.temperature : '—'}</td>
+                    <td className="data-table__num">{hasEntry ? row.humidity : '—'}</td>
+                    <td>
+                      {status ? (
+                        <span className={`status-pill status-pill--${status}`}>
+                          {getPressureLabel(status)}
+                        </span>
+                      ) : (
+                        <span className="data-table__no-entry">Tidak ada log</span>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
               {sortedHistory.length === 0 && (
                 <tr>
                   <td colSpan={5} className="data-table__empty">
+                    <IconHistory size={22} />
                     {historyLoading ? 'Memuat…' : 'Belum ada data histori.'}
                   </td>
                 </tr>
