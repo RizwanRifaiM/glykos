@@ -7,7 +7,7 @@ export default function ConnectionBar({ connection }) {
   return (
     <div
       className={`connection-pill ${wifi ? 'connection-pill--online' : 'connection-pill--offline'}`}
-      title={wifi ? 'Terhubung ke ESP32' : 'Menampilkan data cadangan — perangkat belum terhubung'}
+      title={wifi ? 'Terhubung ke perangkat' : 'Perangkat belum terhubung'}
     >
       {wifi ? <IconWifi size={16} /> : <IconWifiOff size={16} />}
       <span className="connection-pill__label">{wifi ? 'Live' : 'Offline'}</span>

@@ -2,13 +2,39 @@
 import { useEffect, useState } from 'react'
 import { collection, onSnapshot } from 'firebase/firestore'
 import { db } from '../services/firebase'
+import { toDateKey } from '../utils/formatTime'
+
+// Total langkah sehari.
+//
+// Tiap dokumen menyimpan langkah KUMULATIF sejak sesi pemakaiannya dimulai,
+// dan hitungan itu direset tiap perangkat tersambung ulang. Jadi total harian
+// bukan penjumlahan semua dokumen (akan berlipat ganda), melainkan jumlah
+// dari nilai TERBESAR pada masing-masing sesi.
+//
+// Dokumen lama yang ditulis sebelum sessionId ada dikelompokkan ke satu ember
+// 'legacy' — untuk data itu totalnya jadi nilai terbesar hari tersebut, yang
+// merupakan perkiraan terbaik yang bisa didapat tanpa penanda sesi.
+function sumStepsPerSession(dayEntries) {
+  const maxBySession = {}
+  dayEntries.forEach((entry) => {
+    const value = Number(entry.steps)
+    if (!Number.isFinite(value) || value <= 0) return
+    const key = entry.sessionId || 'legacy'
+    maxBySession[key] = Math.max(maxBySession[key] ?? 0, value)
+  })
+  return Object.values(maxBySession).reduce((total, value) => total + value, 0)
+}
 
 function buildPoints(groupedByDate, start, days) {
   const points = []
   for (let i = 0; i < days; i++) {
     const d = new Date(start)
     d.setDate(d.getDate() + i)
-    const dateKey = d.toISOString().slice(0, 10)
+    // Kunci tanggal LOKAL — harus cocok dengan `tanggal` yang ditulis
+    // useFirestoreSync dan dengan label yang dilihat pengguna. Sebelumnya
+    // memakai toISOString() yang berbasis UTC, sehingga di UTC+7 kuncinya
+    // selalu meleset satu hari dari label barisnya sendiri.
+    const dateKey = toDateKey(d)
 
     const dayEntries = groupedByDate[dateKey] || []
 
@@ -41,6 +67,7 @@ function buildPoints(groupedByDate, start, days) {
           humidities.length > 0
             ? Math.round((humidities.reduce((a, b) => a + b, 0) / humidities.length) * 10) / 10
             : 0,
+        steps: sumStepsPerSession(dayEntries),
       })
     } else {
       // Belum ada log Firestore untuk hari ini — nol, BUKAN data simulasi.
@@ -51,6 +78,7 @@ function buildPoints(groupedByDate, start, days) {
         pressure: 0,
         temperature: 0,
         humidity: 0,
+        steps: 0,
       })
     }
   }

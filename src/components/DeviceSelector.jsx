@@ -1,11 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { IconCheck, IconChevronDown } from './icons'
 
+const footLabel = (foot) => (foot === 'left' ? 'Kiri' : 'Kanan')
+
 export default function DeviceSelector({ devices, selectedId, onSelect }) {
   const entries = Object.entries(devices)
   const selected = devices[selectedId]
   const [open, setOpen] = useState(false)
   const rootRef = useRef(null)
+
+  // Baru ada satu perangkat: tampilkan sebagai label, bukan dropdown yang
+  // membuka satu opsi yang sudah terpilih. Begitu perangkat kedua
+  // ditambahkan di useSensorData.js, pemilihnya aktif kembali sendiri.
+  const isSingleDevice = entries.length <= 1
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -16,6 +23,22 @@ export default function DeviceSelector({ devices, selectedId, onSelect }) {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  if (isSingleDevice) {
+    return (
+      <div className="device-picker">
+        <div className="device-picker__trigger device-picker__trigger--static">
+          <span className="device-picker__dot" aria-hidden="true" />
+          <span className="device-picker__label">
+            <strong>{selected?.name ?? selectedId}</strong>
+            <small>
+              {selectedId} · Kaki {footLabel(selected?.foot)}
+            </small>
+          </span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="device-picker" ref={rootRef}>
@@ -29,7 +52,9 @@ export default function DeviceSelector({ devices, selectedId, onSelect }) {
         <span className="device-picker__dot" aria-hidden="true" />
         <span className="device-picker__label">
           <strong>{selected?.name ?? selectedId}</strong>
-          <small>{selectedId} · Kaki {selected?.foot === 'left' ? 'Kiri' : 'Kanan'}</small>
+          <small>
+            {selectedId} · Kaki {footLabel(selected?.foot)}
+          </small>
         </span>
         <IconChevronDown size={16} className="device-picker__chevron" />
       </button>
@@ -50,7 +75,9 @@ export default function DeviceSelector({ devices, selectedId, onSelect }) {
               >
                 <span className="device-picker__option-label">
                   <strong>{device.name}</strong>
-                  <small>{id} · Kaki {device.foot === 'left' ? 'Kiri' : 'Kanan'}</small>
+                  <small>
+                    {id} · Kaki {footLabel(device.foot)}
+                  </small>
                 </span>
                 {selectedId === id && <IconCheck size={16} />}
               </button>

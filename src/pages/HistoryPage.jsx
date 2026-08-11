@@ -8,11 +8,41 @@ import { IconDownload, IconFileText, IconHistory } from '../components/icons'
 import { exportToCsv, exportToPdf } from '../utils/exportData'
 import { getPressureLabel, getPressureStatus } from '../constants/thresholds'
 import { HISTORY_METRICS_CONFIG } from '../constants/historyMetrics'
+import { toDateKey } from '../utils/formatTime'
 
 const METRIC_KEYS = Object.keys(HISTORY_METRICS_CONFIG)
 
+const ALERT_RANK = { warning: 1, danger: 2 }
+
+// Merangkum peringatan yang tercatat menjadi "tingkat terparah per tanggal",
+// dipakai kolom Peringatan pada tabel. Kuncinya memakai tanggal LOKAL supaya
+// cocok dengan `date` tiap baris riwayat.
+function buildAlertsByDate(alerts) {
+  const byDate = {}
+  alerts.forEach((alert) => {
+    const raw = alert.createdAt
+    const date =
+      raw && typeof raw.toDate === 'function' ? raw.toDate() : raw ? new Date(raw) : null
+    const key = date ? toDateKey(date) : null
+    if (!key) return
+
+    const rank = ALERT_RANK[alert.status] ?? 0
+    if (rank === 0) return
+
+    const current = byDate[key]
+    if (!current) {
+      byDate[key] = { level: alert.status, count: 1 }
+      return
+    }
+    current.count += 1
+    if (rank > (ALERT_RANK[current.level] ?? 0)) current.level = alert.status
+  })
+  return byDate
+}
+
 export default function HistoryPage() {
-  const { data, history, historyLoading, historyRange, setHistoryRange } = useOutletContext()
+  const { data, history, historyLoading, historyRange, setHistoryRange, alerts } =
+    useOutletContext()
   const [visibleMetrics, setVisibleMetrics] = useState(METRIC_KEYS)
   const [sortDesc, setSortDesc] = useState(true)
   const rangeText = historyRange === '7d' ? '7 hari' : '30 hari'
@@ -26,6 +56,8 @@ export default function HistoryPage() {
       return [...prev, key]
     })
   }
+
+  const alertsByDate = useMemo(() => buildAlertsByDate(alerts ?? []), [alerts])
 
   const sortedHistory = useMemo(() => {
     const rows = [...history]
@@ -121,19 +153,25 @@ export default function HistoryPage() {
                 <th className="data-table__num">Tekanan (kPa)</th>
                 <th className="data-table__num">Suhu (°C)</th>
                 <th className="data-table__num">Kelembapan (%RH)</th>
+                <th className="data-table__num">Langkah</th>
                 <th>Status</th>
+                <th>Peringatan</th>
               </tr>
             </thead>
             <tbody>
               {sortedHistory.map((row) => {
                 const hasEntry = row.pressure > 0 || row.temperature > 0 || row.humidity > 0
                 const status = hasEntry ? getPressureStatus(row.pressure) : null
+                const alert = alertsByDate[row.date]
                 return (
                   <tr key={row.date} className={status ? `data-table__row--${status}` : ''}>
                     <td>{row.label}</td>
                     <td className="data-table__num">{hasEntry ? row.pressure : '—'}</td>
                     <td className="data-table__num">{hasEntry ? row.temperature : '—'}</td>
                     <td className="data-table__num">{hasEntry ? row.humidity : '—'}</td>
+                    <td className="data-table__num">
+                      {row.steps > 0 ? row.steps.toLocaleString('id-ID') : '—'}
+                    </td>
                     <td>
                       {status ? (
                         <span className={`status-pill status-pill--${status}`}>
@@ -143,12 +181,23 @@ export default function HistoryPage() {
                         <span className="data-table__no-entry">Tidak ada log</span>
                       )}
                     </td>
+                    <td>
+                      {alert ? (
+                        <span className={`status-pill status-pill--${alert.level}`}>
+                          {alert.count} peringatan
+                        </span>
+                      ) : (
+                        <span className="data-table__no-entry">
+                          {hasEntry ? 'Tidak ada' : '—'}
+                        </span>
+                      )}
+                    </td>
                   </tr>
                 )
               })}
               {sortedHistory.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="data-table__empty">
+                  <td colSpan={7} className="data-table__empty">
                     <IconHistory size={22} />
                     {historyLoading ? 'Memuat…' : 'Belum ada data histori.'}
                   </td>

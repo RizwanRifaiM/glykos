@@ -21,12 +21,13 @@ import { getPressureStatus, getTemperatureStatus, LOCATION_LABELS } from '../con
 //   - Tumit                : 10% dari tumit -> y = 594 - 0.10*537 = 540.3
 //                           x = tengah bantalan tumit = 467
 //
-// Catatan: DEVICE_META.foot di useBleSensor.js berisi 'left', tapi ilustrasi
-// ini (hallux di kiri gambar) secara visual berorientasi seperti kaki KANAN
-// dilihat dari telapak (medial di kiri). Kalau nanti mau bikin ilustrasi
-// per-kaki yang benar-benar akurat kiri/kanan, ini perlu diluruskan dulu —
-// untuk sekarang koordinat di bawah mengikuti bentuk ilustrasi yang ADA
-// (marker di atas bantalan jari terbesar), bukan label 'left' di kode.
+// Orientasi: ilustrasi ini (hallux di sisi kiri gambar) berorientasi seperti
+// kaki KANAN dilihat dari telapak — medial di kiri. Ini sekarang SUDAH COCOK
+// dengan DEVICE_META.foot di useBleSensor.js yang berisi 'right'. (Sebelumnya
+// kode menandainya 'left' sehingga tidak sinkron dengan gambarnya; sudah
+// diperbaiki.) Kalau nanti perangkat kaki kiri ditambahkan, ilustrasi ini
+// perlu varian yang dicerminkan secara horizontal, dan koordinat di bawah
+// dipilih per kaki.
 const PRESSURE_ANCHORS = {
   toe: { x: 387, y: 109 },
   metatarsal: { x: 390, y: 223 },

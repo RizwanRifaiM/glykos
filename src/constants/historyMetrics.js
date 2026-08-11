@@ -6,5 +6,5 @@
 export const HISTORY_METRICS_CONFIG = {
   pressure: { label: 'Tekanan', unit: 'kPa', color: '#6E1936', max: 300 },
   temperature: { label: 'Suhu Kulit', unit: '°C', color: '#446A45', max: 38 },
-  humidity: { label: 'Kelembapan', unit: '%', color: '#81A283', max: 100 },
+  humidity: { label: 'Kelembapan', unit: '%', color: '#ff7373', max: 100 },
 }

@@ -138,7 +138,11 @@ export function useAlertMonitor(deviceId, data, fatigue) {
   }, [deviceId, data, fatigue])
 }
 
-export function useAlerts(deviceId, max = 50) {
+// Batas 200 (bukan 50): selain mengisi halaman Peringatan, daftar ini juga
+// dipakai kolom "Peringatan" pada tabel Riwayat yang mencakup 30 hari. Batas
+// yang terlalu kecil membuat hari-hari terlama salah tampil "Tidak ada"
+// padahal peringatannya ada, hanya terpotong limit.
+export function useAlerts(deviceId, max = 200) {
   const [alerts, setAlerts] = useState([])
   const [loadedKey, setLoadedKey] = useState(null)
   const key = deviceId ? `${deviceId}:${max}` : null

@@ -102,9 +102,6 @@ export function TemperatureCard({ temperature, history }) {
           highest: Number(temperature || 0),
           location: 'metatarsal',
           points: { metatarsal: Number(temperature || 0) },
-          leftFoot: Number(temperature || 0),
-          rightFoot: Number(temperature || 0),
-          lateralFoot: Number(temperature || 0),
           delta: 0,
         }
 
@@ -118,7 +115,7 @@ export function TemperatureCard({ temperature, history }) {
   return (
     <MetricCard
       icon={<IconThermometer size={22} />}
-      title="Suhu Tertinggi"
+      title="Suhu Kulit"
       value={highest}
       unit="°C"
       status={status}
@@ -139,21 +136,12 @@ export function TemperatureCard({ temperature, history }) {
           </div>
         ))}
       </div>
+      {/* Suhu per area sudah tampil di point-grid di atas. Blok ini hanya
+          untuk nilai turunannya — selisih terpanas vs terdingin antar area
+          pada kaki yang sama, yang jadi prediktor pre-ulkus. */}
       <div className="temp-compare">
-        <div>
-          <span>Kaki Kiri</span>
-          <strong>{tObj.leftFoot ?? highest}°C</strong>
-        </div>
-        <div>
-          <span>Kaki Kanan</span>
-          <strong>{tObj.rightFoot ?? highest}°C</strong>
-        </div>
-        <div>
-          <span>Lateral</span>
-          <strong>{tObj.lateralFoot ?? highest}°C</strong>
-        </div>
         <div className={delta >= TEMP_DELTA_WARNING ? 'highlight' : ''}>
-          <span>Selisih</span>
+          <span>Selisih suhu antar area</span>
           <strong>{delta.toFixed(1)}°C</strong>
         </div>
       </div>
@@ -178,7 +166,7 @@ export function HumidityCard({ humidity, history, airTemperature }) {
       value={rh}
       unit="% RH"
       status={status}
-      detail="Sensor SHT30 / AHT20"
+      detail="Kelembapan udara di dalam sepatu"
       trend={
         <Sparkline
           values={trendValuesArr}
@@ -206,7 +194,7 @@ export function HumidityCard({ humidity, history, airTemperature }) {
       </p>
       {typeof airTemperature === 'number' && (
         <p className="metric-card__note metric-card__note--secondary">
-          Suhu udara sekitar: {airTemperature}°C (sensor SHT30)
+          Suhu udara sekitar: {airTemperature}°C
         </p>
       )}
     </MetricCard>

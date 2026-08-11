@@ -2,9 +2,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '../services/firebase'
+import { toDateKey } from '../utils/formatTime'
 
+// Baru ada satu perangkat, dipasang di kaki KANAN. Struktur map dipertahankan
+// supaya perangkat kedua (kaki kiri) tinggal ditambahkan di sini tanpa
+// mengubah DeviceSelector.
 const DEVICES = {
-  'glykos-device': { name: 'Glykos Device', foot: 'left' }
+  'glykos-device': { name: 'Glykos Device', foot: 'right' }
 }
 
 // Ditampilkan hanya saat BELUM ADA perangkat tersambung & belum ada data live
@@ -17,7 +21,7 @@ const DEFAULT_JSON = {
   pressure1: 0,
   pressure2: 0,
   pressure3: 0,
-  tanggal: new Date().toISOString().slice(0, 10),
+  tanggal: toDateKey(new Date()),
   waktu: new Date().toLocaleTimeString('id-ID'),
 }
 
@@ -32,7 +36,7 @@ function parseSensorReading(raw, deviceId) {
   const p3 = Number(dataRaw.pressure3 ?? 0)
   const temperatureVal = Number(dataRaw.temperature ?? 0)
   const humidityVal = Number(dataRaw.humidity ?? 0)
-  const tanggal = dataRaw.tanggal || new Date().toISOString().slice(0, 10)
+  const tanggal = dataRaw.tanggal || toDateKey(new Date())
   const waktu = dataRaw.waktu || new Date().toLocaleTimeString('id-ID')
 
   const peakPressure = Math.max(p1, p2, p3)
@@ -61,23 +65,26 @@ function parseSensorReading(raw, deviceId) {
       lastUpdate: new Date(),
     },
     pressure: {
+      // Hanya nama area di sini. Jangan tambahkan alias pressure1/2/3 —
+      // PressureCard me-render seluruh isi `points`, jadi duplikat akan
+      // muncul sebagai baris kedua berisi angka yang sama. Nilai mentahnya
+      // sudah tersedia di field pressure1/2/3 tingkat atas (dipakai
+      // useFirestoreSync & exportData).
       peak: peakPressure,
       location: maxLocation,
       points: {
         heel: p1,
         metatarsal: p2,
         toe: p3,
-        pressure1: p1,
-        pressure2: p2,
-        pressure3: p3,
       },
     },
     temperatureObj: {
+      // T1/T2/T3 adalah tiga area pada SATU kaki (forefoot/tumit/lateral),
+      // bukan perbandingan kaki kiri vs kanan — lihat catatan di
+      // useBleSensor.js. Karena itu tidak ada lagi field leftFoot/rightFoot.
       highest: temperatureVal,
-      location: 'Metatarsal',
-      points: { Metatarsal: temperatureVal },
-      leftFoot: temperatureVal,
-      rightFoot: temperatureVal,
+      location: 'metatarsal',
+      points: { metatarsal: temperatureVal },
       delta: 0,
     },
     activity: dataRaw.activity || {

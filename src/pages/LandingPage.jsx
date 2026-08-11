@@ -22,7 +22,7 @@ const FEATURES = [
     icon: IconGauge,
     accent: 'rose',
     title: 'Pemantauan Tekanan Plantar',
-    desc: 'Sensor FSR 402 pada titik tumit, metatarsal & jari kaki mendeteksi tekanan berlebih yang berisiko memicu luka.',
+    desc: 'Sensor pada titik tumit, metatarsal & jari kaki mendeteksi tekanan berlebih yang berisiko memicu luka.',
   },
   {
     icon: IconThermometer,
@@ -536,9 +536,7 @@ export default function LandingPage() {
 
         <div className="landing-footer__bottom">
           <p>© {new Date().getFullYear()} Glykos</p>
-          <p className="landing-footer__tech">
-            ESP32 DevKit V1 · FSR 402 · NTC · SHT30 · MPU6050
-          </p>
+          <p className="landing-footer__tech">Insole pintar untuk pemantauan kaki diabetes</p>
         </div>
       </footer>
     </div>

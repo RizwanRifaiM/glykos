@@ -4,6 +4,14 @@ import { COLORS } from '../constants/theme'
 import DeviceSelector from '../components/DeviceSelector'
 import ConnectionBar from '../components/ConnectionBar'
 import BleConnectButton from '../components/BleConnectButton'
+import DemoModeBanner from '../components/DemoModeBanner'
+import { isDemoMode } from '../utils/demoMode'
+import {
+  buildDemoHistory,
+  buildDemoReading,
+  DEMO_ALERTS,
+  DEMO_FATIGUE,
+} from '../constants/demoData'
 import { useSensorData } from '../hooks/useSensorData'
 import { useBleSensor } from '../hooks/useBleSensor'
 import { useHistoryData } from '../hooks/useHistoryData'
@@ -75,6 +83,7 @@ function TopbarUser() {
 export default function DashboardLayout() {
   const [deviceId, setDeviceId] = useState('glykos-device')
   const [historyRange, setHistoryRange] = useState('7d')
+  const demoMode = isDemoMode()
 
   const {
     data: firestoreData,
@@ -83,8 +92,11 @@ export default function DashboardLayout() {
     isLive: firestoreLive,
   } = useSensorData(deviceId)
   const ble = useBleSensor()
-  const { history, isLoading: historyLoading } = useHistoryData(deviceId, historyRange)
-  const { alerts, isLoading: alertsLoading } = useAlerts(deviceId)
+  const { history: realHistory, isLoading: realHistoryLoading } = useHistoryData(
+    deviceId,
+    historyRange,
+  )
+  const { alerts: realAlerts, isLoading: realAlertsLoading } = useAlerts(deviceId)
 
   // Saat perangkat BLE terhubung dan sudah mengirim paket, datanya jadi sumber
   // live yang meng-override data Firestore/cadangan.
@@ -92,16 +104,18 @@ export default function DashboardLayout() {
   const rawData = bleActive ? ble.reading : firestoreData
   const isLive = bleActive ? true : firestoreLive
 
-  // Firmware tidak punya WiFi — web app ini yang menuliskan pembacaan BLE ke
-  // Firestore (live/current + history) selama perangkat tersambung.
-  useFirestoreSync(deviceId, ble.reading, bleActive)
-
   // Firmware BLE tidak menghitung langkah sendiri (hanya kirim AX/AY/AZ
   // mentah) — dihitung di web app lewat useStepCounter, lalu dipakai
   // menggantikan `activity: null` bawaan useBleSensor supaya ActivityPanel
   // menampilkannya lewat jalur yang sama seperti data Firestore.
   const stepCounter = useStepCounter(deviceId, rawData, isLive)
-  const data =
+
+  // Firmware tidak punya WiFi — web app ini yang menuliskan pembacaan BLE ke
+  // Firestore (live/current + history) selama perangkat tersambung.
+  // Dipanggil SETELAH useStepCounter karena jumlah langkah ikut disimpan;
+  // tanpa itu kolom Langkah di tabel Riwayat selalu kosong.
+  useFirestoreSync(deviceId, ble.reading, bleActive, stepCounter.steps)
+  const liveData =
     bleActive && !rawData.activity && stepCounter.sessionActive
       ? {
           ...rawData,
@@ -112,8 +126,25 @@ export default function DashboardLayout() {
         }
       : rawData
 
-  const fatigue = useFatigueMonitor(deviceId, data, isLive, stepCounter.steps)
-  useAlertMonitor(deviceId, data, fatigue)
+  const liveFatigue = useFatigueMonitor(deviceId, liveData, isLive, stepCounter.steps)
+
+  // useAlertMonitor MENULIS ke Firestore setiap kali status naik ke
+  // warning/danger. Di mode demo `null` dioper supaya hook-nya no-op —
+  // tanpa ini, angka contoh akan mencatat peringatan palsu ke basis data
+  // sungguhan dan muncul lagi nanti sebagai riwayat asli.
+  useAlertMonitor(deviceId, demoMode ? null : liveData, liveFatigue)
+
+  // Penggantian data demo dilakukan SETELAH semua hook di atas, supaya jalur
+  // data sungguhan (termasuk penulisan Firestore) tidak terpengaruh sama sekali.
+  const data = demoMode ? buildDemoReading() : liveData
+  const fatigue = demoMode ? DEMO_FATIGUE : liveFatigue
+  const history = demoMode ? buildDemoHistory(historyRange === '30d' ? 30 : 7) : realHistory
+  const historyLoading = demoMode ? false : realHistoryLoading
+  const alerts = demoMode ? DEMO_ALERTS : realAlerts
+  const alertsLoading = demoMode ? false : realAlertsLoading
+  // Ditandai live supaya banner onboarding "belum ada data" tidak menutupi
+  // kartu metrik yang justru ingin ditinjau.
+  const displayLive = demoMode ? true : isLive
 
   return (
     <div className="app-shell">
@@ -182,12 +213,14 @@ export default function DashboardLayout() {
           </p>
         )}
 
+        {demoMode && <DemoModeBanner />}
+
         <main className="app-main">
           <Outlet
             context={{
               deviceId,
               data,
-              isLive,
+              isLive: displayLive,
               refresh,
               history,
               historyLoading,
@@ -202,7 +235,7 @@ export default function DashboardLayout() {
         </main>
 
         <footer className="footer app-footer">
-          <p>Glykos · ESP32 DevKit V1 · FSR 402 · NTC · SHT30 · MPU6050</p>
+          <p>Glykos — pemantauan kaki diabetes</p>
         </footer>
       </div>
 

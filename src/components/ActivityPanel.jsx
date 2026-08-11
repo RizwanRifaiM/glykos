@@ -12,7 +12,7 @@ function AccelBlock({ accel }) {
 
   return (
     <div className="fatigue-block">
-      <h3 className="fatigue-block__title">Akselerasi (MPU6050)</h3>
+      <h3 className="fatigue-block__title">Akselerasi</h3>
       <div className="temp-compare">
         <div>
           <span>X</span>
@@ -86,10 +86,10 @@ export default function ActivityPanel({ activity, accel, fatigue }) {
     return (
       <section className="panel activity-panel">
         <h2 className="panel__title">Aktivitas Harian</h2>
-        <p className="panel__subtitle">Data dari MPU6050 — pola tekanan &amp; gerak</p>
+        <p className="panel__subtitle">Pola gerak &amp; beban kaki harian</p>
         <p className="metric-card__note">
-          Belum ada data langkah dari perangkat ini — sensor MPU6050 belum terdeteksi atau
-          belum mengirim data akselerasi.
+          Belum ada data langkah dari perangkat ini — sensor gerak belum terdeteksi atau belum
+          mengirim data.
         </p>
         <AccelBlock accel={accel} />
         <FatigueBlock fatigue={fatigue} />
@@ -103,7 +103,7 @@ export default function ActivityPanel({ activity, accel, fatigue }) {
   return (
     <section className="panel activity-panel">
       <h2 className="panel__title">Aktivitas Harian</h2>
-      <p className="panel__subtitle">Data dari MPU6050 — pola tekanan &amp; gerak</p>
+      <p className="panel__subtitle">Pola gerak &amp; beban kaki harian</p>
       <div className="activity-panel__grid">
         <div className="activity-stat">
           <span className="activity-stat__icon">
@@ -129,9 +129,8 @@ export default function ActivityPanel({ activity, accel, fatigue }) {
       </div>
       {accel && (accel.x !== null || accel.y !== null || accel.z !== null) && (
         <p className="metric-card__note">
-          Langkah dihitung langsung di web app dari akselerasi MPU6050 (bukan dari firmware) —
-          estimasi, bisa meleset (undercount) saat jalan cepat/lari karena keterbatasan laju
-          kirim data BLE.
+          Jumlah langkah adalah estimasi dari data gerak kaki, bisa terhitung lebih sedikit
+          saat berjalan cepat atau berlari.
         </p>
       )}
       <AccelBlock accel={accel} />

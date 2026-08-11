@@ -38,12 +38,13 @@ export function exportToCsv(data, history = [], filename = 'glykos-report') {
     ['Waktu Aktif (menit)', activeMins],
     [],
     ['Histori'],
-    ['Tanggal', 'Tekanan (kPa)', 'Suhu (°C)', 'Kelembapan (%RH)'],
+    ['Tanggal', 'Tekanan (kPa)', 'Suhu (°C)', 'Kelembapan (%RH)', 'Langkah'],
     ...history.map((row) => [
       row.date || row.tanggal,
       row.pressure,
       row.temperature,
       row.humidity,
+      row.steps ?? 0,
     ]),
   ]
 
@@ -109,9 +110,9 @@ export function exportToPdf(data, history = []) {
   </div>
   <h2>Histori</h2>
   <table>
-    <thead><tr><th>Tanggal</th><th>Tekanan</th><th>Suhu</th><th>Kelembapan</th></tr></thead>
+    <thead><tr><th>Tanggal</th><th>Tekanan</th><th>Suhu</th><th>Kelembapan</th><th>Langkah</th></tr></thead>
     <tbody>
-      ${history.map((row) => `<tr><td>${row.label || row.date}</td><td>${row.pressure} kPa</td><td>${row.temperature}°C</td><td>${row.humidity}%</td></tr>`).join('')}
+      ${history.map((row) => `<tr><td>${row.label || row.date}</td><td>${row.pressure} kPa</td><td>${row.temperature}°C</td><td>${row.humidity}%</td><td>${(row.steps ?? 0).toLocaleString('id-ID')}</td></tr>`).join('')}
     </tbody>
   </table>
 </body>

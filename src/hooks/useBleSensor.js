@@ -5,8 +5,10 @@
 // tanpa perubahan.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BleSensor, isBleSupported } from '../services/ble'
+import { toDateKey } from '../utils/formatTime'
 
-const DEVICE_META = { id: 'glykos-device', name: 'Glykos Device', foot: 'left' }
+// Baru ada satu perangkat, dipasang di kaki KANAN.
+const DEVICE_META = { id: 'glykos-device', name: 'Glykos Device', foot: 'right' }
 
 // Pemetaan lokasi sesuai kontrak firmware:
 //   P1 = Hallux (jari kaki),  P2 = Metatarsal1,  P3 = Tumit
@@ -33,23 +35,29 @@ function normalizeBleReading(raw, receivedAt, isConnected) {
   if (peak === heel) location = 'heel'
   else if (peak === toe) location = 'toe'
 
-  // Suhu NTC: T1 = forefoot, T2 = tumit, T3 = lateral. Selisih terbesar antar
-  // area yang tersedia adalah prediktor pre-ulkus (dipakai oleh threshold
-  // TEMP_DELTA_WARNING).
+  // Suhu NTC. Tiap NTC dipasang berdampingan dengan sensor tekanan, jadi
+  // areanya memakai KUNCI YANG SAMA dengan pressure.points (metatarsal/heel/
+  // toe) supaya kedua kartu menyebut area yang sama dengan nama yang sama —
+  // lihat LOCATION_LABELS di constants/thresholds.js.
+  //   T1 = forefoot  -> metatarsal
+  //   T2 = tumit     -> heel
+  //   T3 = lateral   -> toe
+  // Selisih terbesar antar area yang tersedia adalah prediktor pre-ulkus
+  // (dipakai oleh threshold TEMP_DELTA_WARNING).
   const t1 = typeof raw.T1 === 'number' ? round1(raw.T1) : null
   const t2 = typeof raw.T2 === 'number' ? round1(raw.T2) : null
   const t3 = typeof raw.T3 === 'number' ? round1(raw.T3) : null
   const tempAreas = [
-    { key: 'Forefoot', value: t1 },
-    { key: 'Tumit', value: t2 },
-    { key: 'Lateral', value: t3 },
+    { key: 'metatarsal', value: t1 },
+    { key: 'heel', value: t2 },
+    { key: 'toe', value: t3 },
   ].filter((area) => area.value !== null)
 
   const temps = tempAreas.map((area) => area.value)
   const highest = temps.length ? Math.max(...temps) : 0
   const lowest = temps.length ? Math.min(...temps) : 0
   const delta = temps.length >= 2 ? round1(highest - lowest) : 0
-  const tempLocation = tempAreas.find((area) => area.value === highest)?.key ?? 'Forefoot'
+  const tempLocation = tempAreas.find((area) => area.value === highest)?.key ?? 'metatarsal'
 
   const tempPoints = {}
   tempAreas.forEach((area) => {
@@ -69,7 +77,7 @@ function normalizeBleReading(raw, receivedAt, isConnected) {
     pressure1: heel,
     pressure2: metatarsal,
     pressure3: toe,
-    tanggal: now.toISOString().slice(0, 10),
+    tanggal: toDateKey(now),
     waktu: now.toLocaleTimeString('id-ID'),
 
     connection: {
@@ -78,24 +86,26 @@ function normalizeBleReading(raw, receivedAt, isConnected) {
       lastUpdate: now,
     },
     pressure: {
+      // Lihat catatan yang sama di useSensorData.js: jangan tambahkan alias
+      // pressure1/2/3 di sini — PressureCard me-render seluruh isi `points`.
       peak,
       location,
       points: {
         heel,
         metatarsal,
         toe,
-        pressure1: toKpa(raw.P1, raw.F1),
-        pressure2: toKpa(raw.P2, raw.F2),
-        pressure3: toKpa(raw.P3, raw.F3),
       },
     },
     temperatureObj: {
+      // T1/T2/T3 = forefoot/tumit/lateral pada SATU kaki (kanan). Sebelumnya
+      // ketiganya juga disalin ke field leftFoot/rightFoot/lateralFoot, dan
+      // kartu Suhu menampilkannya berlabel "Kaki Kiri"/"Kaki Kanan" — itu
+      // salah: perangkatnya cuma satu, tidak ada perbandingan antar kaki.
+      // Nilai per area sudah tersedia di `points`; yang tersisa di sini
+      // hanyalah nilai turunan (highest & delta).
       highest,
       location: tempLocation,
       points: tempPoints,
-      leftFoot: t1 ?? highest, // forefoot
-      rightFoot: t2 ?? highest, // tumit
-      lateralFoot: t3 ?? highest, // lateral
       delta,
     },
     // Firmware hanya mengirim akselerasi mentah (AX/AY/AZ), belum langkah kaki.
