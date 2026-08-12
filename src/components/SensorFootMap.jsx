@@ -1,5 +1,6 @@
 import { COLORS } from '../constants/theme'
 import { getPressureStatus, getTemperatureStatus, LOCATION_LABELS } from '../constants/thresholds'
+import { pressureDotRadius, pressurePulse } from '../utils/pressureScale'
 
 // Titik peta sensor tekanan (di atas siluet kaki) & suhu (di sisi luar, dengan
 // leader line ke area kaki terkait) — koordinat mengikuti viewBox 850x640 dari
@@ -61,27 +62,47 @@ const STATUS_COLOR = { safe: COLORS.blue, warning: COLORS.warning, danger: COLOR
 
 // Number.isFinite, bukan `typeof value !== 'number'`: NaN lolos dari cek typeof
 // dan berujung pada fill="rgb(NaN,...)" / teks "NaN kPa" di SVG.
-function PressureMarker({ id, anchor, value, pulseClass }) {
+function PressureMarker({ id, anchor, value, pulseClass, index }) {
   if (!Number.isFinite(value)) return null
   const color = STATUS_COLOR[getPressureStatus(value)]
   const label = LOCATION_LABELS[id] ?? id
+  const radius = pressureDotRadius(value)
+  const { scale, durationSec } = pressurePulse(value)
+
+  // Label digeser mengikuti jari-jari, bukan offset tetap — dengan titik yang
+  // bisa tiga kali lebih besar, offset tetap membuat angkanya tertimpa titik.
+  const valueY = anchor.y - radius - 9
+  const labelY = anchor.y + radius + 15
 
   return (
     <g>
-      <circle cx={anchor.x} cy={anchor.y} r="9" fill={color} />
+      <circle
+        className="sensor-dot"
+        cx={anchor.x}
+        cy={anchor.y}
+        r={radius}
+        fill={color}
+        style={{
+          '--dot-scale': scale,
+          '--dot-duration': `${durationSec}s`,
+          // Jeda berbeda per titik supaya ketiganya tidak berdenyut serempak
+          // seperti lampu sein.
+          '--dot-delay': `${index * 0.35}s`,
+        }}
+      />
       <circle
         className={pulseClass}
         cx={anchor.x}
         cy={anchor.y}
-        r="9"
+        r={radius}
         fill="none"
         stroke={color}
         strokeWidth="2"
       />
-      <text x={anchor.x} y={anchor.y - 18} fontSize="12" fontWeight="800" fill={COLORS.navy} textAnchor="middle">
+      <text x={anchor.x} y={valueY} fontSize="12" fontWeight="800" fill={COLORS.navy} textAnchor="middle">
         {value} kPa
       </text>
-      <text x={anchor.x} y={anchor.y + 26} fontSize="10" fill={COLORS.blue} textAnchor="middle">
+      <text x={anchor.x} y={labelY} fontSize="10" fill={COLORS.blue} textAnchor="middle">
         {label}
       </text>
     </g>
@@ -139,9 +160,9 @@ export default function SensorFootMap({ pressurePoints = {}, temperaturePoints =
         />
       </g>
 
-      <PressureMarker id="toe" anchor={PRESSURE_ANCHORS.toe} value={pressurePoints.toe} pulseClass={PULSE_CLASS[0]} />
-      <PressureMarker id="metatarsal" anchor={PRESSURE_ANCHORS.metatarsal} value={pressurePoints.metatarsal} pulseClass={PULSE_CLASS[1]} />
-      <PressureMarker id="heel" anchor={PRESSURE_ANCHORS.heel} value={pressurePoints.heel} pulseClass={PULSE_CLASS[2]} />
+      <PressureMarker id="toe" anchor={PRESSURE_ANCHORS.toe} value={pressurePoints.toe} pulseClass={PULSE_CLASS[0]} index={0} />
+      <PressureMarker id="metatarsal" anchor={PRESSURE_ANCHORS.metatarsal} value={pressurePoints.metatarsal} pulseClass={PULSE_CLASS[1]} index={1} />
+      <PressureMarker id="heel" anchor={PRESSURE_ANCHORS.heel} value={pressurePoints.heel} pulseClass={PULSE_CLASS[2]} index={2} />
 
       {TEMP_MARKERS.map(({ key, anchor, footAnchor }, index) => (
         <TemperatureMarker

@@ -1084,6 +1084,38 @@
   max-width: 460px;
 }
 
+/* Titik sensor tekanan pada peta kaki.
+   Jari-jarinya ditentukan di SensorFootMap.jsx menurut nilai kPa; di sini
+   hanya geraknya. `transform-box: fill-box` wajib — tanpa itu transform-origin
+   dihitung dari sudut viewBox SVG, bukan dari pusat lingkarannya, sehingga
+   titiknya melayang menjauh alih-alih membesar di tempat. */
+.sensor-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sensor-dot-breathe var(--dot-duration, 2.2s) ease-in-out var(--dot-delay, 0s) infinite;
+  /* Perubahan tekanan menggeser ukuran titik dengan mulus, bukan meloncat. */
+  transition: r 600ms var(--ease);
+}
+
+@keyframes sensor-dot-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(var(--dot-scale, 1.12));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Denyutnya dimatikan, TAPI ukuran titiknya tetap proporsional terhadap
+     tekanan — informasinya ada di ukuran, bukan di geraknya. */
+  .sensor-dot {
+    animation: none;
+    transition: none;
+  }
+}
+
 /* Info callout */
 
 .info-callout {
