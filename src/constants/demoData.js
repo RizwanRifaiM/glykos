@@ -1,16 +1,19 @@
-// Data contoh untuk MODE DEMO (aktif hanya lewat ?demo=1 — lihat
-// src/utils/demoMode.js). Dipakai untuk meninjau tampilan grafik & kartu
-// tanpa perangkat BLE tersambung.
+// Data contoh untuk MODE DEMO — lihat src/utils/demoMode.js untuk kapan mode
+// ini menyala. Dipakai untuk meninjau tampilan grafik & kartu tanpa perangkat
+// BLE tersambung.
 //
-// PENTING — jangan jadikan ini fallback default. useSensorData.js dan
-// useHistoryData.js sengaja menampilkan NOL saat belum ada data, supaya
-// dashboard tidak pernah terlihat seolah ada pembacaan sensor nyata padahal
-// tidak ada. Mode demo aman karena harus diminta eksplisit lewat URL dan
-// selalu disertai spanduk peringatan.
+// PENTING — data ini dipakai sebagai tampilan awal selama pengguna belum punya
+// data sendiri, TANPA spanduk penanda (dihapus atas permintaan). Karena itu dua
+// batas berikut jadi satu-satunya yang tersisa dan tidak boleh dilonggarkan:
+//   1. Data nyata SELALU menang. shouldUseDemoData() mematikan mode demo begitu
+//      ada pembacaan BLE atau dokumen live di Firestore — termasuk pembacaan
+//      lama yang sudah basi, karena itu pun tetap data sungguhan.
+//   2. Tidak ada satu pun angka di sini yang ditulis ke Firestore:
+//      sinkronisasi hanya berjalan saat BLE aktif (useFirestoreSync), dan
+//      pencatatan peringatan dimatikan saat mode demo (DashboardLayout.jsx).
 //
-// Data di sini juga TIDAK PERNAH ditulis ke Firestore: sinkronisasi hanya
-// berjalan saat BLE aktif (useFirestoreSync), dan pencatatan peringatan
-// dimatikan saat mode demo (lihat DashboardLayout.jsx).
+// Melanggar salah satunya membuat aplikasi pemantauan medis menampilkan angka
+// karangan sebagai kondisi kaki pengguna, tanpa apa pun yang mengoreksinya.
 
 import { toDateKey } from '../utils/formatTime'
 
@@ -77,13 +80,14 @@ export function buildDemoReading() {
   const toe = 84.2
   const peak = Math.max(heel, metatarsal, toe)
 
-  // Kunci area sama dengan pressure.points — sensor suhu dipasang
-  // berdampingan dengan sensor tekanan (T1→metatarsal, T2→heel, T3→toe).
+  // Tiga NTC firmware: T1→metatarsal (forefoot), T2→heel (tumit),
+  // T3→lateral (sisi luar telapak). Dua yang pertama berbagi kunci dengan
+  // pressure.points; `lateral` tidak punya pasangan FSR.
   const tMetatarsal = 32.8
   const tHeel = 30.1
-  const tToe = 31.4
-  const highest = Math.max(tMetatarsal, tHeel, tToe)
-  const delta = round1(highest - Math.min(tMetatarsal, tHeel, tToe)) // 2,7 °C → memicu peringatan
+  const tLateral = 31.4
+  const highest = Math.max(tMetatarsal, tHeel, tLateral)
+  const delta = round1(highest - Math.min(tMetatarsal, tHeel, tLateral)) // 2,7 °C → memicu peringatan
 
   return {
     id: DEMO_DEVICE.id,
@@ -117,7 +121,7 @@ export function buildDemoReading() {
     temperatureObj: {
       highest,
       location: 'metatarsal',
-      points: { metatarsal: tMetatarsal, heel: tHeel, toe: tToe },
+      points: { metatarsal: tMetatarsal, heel: tHeel, lateral: tLateral },
       delta,
     },
 

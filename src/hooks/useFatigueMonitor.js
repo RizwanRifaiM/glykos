@@ -39,7 +39,8 @@ function distributionOf(points) {
 // services/ble.js) karena perhitungannya bergantung pada Date.now() dan
 // akumulasi berjalan — bukan sesuatu yang bisa diturunkan murni dari props
 // saat render. Komponen membaca snapshot-nya lewat useSyncExternalStore.
-class FatigueSession {
+// Diekspor untuk pengujian — lihat catatan yang sama di useStepCounter.js.
+export class FatigueSession {
   constructor() {
     this._listeners = new Set()
     this._reset()

@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { COLORS } from '../constants/theme'
+import BrandMark from '../components/BrandMark'
 import DeviceSelector from '../components/DeviceSelector'
 import ConnectionBar from '../components/ConnectionBar'
 import BleConnectButton from '../components/BleConnectButton'
 import DemoModeBanner from '../components/DemoModeBanner'
-import { isDemoMode } from '../utils/demoMode'
+import { SkeletonPage } from '../components/Skeleton'
+import { demoPreference, shouldUseDemoData } from '../utils/demoMode'
 import {
   buildDemoHistory,
   buildDemoReading,
@@ -41,17 +42,7 @@ const NAV_ITEMS = [
 function Brand() {
   return (
     <div className="app-topbar__brand">
-      <svg viewBox="0 0 48 48" width="26" height="26" aria-hidden="true">
-        <circle cx="24" cy="24" r="22" fill={COLORS.navy} />
-        <path d="M24 8c-2 6-8 10-8 16a8 8 0 0016 0c0-6-6-10-8-16z" fill={COLORS.lightBlue} />
-        <path
-          d="M18 32c2 4 6 6 6 6s4-2 6-6"
-          stroke={COLORS.cream}
-          strokeWidth="2"
-          fill="none"
-          strokeLinecap="round"
-        />
-      </svg>
+      <BrandMark size={26} />
       <span>Glykos</span>
     </div>
   )
@@ -83,26 +74,46 @@ function TopbarUser() {
 export default function DashboardLayout() {
   const [deviceId, setDeviceId] = useState('glykos-device')
   const [historyRange, setHistoryRange] = useState('7d')
-  const demoMode = isDemoMode()
+  const demoPref = demoPreference()
+
+  // Seluruh data sensor tersimpan di bawah users/{uid} — lihat services/paths.js.
+  // Tanpa uid, hook-hook di bawah tidak berlangganan apa pun.
+  const { user } = useAuth()
+  const uid = user?.uid ?? null
 
   const {
     data: firestoreData,
     refresh,
     devices,
     isLive: firestoreLive,
-  } = useSensorData(deviceId)
+    isStale: firestoreStale,
+    updatedAtMs,
+    hasData: firestoreHasData,
+    isLoaded: firestoreLoaded,
+  } = useSensorData(uid, deviceId)
   const ble = useBleSensor()
   const { history: realHistory, isLoading: realHistoryLoading } = useHistoryData(
+    uid,
     deviceId,
     historyRange,
   )
-  const { alerts: realAlerts, isLoading: realAlertsLoading } = useAlerts(deviceId)
+  const { alerts: realAlerts, isLoading: realAlertsLoading } = useAlerts(uid, deviceId)
 
   // Saat perangkat BLE terhubung dan sudah mengirim paket, datanya jadi sumber
   // live yang meng-override data Firestore/cadangan.
   const bleActive = ble.isConnected && ble.reading
   const rawData = bleActive ? ble.reading : firestoreData
   const isLive = bleActive ? true : firestoreLive
+
+  // Data contoh dipakai selama pengguna belum punya data sendiri — supaya
+  // dashboard sesudah login tidak berisi angka nol semua. Begitu ada pembacaan
+  // nyata (BLE tersambung ATAU dokumen live sudah pernah ditulis), data contoh
+  // mundur seketika: yang nyata selalu menang. Lihat utils/demoMode.js.
+  const hasRealData = Boolean(bleActive || firestoreHasData)
+  const demoMode = shouldUseDemoData(demoPref, {
+    hasRealData,
+    isLoaded: firestoreLoaded,
+  })
 
   // Firmware BLE tidak menghitung langkah sendiri (hanya kirim AX/AY/AZ
   // mentah) — dihitung di web app lewat useStepCounter, lalu dipakai
@@ -114,7 +125,7 @@ export default function DashboardLayout() {
   // Firestore (live/current + history) selama perangkat tersambung.
   // Dipanggil SETELAH useStepCounter karena jumlah langkah ikut disimpan;
   // tanpa itu kolom Langkah di tabel Riwayat selalu kosong.
-  useFirestoreSync(deviceId, ble.reading, bleActive, stepCounter.steps)
+  useFirestoreSync(uid, deviceId, ble.reading, bleActive, stepCounter.steps)
   const liveData =
     bleActive && !rawData.activity && stepCounter.sessionActive
       ? {
@@ -132,7 +143,7 @@ export default function DashboardLayout() {
   // warning/danger. Di mode demo `null` dioper supaya hook-nya no-op —
   // tanpa ini, angka contoh akan mencatat peringatan palsu ke basis data
   // sungguhan dan muncul lagi nanti sebagai riwayat asli.
-  useAlertMonitor(deviceId, demoMode ? null : liveData, liveFatigue)
+  useAlertMonitor(uid, deviceId, demoMode ? null : liveData, liveFatigue)
 
   // Penggantian data demo dilakukan SETELAH semua hook di atas, supaya jalur
   // data sungguhan (termasuk penulisan Firestore) tidak terpengaruh sama sekali.
@@ -143,8 +154,12 @@ export default function DashboardLayout() {
   const alerts = demoMode ? DEMO_ALERTS : realAlerts
   const alertsLoading = demoMode ? false : realAlertsLoading
   // Ditandai live supaya banner onboarding "belum ada data" tidak menutupi
-  // kartu metrik yang justru ingin ditinjau.
+  // kartu metrik yang justru ingin ditinjau. Ajakan menyambungkan perangkat
+  // tidak hilang — pindah ke DemoModeBanner yang membawa tombol Bluetooth-nya.
   const displayLive = demoMode ? true : isLive
+  // "Basi" hanya berlaku untuk data Firestore: selama BLE tersambung, sumber
+  // datanya perangkat langsung dan selalu baru.
+  const displayStale = demoMode || bleActive ? false : firestoreStale
 
   return (
     <div className="app-shell">
@@ -213,25 +228,37 @@ export default function DashboardLayout() {
           </p>
         )}
 
-        {demoMode && <DemoModeBanner />}
+        {/* Hanya untuk mode demo yang diminta eksplisit lewat ?demo=1. Pada
+            mode otomatis (default, saat pengguna belum punya data) spanduknya
+            sengaja tidak ditampilkan atas permintaan — dashboard langsung
+            berisi data contoh tanpa penanda. */}
+        {demoMode && demoPref === 'on' && <DemoModeBanner />}
 
         <main className="app-main">
-          <Outlet
-            context={{
-              deviceId,
-              data,
-              isLive: displayLive,
-              refresh,
-              history,
-              historyLoading,
-              historyRange,
-              setHistoryRange,
-              alerts,
-              alertsLoading,
-              fatigue,
-              ble,
-            }}
-          />
+          {/* Batas Suspense sendiri untuk rute anak: saat berpindah halaman,
+              yang berkerangka hanya area konten — sidebar & topbar tetap di
+              tempatnya. Tanpa ini, fallback di App.jsx yang menutupi seluruh
+              layar ikut menelan shell dashboard tiap kali pindah halaman. */}
+          <Suspense fallback={<SkeletonPage />}>
+            <Outlet
+              context={{
+                deviceId,
+                data,
+                isLive: displayLive,
+                isStale: displayStale,
+                updatedAtMs,
+                refresh,
+                history,
+                historyLoading,
+                historyRange,
+                setHistoryRange,
+                alerts,
+                alertsLoading,
+                fatigue,
+                ble,
+              }}
+            />
+          </Suspense>
         </main>
 
         <footer className="footer app-footer">

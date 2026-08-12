@@ -14,6 +14,20 @@ export function toDateKey(value) {
   return `${year}-${month}-${day}`
 }
 
+// "3 menit lalu" / "2 jam lalu" — dipakai penanda data basi, di mana yang
+// penting bukan jam persisnya melainkan sudah berapa lama tidak diperbarui.
+export function formatRelativeTime(timestampMs, now = Date.now()) {
+  if (!Number.isFinite(timestampMs)) return 'baru saja'
+  const seconds = Math.max(0, Math.round((now - timestampMs) / 1000))
+  if (seconds < 60) return 'baru saja'
+  const minutes = Math.round(seconds / 60)
+  if (minutes < 60) return `${minutes} menit lalu`
+  const hours = Math.round(minutes / 60)
+  if (hours < 24) return `${hours} jam lalu`
+  const days = Math.round(hours / 24)
+  return `${days} hari lalu`
+}
+
 export function formatLastUpdate(timestamp) {
   if (!timestamp) return '--:--:--'
 

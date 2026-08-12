@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { doc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore'
-import { db } from '../services/firebase'
+import { onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore'
+import { profileDoc } from '../services/paths'
 import { useAuth } from '../contexts/auth-context'
 import Button from '../components/Button'
 import FaqAccordion from '../components/FaqAccordion'
 import { IconBell } from '../components/icons'
 import PageHeader from '../components/PageHeader'
+import { SkeletonForm } from '../components/Skeleton'
 import {
   getNotificationPermission,
   isNotificationSupported,
@@ -32,7 +33,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!user) return
-    const ref = doc(db, 'users', user.uid)
+    const ref = profileDoc(user.uid)
     const unsubscribe = onSnapshot(
       ref,
       (snap) => {
@@ -56,7 +57,7 @@ export default function ProfilePage() {
     setIsSaving(true)
     try {
       await setDoc(
-        doc(db, 'users', user.uid),
+        profileDoc(user.uid),
         { ...profile, updatedAt: serverTimestamp() },
         { merge: true },
       )
@@ -87,7 +88,7 @@ export default function ProfilePage() {
         </p>
 
         {isLoading ? (
-          <div className="loading">Memuat profil…</div>
+          <SkeletonForm fields={4} />
         ) : (
           <form className="profile-form" onSubmit={handleSubmit}>
             <label className="profile-field">

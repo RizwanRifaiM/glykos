@@ -1,3 +1,27 @@
+// Nilai apa pun yang masuk ke HTML laporan di-escape dulu. Isinya memang data
+// milik pengguna sendiri (nama perangkat, nama area, label tanggal), tapi
+// menempelkan string mentah ke markup lewat template literal adalah kebiasaan
+// yang cepat berubah jadi lubang begitu ada satu field yang bisa diisi bebas —
+// dan profil pasien sudah punya beberapa.
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+// Satu sel CSV: dikutip bila mengandung pemisah/kutip/baris baru, dan diberi
+// awalan kutip tunggal bila diawali karakter yang ditafsirkan Excel/Sheets
+// sebagai rumus (=, +, -, @). Sebelumnya baris disusun dengan join(',') polos,
+// sehingga satu koma di dalam nilai sudah cukup menggeser seluruh kolom.
+function csvCell(value) {
+  const text = String(value ?? '')
+  const guarded = /^[=+\-@]/.test(text) ? `'${text}` : text
+  return /[",\n\r]/.test(guarded) ? `"${guarded.replace(/"/g, '""')}"` : guarded
+}
+
 export function exportToCsv(data, history = [], filename = 'glykos-report') {
   const peakPressure =
     typeof data?.pressure === 'object'
@@ -48,7 +72,7 @@ export function exportToCsv(data, history = [], filename = 'glykos-report') {
     ]),
   ]
 
-  const csv = rows.map((row) => row.join(',')).join('\n')
+  const csv = rows.map((row) => row.map(csvCell).join(',')).join('\r\n')
   const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
@@ -102,17 +126,22 @@ export function exportToPdf(data, history = []) {
 </head>
 <body>
   <h1>Glykos — Laporan Monitoring</h1>
-  <p class="subtitle">${data?.device?.name ?? data?.deviceId ?? 'glykos-device'} · ${new Date().toLocaleString('id-ID')}</p>
+  <p class="subtitle">${escapeHtml(data?.device?.name ?? data?.deviceId ?? 'glykos-device')} · ${escapeHtml(new Date().toLocaleString('id-ID'))}</p>
   <div class="metrics">
-    <div class="metric"><span>Tekanan Puncak</span><strong>${peakPressure} kPa</strong><small>${pressureLocation}</small></div>
-    <div class="metric"><span>Suhu Tertinggi</span><strong>${highestTemp}°C</strong><small>${tempLocation}</small></div>
-    <div class="metric"><span>Kelembapan</span><strong>${humidity}% RH</strong></div>
+    <div class="metric"><span>Tekanan Puncak</span><strong>${escapeHtml(peakPressure)} kPa</strong><small>${escapeHtml(pressureLocation)}</small></div>
+    <div class="metric"><span>Suhu Tertinggi</span><strong>${escapeHtml(highestTemp)}°C</strong><small>${escapeHtml(tempLocation)}</small></div>
+    <div class="metric"><span>Kelembapan</span><strong>${escapeHtml(humidity)}% RH</strong></div>
   </div>
   <h2>Histori</h2>
   <table>
     <thead><tr><th>Tanggal</th><th>Tekanan</th><th>Suhu</th><th>Kelembapan</th><th>Langkah</th></tr></thead>
     <tbody>
-      ${history.map((row) => `<tr><td>${row.label || row.date}</td><td>${row.pressure} kPa</td><td>${row.temperature}°C</td><td>${row.humidity}%</td><td>${(row.steps ?? 0).toLocaleString('id-ID')}</td></tr>`).join('')}
+      ${history
+        .map(
+          (row) =>
+            `<tr><td>${escapeHtml(row.label || row.date)}</td><td>${escapeHtml(row.pressure)} kPa</td><td>${escapeHtml(row.temperature)}°C</td><td>${escapeHtml(row.humidity)}%</td><td>${escapeHtml((row.steps ?? 0).toLocaleString('id-ID'))}</td></tr>`,
+        )
+        .join('')}
     </tbody>
   </table>
 </body>

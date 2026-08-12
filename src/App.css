@@ -1001,6 +1001,7 @@
 .demo-banner {
   display: flex;
   align-items: flex-start;
+  flex-wrap: wrap;
   gap: 12px;
   margin: 12px 24px 0;
   padding: 14px 18px;
@@ -1037,6 +1038,21 @@
   background: rgba(110, 25, 54, 0.12);
 }
 
+.demo-banner__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.demo-banner__exit {
+  flex-shrink: 0;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
 @media (max-width: 640px) {
   .demo-banner {
     margin: 12px 16px 0;
@@ -1052,8 +1068,8 @@
 /* Foot sensor map */
 
 .foot-map-panel {
-  background: var(--pink-2);
-  border-color: rgba(254, 206, 206, 0.7);
+  background: #ffe3e3;
+  border-color: rgba(250, 200, 200, 0.75);
 }
 
 .foot-map-panel__visual {
@@ -1110,17 +1126,23 @@
   gap: 24px;
 }
 
+/* Kartu metrik OPAK — bukan glass.
+   `.app-shell` melapisi latar krem dengan tiga radial-gradient hijau & pink,
+   jadi permukaan tembus pandang akan ikut berubah warna tergantung POSISI
+   kartu di layar: kartu yang sama bisa tampil kehijauan di kiri dan kemerah-
+   mudaan di kanan. Digabung dengan tint status yang juga transparan, ketiga
+   status berakhir di rentang mid-tone yang sama dan saling tabrakan.
+   Permukaan opak membuat warna kartu deterministik; kontras terhadap halaman
+   dijaga oleh putih vs krem + border + shadow. */
 .metric-card {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius-lg);
   padding: 28px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
@@ -1128,37 +1150,50 @@
   transform: translateY(-3px);
 }
 
+/* Status dibaca dari rel atas + pill + semburat tipis yang MELUNTUR jadi
+   putih dalam 150px pertama. Badan kartu tetap putih di ketiga status,
+   sehingga kartu bersebelahan terbaca sebagai satu keluarga, bukan tiga
+   blok warna yang berebut perhatian. */
 .metric-card--safe {
-  background: rgba(129, 162, 131, 0.24);
-  border-top: 4px solid var(--blue);
-  box-shadow: var(--shadow-sm), var(--glow-safe);
+  background:
+    linear-gradient(180deg, rgba(63, 122, 67, 0.13), rgba(63, 122, 67, 0) 150px),
+    var(--surface);
+  border-color: rgba(63, 122, 67, 0.3);
+  border-top: 4px solid var(--status-safe);
+  box-shadow: var(--shadow-md), 0 12px 32px -12px rgba(63, 122, 67, 0.45);
 }
 
 .metric-card--warning {
-  background: rgba(228, 174, 197, 0.34);
-  border-top: 4px solid var(--warning);
-  box-shadow: var(--shadow-sm), var(--glow-warning);
+  background:
+    linear-gradient(180deg, rgba(156, 101, 16, 0.14), rgba(156, 101, 16, 0) 150px),
+    var(--surface);
+  border-color: rgba(156, 101, 16, 0.32);
+  border-top: 4px solid var(--status-warning);
+  box-shadow: var(--shadow-md), 0 12px 32px -12px rgba(156, 101, 16, 0.42);
 }
 
 .metric-card--danger {
-  background: rgba(110, 25, 54, 0.18);
-  border-top: 4px solid var(--red);
-  box-shadow: var(--shadow-sm), var(--glow-danger);
+  background:
+    linear-gradient(180deg, rgba(110, 25, 54, 0.14), rgba(110, 25, 54, 0) 150px),
+    var(--surface);
+  border-color: rgba(110, 25, 54, 0.32);
+  border-top: 4px solid var(--status-danger);
+  box-shadow: var(--shadow-md), var(--glow-danger);
   animation: pulse-danger 2.4s ease-in-out infinite;
 }
 
 .metric-card--empty {
-  border-top: 4px solid var(--border);
+  border-top: 4px solid var(--border-strong);
   opacity: 0.7;
 }
 
 @keyframes pulse-danger {
   0%,
   100% {
-    box-shadow: var(--shadow-sm), var(--glow-danger);
+    box-shadow: var(--shadow-md), var(--glow-danger);
   }
   50% {
-    box-shadow: var(--shadow-sm), 0 14px 42px -4px rgba(110, 25, 54, 0.7);
+    box-shadow: var(--shadow-md), 0 14px 42px -4px rgba(110, 25, 54, 0.7);
   }
 }
 
@@ -1194,18 +1229,18 @@
   height: 44px;
   flex-shrink: 0;
   border-radius: var(--radius-sm);
-  background: rgba(129, 162, 131, 0.1);
-  color: var(--blue);
+  background: rgba(63, 122, 67, 0.12);
+  color: var(--status-safe);
 }
 
 .metric-card--warning .metric-card__icon {
-  background: rgba(228, 174, 197, 0.22);
-  color: var(--navy);
+  background: rgba(156, 101, 16, 0.14);
+  color: var(--status-warning);
 }
 
 .metric-card--danger .metric-card__icon {
-  background: rgba(110, 25, 54, 0.1);
-  color: var(--red);
+  background: rgba(110, 25, 54, 0.12);
+  color: var(--status-danger);
 }
 
 .metric-card__title {
@@ -1231,19 +1266,20 @@
 
 .metric-card__value span {
   font-size: 16px;
-  color: var(--blue);
+  color: var(--text-muted);
   font-weight: 600;
 }
 
 .metric-card__detail {
   font-size: 14px;
-  color: var(--blue);
+  color: var(--text-muted);
 }
 
+/* Tanpa `opacity` — 0.85 di atas teks yang sudah muted menurunkan kontras
+   lagi di bawah ambang AA. Peredupan dibawa oleh warnanya sendiri. */
 .metric-card__note {
   font-size: 13px;
-  color: var(--blue);
-  opacity: 0.85;
+  color: var(--text-muted);
   line-height: 1.6;
 }
 
@@ -1272,22 +1308,23 @@
   border-radius: 20px;
 }
 
+/* Pill SOLID, bukan wash 12-25% seperti sebelumnya: pada wash, label
+   "Aman"/"Perhatian"/"Risiko" ikut mewarisi warna pucat masing-masing dan
+   ketiganya jadi sama-sama lemah. Ketiga warna di bawah sudah dicek >=4,9:1
+   untuk teks putih (WCAG AA). */
 .status-pill--safe {
-  background: rgba(129, 162, 131, 0.15);
-  color: var(--blue);
-  box-shadow: 0 0 0 1px rgba(129, 162, 131, 0.15);
+  background: var(--status-safe);
+  color: #fff;
 }
 
 .status-pill--warning {
-  background: rgba(228, 174, 197, 0.25);
-  color: var(--navy);
-  box-shadow: 0 0 14px rgba(228, 174, 197, 0.4);
+  background: var(--status-warning);
+  color: #fff;
 }
 
 .status-pill--danger {
-  background: rgba(110, 25, 54, 0.12);
-  color: var(--red);
-  box-shadow: 0 0 14px rgba(110, 25, 54, 0.4);
+  background: var(--status-danger);
+  color: #fff;
 }
 
 /* Overview status banner */
@@ -1375,6 +1412,20 @@
   box-shadow: var(--shadow-md);
 }
 
+/* Data lama yang masih ditampilkan tapi bukan kondisi sekarang — dibedakan
+   dari banner onboarding biasa karena artinya berbeda: di sini ADA angka di
+   bawahnya, hanya kedaluwarsa. Warnanya memakai token status peringatan yang
+   sama dengan kartu metrik supaya bacaannya konsisten. */
+.onboarding-banner--stale {
+  border-color: var(--status-warning);
+  box-shadow: var(--glow-warning);
+}
+
+.onboarding-banner--stale .onboarding-banner__icon {
+  background: rgba(228, 174, 197, 0.28);
+  color: var(--status-warning);
+}
+
 .onboarding-banner__icon {
   display: inline-flex;
   align-items: center;
@@ -1385,6 +1436,17 @@
   background: rgba(129, 162, 131, 0.2);
   color: var(--navy);
   flex-shrink: 0;
+}
+
+.onboarding-banner__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.onboarding-banner__actions .glykos-btn {
+  text-decoration: none;
 }
 
 .onboarding-banner__body {
@@ -1438,7 +1500,8 @@
 }
 
 .point-grid__item {
-  background: var(--bg);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px 10px;
   text-align: center;
@@ -1447,7 +1510,7 @@
 .point-grid__item span {
   display: block;
   font-size: 11px;
-  color: var(--blue);
+  color: var(--text-muted);
   margin-bottom: 2px;
 }
 
@@ -1465,7 +1528,8 @@
 }
 
 .temp-compare > div {
-  background: var(--bg);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px 10px;
   text-align: center;
@@ -1473,13 +1537,13 @@
 
 .temp-compare > div.highlight {
   background: rgba(110, 25, 54, 0.1);
-  border: 1px solid rgba(110, 25, 54, 0.3);
+  border-color: rgba(110, 25, 54, 0.35);
 }
 
 .temp-compare span {
   display: block;
   font-size: 11px;
-  color: var(--blue);
+  color: var(--text-muted);
 }
 
 .temp-compare strong {
@@ -1490,16 +1554,28 @@
 .humidity-bar__track {
   position: relative;
   height: 10px;
-  background: var(--bg);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
   border-radius: 6px;
   overflow: hidden;
 }
 
+/* Isi bar mengikuti status kartunya. Sebelumnya selalu sage pucat
+   (#86a788 → #81a283) — hampir tak terbaca di atas track, dan tetap hijau
+   walau kartunya berstatus perhatian/risiko. */
 .humidity-bar__fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--light-blue), var(--blue));
+  background: linear-gradient(90deg, var(--blue), var(--status-safe));
   border-radius: 6px;
-  transition: width 0.5s ease;
+  transition: width 0.5s ease, background 0.3s ease;
+}
+
+.metric-card--warning .humidity-bar__fill {
+  background: linear-gradient(90deg, #c98d22, var(--status-warning));
+}
+
+.metric-card--danger .humidity-bar__fill {
+  background: linear-gradient(90deg, #9c3355, var(--status-danger));
 }
 
 .humidity-bar__ideal {
@@ -1518,7 +1594,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 11px;
-  color: var(--blue);
+  color: var(--text-muted);
   margin-top: 4px;
 }
 

@@ -1,43 +1,6 @@
 import { IconActivity, IconClock } from './icons'
 import { FATIGUE_LABELS } from '../constants/fatigue'
 
-function AccelBlock({ accel }) {
-  const hasData = accel && (accel.x !== null || accel.y !== null || accel.z !== null)
-  if (!hasData) return null
-
-  const x = accel.x ?? 0
-  const y = accel.y ?? 0
-  const z = accel.z ?? 0
-  const magnitude = Math.sqrt(x * x + y * y + z * z)
-
-  return (
-    <div className="fatigue-block">
-      <h3 className="fatigue-block__title">Akselerasi</h3>
-      <div className="temp-compare">
-        <div>
-          <span>X</span>
-          <strong>{x.toFixed(2)} g</strong>
-        </div>
-        <div>
-          <span>Y</span>
-          <strong>{y.toFixed(2)} g</strong>
-        </div>
-        <div>
-          <span>Z</span>
-          <strong>{z.toFixed(2)} g</strong>
-        </div>
-        <div>
-          <span>Total</span>
-          <strong>{magnitude.toFixed(2)} g</strong>
-        </div>
-      </div>
-      <p className="metric-card__note">
-        ~1 g saat diam (gravitasi) — naik saat kaki bergerak/melangkah.
-      </p>
-    </div>
-  )
-}
-
 function FatigueBlock({ fatigue }) {
   if (!fatigue?.sessionActive) {
     return (
@@ -91,7 +54,6 @@ export default function ActivityPanel({ activity, accel, fatigue }) {
           Belum ada data langkah dari perangkat ini — sensor gerak belum terdeteksi atau belum
           mengirim data.
         </p>
-        <AccelBlock accel={accel} />
         <FatigueBlock fatigue={fatigue} />
       </section>
     )
@@ -133,7 +95,6 @@ export default function ActivityPanel({ activity, accel, fatigue }) {
           saat berjalan cepat atau berlari.
         </p>
       )}
-      <AccelBlock accel={accel} />
       <FatigueBlock fatigue={fatigue} />
     </section>
   )

@@ -1,0 +1,41 @@
+rules_version = '2';
+
+// Aturan akses Firestore Glykos.
+//
+// Prinsip: data sensor kaki adalah data kesehatan — hanya pemiliknya yang boleh
+// membaca maupun menulis. Karena itu SELURUH data per-perangkat berada di bawah
+// dokumen pengguna (`users/{uid}/devices/...`), bukan di koleksi `devices`
+// tingkat atas. Tanpa itu, satu `deviceId` yang di-hardcode akan membuat semua
+// akun berbagi satu set data yang sama.
+//
+// Path lama `devices/{deviceId}/...` (dipakai sebelum scoping ini ada) sengaja
+// TIDAK diberi aturan apa pun, jadi otomatis ditolak. Data lama di sana perlu
+// dipindahkan manual lewat console/skrip admin bila masih dibutuhkan.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Profil pasien: users/{uid} — ditulis ProfilePage.jsx
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      // Hanya create/update; penghapusan akun ditangani di luar klien.
+      allow create, update: if isOwner(uid);
+      allow delete: if false;
+
+      // Seluruh data perangkat milik pengguna ini:
+      //   devices/{deviceId}/live/current   — snapshot terbaru (useSensorData)
+      //   devices/{deviceId}/history/{id}   — log per menit (useHistoryData)
+      //   devices/{deviceId}/alerts/{id}    — peringatan (useAlerts)
+      match /devices/{deviceId}/{documents=**} {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid);
+        // History & alerts bersifat append-only: catatan medis tidak boleh
+        // dihapus diam-diam dari sisi klien.
+        allow delete: if false;
+      }
+    }
+  }
+}

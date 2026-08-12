@@ -4,6 +4,7 @@ import Button from '../components/Button'
 import HistoryChart from '../components/HistoryChart'
 import HistorySummaryCards from '../components/HistorySummaryCards'
 import PageHeader from '../components/PageHeader'
+import { SkeletonTableRows } from '../components/Skeleton'
 import { IconDownload, IconFileText, IconHistory } from '../components/icons'
 import { exportToCsv, exportToPdf } from '../utils/exportData'
 import { getPressureLabel, getPressureStatus } from '../constants/thresholds'
@@ -158,8 +159,15 @@ export default function HistoryPage() {
                 <th>Peringatan</th>
               </tr>
             </thead>
-            <tbody>
-              {sortedHistory.map((row) => {
+            <tbody aria-busy={historyLoading || undefined}>
+              {/* Selama memuat, tabelnya diisi kerangka — BUKAN baris data.
+                  useHistoryData selalu mengembalikan satu baris per hari dalam
+                  rentang (berisi nol selama data belum tiba), jadi tanpa cabang
+                  ini pengguna melihat tabel penuh berisi "—" yang terbaca
+                  seperti "tidak ada data" padahal datanya masih dalam
+                  perjalanan. */}
+              {historyLoading && <SkeletonTableRows rows={sortedHistory.length || 7} columns={7} />}
+              {!historyLoading && sortedHistory.map((row) => {
                 const hasEntry = row.pressure > 0 || row.temperature > 0 || row.humidity > 0
                 const status = hasEntry ? getPressureStatus(row.pressure) : null
                 const alert = alertsByDate[row.date]
@@ -195,11 +203,11 @@ export default function HistoryPage() {
                   </tr>
                 )
               })}
-              {sortedHistory.length === 0 && (
+              {!historyLoading && sortedHistory.length === 0 && (
                 <tr>
                   <td colSpan={7} className="data-table__empty">
                     <IconHistory size={22} />
-                    {historyLoading ? 'Memuat…' : 'Belum ada data histori.'}
+                    Belum ada data histori.
                   </td>
                 </tr>
               )}

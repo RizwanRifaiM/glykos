@@ -1,8 +1,13 @@
-import { IconAlertTriangle } from './icons'
+import { AnchorButton } from './Button'
+import { IconAlertTriangle, IconX } from './icons'
+import { demoToggleHref } from '../utils/demoMode'
 
-// Spanduk wajib saat mode demo aktif. Dibuat mencolok & tidak bisa ditutup —
-// tujuannya justru supaya angka contoh di bawahnya tidak pernah terbaca
-// sebagai pembacaan sensor nyata.
+// Spanduk untuk mode demo yang diminta EKSPLISIT lewat ?demo=1. Tidak bisa
+// ditutup — selama mode itu menyala, angka contoh di bawahnya tidak boleh
+// terbaca sebagai pembacaan sensor nyata.
+//
+// Mode demo otomatis (default saat pengguna belum punya data) TIDAK memakai
+// spanduk ini; lihat catatan di DashboardLayout.jsx.
 export default function DemoModeBanner() {
   return (
     <div className="demo-banner" role="status">
@@ -12,9 +17,17 @@ export default function DemoModeBanner() {
       <p>
         <strong>Mode Demo aktif.</strong> Semua angka, grafik, dan peringatan di halaman ini
         adalah <strong>data contoh</strong> — bukan pembacaan sensor dari perangkat Anda dan
-        tidak tersimpan ke basis data. Hapus <code>?demo=1</code> dari URL untuk kembali ke
-        data sungguhan.
+        tidak tersimpan ke basis data.
       </p>
+
+      <div className="demo-banner__actions">
+        {/* Ke ?demo=0, bukan ke URL polos: tanpa parameter, mode demo otomatis
+            akan menyala lagi seketika dan tombolnya terlihat rusak. */}
+        <AnchorButton variant="danger" className="demo-banner__exit" href={demoToggleHref(false)}>
+          <IconX size={14} />
+          Keluar Mode Demo
+        </AnchorButton>
+      </div>
     </div>
   )
 }

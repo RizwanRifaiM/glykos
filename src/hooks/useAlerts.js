@@ -1,68 +1,15 @@
 // src/hooks/useAlerts.js
 import { useEffect, useRef, useState } from 'react'
-import {
-  addDoc,
-  collection,
-  limit,
-  onSnapshot,
-  orderBy,
-  query,
-  serverTimestamp,
-} from 'firebase/firestore'
-import { db } from '../services/firebase'
-import {
-  getPressureStatus,
-  getPressureLabel,
-  getTemperatureStatus,
-  getHumidityStatus,
-  TEMP_DELTA_WARNING,
-} from '../constants/thresholds'
+import { addDoc, limit, onSnapshot, orderBy, query, serverTimestamp } from 'firebase/firestore'
+import { alertsCollection } from '../services/paths'
 import { FATIGUE_LABELS } from '../constants/fatigue'
 import { notify } from '../utils/notifications'
+import { decideAlert, evaluateMetrics, STATUS_RANK } from '../utils/alertRules'
 
-export const STATUS_RANK = { safe: 0, warning: 1, danger: 2 }
-
-export function evaluateMetrics(data) {
-  const peak = data.pressure?.peak ?? 0
-  const pressureStatus = getPressureStatus(peak)
-
-  const highest = data.temperatureObj?.highest ?? 0
-  const delta = data.temperatureObj?.delta ?? 0
-  const temperatureStatus = delta >= TEMP_DELTA_WARNING ? 'warning' : getTemperatureStatus(highest)
-
-  const humidity = data.humidity ?? 0
-  const humidityStatus = getHumidityStatus(humidity)
-
-  return [
-    {
-      metric: 'pressure',
-      label: 'Tekanan',
-      status: pressureStatus,
-      value: `${peak} kPa`,
-      location: data.pressure?.location ?? null,
-      message: `Tekanan puncak ${peak} kPa (${getPressureLabel(pressureStatus)})`,
-    },
-    {
-      metric: 'temperature',
-      label: 'Suhu',
-      status: temperatureStatus,
-      value: `${highest}°C`,
-      location: data.temperatureObj?.location ?? null,
-      message:
-        delta >= TEMP_DELTA_WARNING
-          ? `Selisih suhu ${delta.toFixed(1)}°C antar area — prediktor pre-ulkus`
-          : `Suhu tertinggi ${highest}°C`,
-    },
-    {
-      metric: 'humidity',
-      label: 'Kelembapan',
-      status: humidityStatus,
-      value: `${humidity}% RH`,
-      location: null,
-      message: `Kelembapan sepatu ${humidity}% RH`,
-    },
-  ]
-}
+// Aturannya sendiri ada di utils/alertRules.js (fungsi murni, bisa diuji tanpa
+// Firestore). Diekspor ulang di sini karena StatusBanner sudah mengimpornya
+// lewat modul ini.
+export { decideAlert, evaluateMetrics, STATUS_RANK }
 
 // Indikasi kelelahan (useFatigueMonitor.js) bukan bagian dari `data` sensor,
 // jadi dievaluasi terpisah lalu digabung ke daftar item yang sama supaya
@@ -85,9 +32,42 @@ function fatigueMetricItem(fatigue) {
   }
 }
 
-async function logAlert(deviceId, item) {
+// Referensi tetap supaya konsumen tidak melihat array baru tiap render.
+const EMPTY_ALERTS = []
+
+// Status terakhir disimpan di localStorage, bukan hanya di useRef.
+//
+// Dengan useRef saja, memuat ulang halaman mengosongkan ingatan hook dan
+// pembacaan pertama sesudahnya terlihat seperti transisi baru dari `safe` —
+// jadi status warning yang sedang berjalan tercatat lagi setiap kali tab
+// dibuka. Kuncinya menyertakan uid supaya dua akun di satu browser tidak
+// saling mewarisi status.
+function stateKey(uid, deviceId) {
+  return `glykos:alert-state:${uid}:${deviceId}`
+}
+
+function loadState(uid, deviceId) {
   try {
-    await addDoc(collection(db, 'devices', deviceId, 'alerts'), {
+    const stored = window.localStorage.getItem(stateKey(uid, deviceId))
+    const parsed = stored ? JSON.parse(stored) : null
+    return parsed && typeof parsed === 'object' ? parsed : {}
+  } catch {
+    return {}
+  }
+}
+
+function saveState(uid, deviceId, state) {
+  try {
+    window.localStorage.setItem(stateKey(uid, deviceId), JSON.stringify(state))
+  } catch {
+    // Mode privat / storage penuh — dedup lintas reload hilang, tapi aturan
+    // transisi dalam sesi berjalan tetap bekerja lewat ref di bawah.
+  }
+}
+
+async function logAlert(uid, deviceId, item) {
+  try {
+    await addDoc(alertsCollection(uid, deviceId), {
       metric: item.metric,
       label: item.label,
       status: item.status,
@@ -102,72 +82,83 @@ async function logAlert(deviceId, item) {
 }
 
 // Memantau status tiap metrik dan mencatat entri baru ke
-// devices/{deviceId}/alerts setiap kali statusnya naik ke warning/danger,
-// plus memicu notifikasi browser untuk status danger. Deteksi ini berjalan
-// di sisi klien selama dashboard terbuka — untuk peringatan saat aplikasi
-// tertutup diperlukan pemantauan sisi server (Cloud Function + push),
+// users/{uid}/devices/{deviceId}/alerts setiap kali statusnya naik ke
+// warning/danger, plus memicu notifikasi browser untuk status danger. Deteksi
+// ini berjalan di sisi klien selama dashboard terbuka — untuk peringatan saat
+// aplikasi tertutup diperlukan pemantauan sisi server (Cloud Function + push),
 // yang belum diaktifkan pada proyek ini.
-export function useAlertMonitor(deviceId, data, fatigue) {
-  const lastStatus = useRef({})
+export function useAlertMonitor(uid, deviceId, data, fatigue) {
+  const stateRef = useRef({})
 
   useEffect(() => {
-    lastStatus.current = {}
-  }, [deviceId])
+    stateRef.current = uid && deviceId ? loadState(uid, deviceId) : {}
+  }, [uid, deviceId])
 
   useEffect(() => {
-    if (!deviceId || !data) return
+    if (!uid || !deviceId || !data) return
 
     const items = evaluateMetrics(data)
     const fatigueItem = fatigueMetricItem(fatigue)
     if (fatigueItem) items.push(fatigueItem)
 
-    items.forEach((item) => {
-      const prevStatus = lastStatus.current[item.metric] ?? 'safe'
-      const prevRank = STATUS_RANK[prevStatus]
-      const currRank = STATUS_RANK[item.status]
+    const now = Date.now()
+    let changed = false
 
-      if (currRank > 0 && item.status !== prevStatus) {
-        logAlert(deviceId, item)
-        if (item.status === 'danger' && currRank > prevRank) {
-          notify(`Glykos — ${item.label} Berisiko`, item.message)
-        }
+    items.forEach((item) => {
+      const prevEntry = stateRef.current[item.metric]
+      const { shouldLog, shouldNotify, entry } = decideAlert(prevEntry, item.status, now)
+
+      if (shouldLog) {
+        logAlert(uid, deviceId, item)
+        if (shouldNotify) notify(`Glykos — ${item.label} Berisiko`, item.message)
       }
 
-      lastStatus.current[item.metric] = item.status
+      if (entry.status !== prevEntry?.status || entry.loggedAt !== prevEntry?.loggedAt) {
+        changed = true
+      }
+      stateRef.current[item.metric] = entry
     })
-  }, [deviceId, data, fatigue])
+
+    if (changed) saveState(uid, deviceId, stateRef.current)
+  }, [uid, deviceId, data, fatigue])
 }
 
 // Batas 200 (bukan 50): selain mengisi halaman Peringatan, daftar ini juga
 // dipakai kolom "Peringatan" pada tabel Riwayat yang mencakup 30 hari. Batas
 // yang terlalu kecil membuat hari-hari terlama salah tampil "Tidak ada"
 // padahal peringatannya ada, hanya terpotong limit.
-export function useAlerts(deviceId, max = 200) {
-  const [alerts, setAlerts] = useState([])
-  const [loadedKey, setLoadedKey] = useState(null)
-  const key = deviceId ? `${deviceId}:${max}` : null
+export function useAlerts(uid, deviceId, max = 200) {
+  const subscriptionKey = uid && deviceId ? `${uid}:${deviceId}:${max}` : null
+
+  // Hasil disimpan bersama kunci langganannya — lihat catatan pola yang sama
+  // di useSensorData.js.
+  const [entry, setEntry] = useState({ key: null, alerts: [] })
 
   useEffect(() => {
-    if (!deviceId) return
+    if (!subscriptionKey) return
 
-    const alertsRef = collection(db, 'devices', deviceId, 'alerts')
-    const q = query(alertsRef, orderBy('createdAt', 'desc'), limit(max))
+    const q = query(alertsCollection(uid, deviceId), orderBy('createdAt', 'desc'), limit(max))
 
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        setAlerts(snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() })))
-        setLoadedKey(key)
+        setEntry({
+          key: subscriptionKey,
+          alerts: snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() })),
+        })
       },
       (err) => {
         console.warn('Gagal membaca riwayat peringatan:', err)
-        setAlerts([])
-        setLoadedKey(key)
+        setEntry({ key: subscriptionKey, alerts: [] })
       },
     )
 
     return unsubscribe
-  }, [deviceId, max, key])
+  }, [uid, deviceId, max, subscriptionKey])
 
-  return { alerts, isLoading: Boolean(deviceId) && loadedKey !== key }
+  const isCurrent = entry.key === subscriptionKey
+  return {
+    alerts: isCurrent ? entry.alerts : EMPTY_ALERTS,
+    isLoading: Boolean(subscriptionKey) && !isCurrent,
+  }
 }

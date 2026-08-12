@@ -37,9 +37,13 @@ export function getHumidityStatus(rh) {
   return 'warning'
 }
 
+// `toe` hanya dipakai sensor TEKANAN (P1/Hallux); `lateral` hanya dipakai
+// sensor SUHU (T3, sisi luar telapak). Keduanya sengaja ada di satu peta nama
+// supaya kartu Tekanan & Suhu memakai istilah yang sama untuk area yang sama.
 export const LOCATION_LABELS = {
   heel: 'Tumit',
   metatarsal: 'Metatarsal',
   toe: 'Jari Kaki',
+  lateral: 'Lateral',
 }
 

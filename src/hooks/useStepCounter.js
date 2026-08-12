@@ -13,7 +13,9 @@ const EMPTY_RESULT = { steps: 0, activeMinutes: 0, sessionActive: false }
 // seperti BleSensor di services/ble.js & FatigueSession di
 // useFatigueMonitor.js) karena bergantung pada Date.now() dan akumulasi
 // berjalan antar notifikasi BLE.
-class StepCounterSession {
+// Diekspor untuk pengujian: seluruh logika deteksi langkah ada di kelas ini,
+// jadi bisa diuji dengan menyuapkan deret akselerasi tanpa merender React.
+export class StepCounterSession {
   constructor() {
     this._listeners = new Set()
     this._reset()

@@ -2,6 +2,7 @@ import { useOutletContext } from 'react-router-dom'
 import { PressureCard, TemperatureCard, HumidityCard } from '../components/MetricCards'
 import ActivityPanel from '../components/ActivityPanel'
 import DeviceOnboardingBanner from '../components/DeviceOnboardingBanner'
+import StaleDataBanner from '../components/StaleDataBanner'
 import HistoryChart from '../components/HistoryChart'
 import SensorFootMap from '../components/SensorFootMap'
 import PageHeader from '../components/PageHeader'
@@ -11,7 +12,7 @@ import { IconDownload, IconFileText, IconRefreshCw } from '../components/icons'
 import { exportToCsv, exportToPdf } from '../utils/exportData'
 
 export default function DashboardOverview() {
-  const { data, isLive, refresh, history, fatigue, ble } = useOutletContext()
+  const { data, isLive, isStale, updatedAtMs, refresh, history, fatigue, ble } = useOutletContext()
 
   return (
     <div className="dashboard-overview">
@@ -36,7 +37,16 @@ export default function DashboardOverview() {
         }
       />
 
-      {isLive ? <StatusBanner data={data} isLive={isLive} /> : <DeviceOnboardingBanner ble={ble} />}
+      {/* Tiga keadaan yang berbeda, jangan disatukan: data baru (StatusBanner),
+          data lama yang masih ditampilkan tapi bukan kondisi sekarang
+          (StaleDataBanner), dan belum pernah ada data sama sekali. */}
+      {isLive ? (
+        <StatusBanner data={data} isLive={isLive} />
+      ) : isStale ? (
+        <StaleDataBanner ble={ble} updatedAtMs={updatedAtMs} />
+      ) : (
+        <DeviceOnboardingBanner ble={ble} />
+      )}
 
       <section className="metrics-grid">
         <PressureCard pressure={data.pressure} history={history} />

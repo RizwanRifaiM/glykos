@@ -54,7 +54,9 @@ export default function ChatbotPage() {
     setError('')
 
     try {
-      const reply = await sendGeminiMessage(trimmed)
+      // `chat` di sini masih berisi percakapan SEBELUM pesan ini — persis
+      // riwayat yang dibutuhkan model untuk menjawab pertanyaan susulan.
+      const reply = await sendGeminiMessage(trimmed, chat)
       setChat((prev) => [
         ...prev,
         { role: 'assistant', content: reply, time: timeLabel() },

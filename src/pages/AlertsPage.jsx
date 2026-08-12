@@ -10,6 +10,7 @@ import {
   IconActivity,
 } from '../components/icons'
 import PageHeader from '../components/PageHeader'
+import { SkeletonAlertList } from '../components/Skeleton'
 
 const STATUS_LABELS = { warning: 'Perhatian', danger: 'Risiko' }
 
@@ -159,7 +160,7 @@ export default function AlertsPage() {
         </div>
 
         {alertsLoading ? (
-          <div className="loading">Memuat riwayat peringatan…</div>
+          <SkeletonAlertList items={4} />
         ) : filteredAlerts.length === 0 ? (
           <div className="alerts-panel__empty">
             <IconShieldAlert size={32} />

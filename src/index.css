@@ -23,8 +23,32 @@
 
   --bg: #f6f3e6;
   --surface: #ffffff;
+  /* Latar blok kecil DI DALAM kartu (point-grid, temp-compare, track bar).
+     Dulu memakai var(--bg) — warna latar HALAMAN — sehingga di atas kartu
+     yang punya tint sendiri blok ini nyaris tak terlihat. Nada sage muda ini
+     dipilih supaya tetap terbaca di atas permukaan putih kartu. */
+  --surface-sunken: #eef2ea;
   --border: rgba(68, 106, 69, 0.1);
+  /* Border kartu yang berdiri di atas latar krem — 0.1 terlalu samar untuk
+     memisahkan kartu putih dari halaman. */
+  --border-strong: rgba(68, 106, 69, 0.18);
+  /* --blue (#81a283) hanya ~2,4:1 di atas putih — gagal WCAG AA untuk teks
+     kecil. Token ini 4,7:1, dipakai untuk teks sekunder di dalam kartu. */
+  --text-muted: #587c59;
   --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+
+  /* Warna status kartu metrik.
+     Sebelumnya safe/warning/danger memakai sage-pucat / pink-pucat / maroon
+     sebagai lapisan TRANSPARAN di atas shell yang bergradasi hijau+pink —
+     hasilnya ketiganya jatuh ke rentang mid-tone yang sama dan saling
+     tabrakan. Sekarang kartunya OPAK dan tiap status punya hue yang benar-
+     benar berbeda (hijau → ambar → maroon), semuanya >=4,5:1 untuk teks
+     putih sehingga status-pill bisa solid. Warning sengaja TIDAK memakai
+     --warning (#e4aec5): pink pucat itu sekeluarga dengan maroon danger,
+     jadi justru yang paling sering tertukar. */
+  --status-safe: #3f7a43;
+  --status-warning: #9c6510;
+  --status-danger: var(--glykos-red);
 
   /* Elevation & radius scale */
   --radius-sm: 10px;
@@ -121,4 +145,278 @@ a {
   outline: 2px solid var(--blue);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* ==========================================================================
+   Keadaan memuat
+   --------------------------------------------------------------------------
+   Sengaja di index.css, bukan App.css/Auth.css: kedua berkas itu ikut chunk
+   yang di-lazy-load, jadi gaya yang ditaruh di sana belum ada justru pada saat
+   loader paling dibutuhkan — detik pertama sebelum chunk-nya selesai diunduh.
+   ========================================================================== */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Layar pemuatan tingkat aplikasi --- */
+
+.app-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+  /* Radial halus supaya latarnya tidak terbaca sebagai halaman kosong. */
+  background-image:
+    radial-gradient(circle at 50% 38%, rgba(134, 167, 136, 0.18), transparent 62%),
+    radial-gradient(circle at 50% 100%, rgba(254, 196, 221, 0.16), transparent 55%);
+
+  /* Muncul terlambat: pemuatan yang selesai di bawah ~200 ms tidak pernah
+     menampilkan loader ini sama sekali, jadi tidak ada kedipan. */
+  opacity: 0;
+  animation: app-loader-in 220ms var(--ease) 200ms forwards;
+}
+
+.app-loader__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: min(320px, 100%);
+  text-align: center;
+}
+
+.app-loader__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 24px;
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md);
+  animation: app-loader-breathe 2.4s var(--ease) infinite;
+}
+
+.app-loader__wordmark {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--navy);
+}
+
+/* Bar indeterminate: kita memang tidak tahu persentasenya, dan bar horizontal
+   lebih tenang daripada spinner berputar di tengah layar. */
+.app-loader__track {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  margin-top: 2px;
+  border-radius: 999px;
+  background: rgba(68, 106, 69, 0.12);
+  overflow: hidden;
+}
+
+.app-loader__bar {
+  position: absolute;
+  inset-block: 0;
+  width: 42%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--light-blue), var(--navy));
+  animation: app-loader-slide 1.4s var(--ease) infinite;
+}
+
+.app-loader__label {
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+@keyframes app-loader-in {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes app-loader-breathe {
+  0%,
+  100% {
+    transform: translateY(0);
+    box-shadow: var(--shadow-md);
+  }
+  50% {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+@keyframes app-loader-slide {
+  0% {
+    transform: translateX(-105%);
+  }
+  100% {
+    transform: translateX(240%);
+  }
+}
+
+/* --- Skeleton --- */
+
+.skeleton {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 14px;
+  border-radius: 6px;
+  background: var(--surface-sunken);
+}
+
+/* Kilau bergerak, bukan kedip opacity: arah gerak kiri→kanan membaca sebagai
+   "sedang berjalan", sedangkan kedip mudah tertukar dengan elemen rusak. */
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.85),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: skeleton-shimmer 1.5s infinite;
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-row td {
+  vertical-align: middle;
+}
+
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.skeleton-list__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: var(--glass-bg);
+  border: 1px solid var(--border);
+}
+
+.skeleton-list__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.skeleton-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.skeleton-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.skeleton-page__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-page__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.skeleton-page__card,
+.skeleton-page__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.skeleton-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.skeleton-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.skeleton-form__field--full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 640px) {
+  .skeleton-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Gerak berulang tanpa henti adalah pemicu utama vestibular discomfort. Semua
+   animasi memuat dimatikan; penandanya tetap terbaca lewat warna & teks. */
+@media (prefers-reduced-motion: reduce) {
+  .app-loader {
+    opacity: 1;
+    animation: none;
+  }
+
+  .app-loader__mark,
+  .skeleton::after {
+    animation: none;
+  }
+
+  .skeleton::after {
+    display: none;
+  }
+
+  .app-loader__bar {
+    position: static;
+    width: 100%;
+    animation: none;
+    opacity: 0.55;
+  }
 }

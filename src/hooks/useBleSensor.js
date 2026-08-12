@@ -35,22 +35,33 @@ function normalizeBleReading(raw, receivedAt, isConnected) {
   if (peak === heel) location = 'heel'
   else if (peak === toe) location = 'toe'
 
-  // Suhu NTC. Tiap NTC dipasang berdampingan dengan sensor tekanan, jadi
-  // areanya memakai KUNCI YANG SAMA dengan pressure.points (metatarsal/heel/
-  // toe) supaya kedua kartu menyebut area yang sama dengan nama yang sama —
-  // lihat LOCATION_LABELS di constants/thresholds.js.
-  //   T1 = forefoot  -> metatarsal
-  //   T2 = tumit     -> heel
-  //   T3 = lateral   -> toe
+  // Suhu NTC — firmware mengirim TIGA sensor (GPIO 35/32/33), sudah dalam
+  // derajat Celsius (dihitung di ESP32 pakai Beta 3950), bukan mV mentah.
+  //   T1 = forefoot -> metatarsal
+  //   T2 = tumit    -> heel
+  //   T3 = lateral  -> lateral  (sisi LUAR telapak, bukan jari kaki)
+  //
+  // Dua area pertama sengaja memakai kunci yang sama dengan pressure.points
+  // supaya kartu Tekanan & Suhu menyebut area yang sama dengan nama yang sama
+  // (lihat LOCATION_LABELS di constants/thresholds.js). `lateral` TIDAK punya
+  // pasangan sensor tekanan — memang tidak ada FSR di sisi luar telapak — jadi
+  // wajar kalau point-grid kedua kartu tidak identik.
+  //
   // Selisih terbesar antar area yang tersedia adalah prediktor pre-ulkus
-  // (dipakai oleh threshold TEMP_DELTA_WARNING).
-  const t1 = typeof raw.T1 === 'number' ? round1(raw.T1) : null
-  const t2 = typeof raw.T2 === 'number' ? round1(raw.T2) : null
-  const t3 = typeof raw.T3 === 'number' ? round1(raw.T3) : null
+  // (dipakai oleh threshold TEMP_DELTA_WARNING). Dengan tiga titik, rentang
+  // yang tercakup jadi lebih luas daripada saat masih dua titik.
+  //
+  // Number.isFinite (bukan typeof): NaN lolos dari `typeof x === 'number'`.
+  // parseCsvLine sudah membuang "nan" yang dikirim firmware saat NTC lepas/
+  // short, jadi key-nya hilang — tapi guard ini menutup jalur itu di sisi sini
+  // juga, supaya NaN tidak pernah sampai ke perhitungan atau ke SVG.
+  const t1 = Number.isFinite(raw.T1) ? round1(raw.T1) : null
+  const t2 = Number.isFinite(raw.T2) ? round1(raw.T2) : null
+  const t3 = Number.isFinite(raw.T3) ? round1(raw.T3) : null
   const tempAreas = [
     { key: 'metatarsal', value: t1 },
     { key: 'heel', value: t2 },
-    { key: 'toe', value: t3 },
+    { key: 'lateral', value: t3 },
   ].filter((area) => area.value !== null)
 
   const temps = tempAreas.map((area) => area.value)
@@ -97,12 +108,10 @@ function normalizeBleReading(raw, receivedAt, isConnected) {
       },
     },
     temperatureObj: {
-      // T1/T2/T3 = forefoot/tumit/lateral pada SATU kaki (kanan). Sebelumnya
-      // ketiganya juga disalin ke field leftFoot/rightFoot/lateralFoot, dan
-      // kartu Suhu menampilkannya berlabel "Kaki Kiri"/"Kaki Kanan" — itu
-      // salah: perangkatnya cuma satu, tidak ada perbandingan antar kaki.
-      // Nilai per area sudah tersedia di `points`; yang tersisa di sini
-      // hanyalah nilai turunan (highest & delta).
+      // T1/T2/T3 = forefoot/tumit/lateral pada SATU kaki (kanan) — tiga titik
+      // pada kaki yang SAMA, bukan perbandingan kaki kiri vs kanan.
+      // Perangkatnya cuma satu. Nilai per area ada di `points`; yang tersisa
+      // di sini hanyalah nilai turunan (highest & delta).
       highest,
       location: tempLocation,
       points: tempPoints,

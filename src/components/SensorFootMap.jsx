@@ -34,17 +34,35 @@ const PRESSURE_ANCHORS = {
   heel: { x: 467, y: 540 },
 }
 
-const TEMP_ANCHORS = {
-  Forefoot: { x: 630, y: 150 },
-  Tumit: { x: 630, y: 480 },
-  Lateral: { x: 706, y: 260 },
-}
+// Tiga sensor NTC firmware (GPIO 35/32/33). `key` HARUS cocok dengan kunci di
+// temperatureObj.points yang dibentuk useBleSensor/useSensorData — sebelumnya
+// di sini dipakai 'Forefoot'/'Tumit'/'Lateral' berhuruf besar sementara data
+// datang sebagai 'metatarsal'/'heel'/'lateral', sehingga TIDAK ADA satu pun
+// marker suhu yang pernah ter-render.
+//
+// `anchor`     = posisi label di LUAR siluet (sisi kanan), diurutkan menurun
+//                mengikuti anatomi: forefoot di atas, lateral di tengah,
+//                tumit di bawah.
+// `footAnchor` = pangkal leader line, di dalam siluet pada area terkait.
+//                Lateral tidak punya sensor tekanan (tidak ada FSR di sisi
+//                luar telapak), jadi titiknya ditetapkan sendiri di tepi luar
+//                midfoot — siluet membentang x≈346-565 setelah translate,
+//                jadi x=512 ada di paruh lateral, y=372 di pertengahan kaki.
+const LATERAL_FOOT_ANCHOR = { x: 512, y: 372 }
+
+const TEMP_MARKERS = [
+  { key: 'metatarsal', anchor: { x: 630, y: 150 }, footAnchor: PRESSURE_ANCHORS.metatarsal },
+  { key: 'lateral', anchor: { x: 706, y: 290 }, footAnchor: LATERAL_FOOT_ANCHOR },
+  { key: 'heel', anchor: { x: 630, y: 480 }, footAnchor: PRESSURE_ANCHORS.heel },
+]
 
 const PULSE_CLASS = ['hero-pulse', 'hero-pulse hero-pulse--delay1', 'hero-pulse hero-pulse--delay2']
 const STATUS_COLOR = { safe: COLORS.blue, warning: COLORS.warning, danger: COLORS.red }
 
+// Number.isFinite, bukan `typeof value !== 'number'`: NaN lolos dari cek typeof
+// dan berujung pada fill="rgb(NaN,...)" / teks "NaN kPa" di SVG.
 function PressureMarker({ id, anchor, value, pulseClass }) {
-  if (typeof value !== 'number') return null
+  if (!Number.isFinite(value)) return null
   const color = STATUS_COLOR[getPressureStatus(value)]
   const label = LOCATION_LABELS[id] ?? id
 
@@ -71,7 +89,7 @@ function PressureMarker({ id, anchor, value, pulseClass }) {
 }
 
 function TemperatureMarker({ id, anchor, value, footAnchor, pulseClass }) {
-  if (typeof value !== 'number') return null
+  if (!Number.isFinite(value)) return null
   const color = STATUS_COLOR[getTemperatureStatus(value)]
 
   return (
@@ -112,8 +130,6 @@ export default function SensorFootMap({ pressurePoints = {}, temperaturePoints =
       role="img"
       aria-label="Peta sensor tekanan dan suhu pada insole"
     >
-      <ellipse cx="455" cy="325" rx="170" ry="300" fill={COLORS.lightBlue} opacity="0.18" />
-
       {/* Siluet kaki (jari di atas, tumit di bawah) — sama seperti ilustrasi hero landing page */}
       <g transform="translate(150,20)">
         <path
@@ -127,27 +143,16 @@ export default function SensorFootMap({ pressurePoints = {}, temperaturePoints =
       <PressureMarker id="metatarsal" anchor={PRESSURE_ANCHORS.metatarsal} value={pressurePoints.metatarsal} pulseClass={PULSE_CLASS[1]} />
       <PressureMarker id="heel" anchor={PRESSURE_ANCHORS.heel} value={pressurePoints.heel} pulseClass={PULSE_CLASS[2]} />
 
-      <TemperatureMarker
-        id="Forefoot"
-        anchor={TEMP_ANCHORS.Forefoot}
-        value={temperaturePoints.Forefoot}
-        footAnchor={PRESSURE_ANCHORS.toe}
-        pulseClass={PULSE_CLASS[0]}
-      />
-      <TemperatureMarker
-        id="Tumit"
-        anchor={TEMP_ANCHORS.Tumit}
-        value={temperaturePoints.Tumit}
-        footAnchor={PRESSURE_ANCHORS.heel}
-        pulseClass={PULSE_CLASS[1]}
-      />
-      <TemperatureMarker
-        id="Lateral"
-        anchor={TEMP_ANCHORS.Lateral}
-        value={temperaturePoints.Lateral}
-        footAnchor={PRESSURE_ANCHORS.metatarsal}
-        pulseClass={PULSE_CLASS[2]}
-      />
+      {TEMP_MARKERS.map(({ key, anchor, footAnchor }, index) => (
+        <TemperatureMarker
+          key={key}
+          id={LOCATION_LABELS[key] ?? key}
+          anchor={anchor}
+          value={temperaturePoints[key]}
+          footAnchor={footAnchor}
+          pulseClass={PULSE_CLASS[index]}
+        />
+      ))}
     </svg>
   )
 }
