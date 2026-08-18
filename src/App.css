@@ -1,3 +1,172 @@
+/* ============================================================
+   LAPISAN DESAIN DASHBOARD
+   ------------------------------------------------------------
+   Semua token di bawah di-scope ke `.app-shell`, BUKAN `:root`.
+   Alasannya: --bg / --surface / --border / --shadow-* dipakai
+   bersama oleh Landing.css dan Auth.css. Mendefinisikan ulangnya
+   di :root akan diam-diam mengubah dua halaman yang tidak diminta.
+   Custom property mewarisi ke seluruh subtree, jadi men-scope-nya
+   di sini memberi dashboard sistemnya sendiri tanpa efek samping.
+
+   Dashboard ini SATU TEMA: terang saja, di semua kondisi. Lihat
+   `color-scheme: light` di bawah — itu bukan hiasan, itu yang menahan
+   peramban ikut menggelapkan kontrol form dan scrollbar saat sistem
+   operasinya bertema gelap.
+
+   Rasio kontras di bawah dihitung, bukan dikira-kira. Terburuk
+    4,79:1 (--ds-warn di atas --ds-surface-2). Semua lolos WCAG AA
+   untuk teks kecil.
+   ============================================================ */
+
+.app-shell {
+  /* Ramp netral bernuansa sage, diturunkan dari brand #446a45.
+     Terhadap --ds-surface: ink 16,1:1 · ink-2 6,8:1 · ink-3 5,1:1 */
+  --ds-bg: #f3f6f1;
+  --ds-surface: #ffffff;
+  --ds-surface-2: #f1f5ef;
+  --ds-line: #dde5db;
+  --ds-line-strong: #c3d1c1;
+  --ds-ink: #16241a;
+  --ds-ink-2: #46614a;
+  --ds-ink-3: #5c7460;
+
+  /* SATU aksen untuk seluruh dashboard: sage brand. Warna status di
+     bawah bukan aksen — itu pengkodean data, dan hanya boleh muncul
+     pada rel kartu, pill, dan ikon status. Tidak ada tombol maroon,
+     tidak ada badge ambar di luar makna statusnya. */
+  --ds-accent: #446a45;
+  --ds-accent-ink: #ffffff;
+  --ds-accent-soft: rgba(68, 106, 69, 0.09);
+
+  /* Ambar dinaikkan dari #9c6510: nilai lama jatuh ke 4,45:1 di atas
+     --ds-surface-2, tepat di bawah ambang AA. */
+  --ds-safe: #3f7a43;
+  --ds-warn: #96600e;
+  --ds-danger: #6e1936;
+  --ds-safe-soft: rgba(63, 122, 67, 0.1);
+  --ds-warn-soft: rgba(150, 96, 14, 0.1);
+  --ds-danger-soft: rgba(110, 25, 54, 0.09);
+
+  /* Skala tipografi fluid. Menggantikan nilai ad-hoc seperti 14.5px
+     dan 19px yang tidak berasal dari skala apa pun. */
+  --ds-t-display: clamp(1.625rem, 1.35rem + 1.1vw, 2.125rem);
+  --ds-t-h2: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+  --ds-t-h3: 0.9375rem;
+  --ds-t-body: 0.9375rem;
+  --ds-t-sm: 0.8125rem;
+  --ds-t-xs: 0.75rem;
+  --ds-t-readout: clamp(2.125rem, 1.7rem + 1.7vw, 3rem);
+
+  /* Skala spasi berbasis 4px */
+  --ds-1: 4px;
+  --ds-2: 8px;
+  --ds-3: 12px;
+  --ds-4: 16px;
+  --ds-5: 20px;
+  --ds-6: 24px;
+  --ds-8: 32px;
+  --ds-10: 40px;
+
+  /* Satu sistem radius. Sebelumnya 10/16/24/28 — selembut itu membaca
+     sebagai aplikasi konsumer; alat pemantauan klinis butuh yang lebih
+     tegas dan lebih rapat. */
+  --ds-r-sm: 8px;
+  --ds-r-md: 12px;
+  --ds-r-lg: 16px;
+  --ds-r-pill: 999px;
+
+  /* Bayangan netral, tanpa glow berwarna. Glow berwarna membuat kartu
+     berstatus tampak menyala dan berebut perhatian dengan pill-nya. */
+  --ds-e-1: 0 1px 2px rgba(22, 36, 26, 0.05);
+  --ds-e-2: 0 1px 3px rgba(22, 36, 26, 0.06), 0 6px 16px -8px rgba(22, 36, 26, 0.12);
+  --ds-e-3: 0 2px 6px rgba(22, 36, 26, 0.07), 0 16px 32px -12px rgba(22, 36, 26, 0.18);
+
+  /* MOTION_INTENSITY 4: hanya umpan balik & transisi status. */
+  --ds-ease: cubic-bezier(0.2, 0, 0, 1);
+  --ds-dur-1: 120ms;
+  --ds-dur-2: 200ms;
+
+  /* ---- Jembatan token lama ----
+     Dashboard punya belasan komponen yang belum disentuh overhaul ini
+     (banner, chatbot, riwayat, peringatan, profil) dan semuanya masih
+     memanggil token lama. Menulis ulang semuanya satu per satu bukan
+     hanya lambat, tapi juga berarti perbaikan kontras dan skala
+     bayangan hanya berlaku pada bagian yang sempat disentuh.
+
+     Karena --ds-* di-scope pada .app-shell dan alias di bawah ini
+     berada di scope yang sama, seluruh subtree dashboard ikut
+     berpindah sekaligus. Definisi asli di index.css tidak diubah,
+     jadi Landing.css dan Auth.css tetap memakai nilai lamanya. */
+  --bg: var(--ds-bg);
+  --surface: var(--ds-surface);
+  --surface-sunken: var(--ds-surface-2);
+  --border: var(--ds-line);
+  --border-strong: var(--ds-line-strong);
+  --navy: var(--ds-ink);
+  /* --blue dulu #81a283: 2,4:1 di atas putih, gagal AA, dan dipakai di
+     55 tempat sebagai warna teks. Satu baris ini memperbaiki semuanya. */
+  --blue: var(--ds-ink-3);
+  --light-blue: var(--ds-line-strong);
+  --text-muted: var(--ds-ink-3);
+  --cream: var(--ds-surface);
+  --red: var(--ds-danger);
+  --warning: var(--ds-warn);
+  --status-safe: var(--ds-safe);
+  --status-warning: var(--ds-warn);
+  --status-danger: var(--ds-danger);
+
+  --radius-sm: var(--ds-r-sm);
+  --radius-md: var(--ds-r-md);
+  --radius-lg: var(--ds-r-lg);
+  --radius-xl: var(--ds-r-lg);
+
+  --shadow-sm: var(--ds-e-1);
+  --shadow-md: var(--ds-e-2);
+  --shadow-lg: var(--ds-e-3);
+
+  /* Glow berwarna dimatikan, bukan diganti: nilainya selalu muncul di
+     dalam daftar box-shadow bersama --shadow-*, jadi memetakannya ke
+     elevasi lain akan menumpuk dua bayangan pada elemen yang sama. */
+  --glow-safe: 0 0 #0000;
+  --glow-warning: 0 0 #0000;
+  --glow-danger: 0 0 #0000;
+
+  /* Sisa glassmorphism di dalam dashboard ikut padam lewat sini. Token
+     aslinya dibiarkan utuh di index.css karena Landing.css memakainya. */
+  --glass-bg: var(--ds-surface);
+  --glass-bg-strong: var(--ds-surface);
+  --glass-border: var(--ds-line);
+  --glass-blur: none;
+
+  --ease: var(--ds-ease);
+}
+
+/* Tema dikunci terang. Tanpa baris ini, pengguna dengan Windows atau
+   Android bertema gelap tetap mendapat halaman terang — tapi peramban
+   akan menggelapkan sendiri elemen yang digambarnya: scrollbar, latar
+   <textarea> dan <input> (composer chatbot), serta menu <select>.
+   Hasilnya kontrol gelap yang menempel di permukaan putih. */
+.app-shell {
+  color-scheme: light;
+}
+
+.app-shell,
+.app-shell input,
+.app-shell textarea,
+.app-shell button {
+  /* Angka pembacaan sensor berubah tiap detik. Tanpa figur tabular,
+     lebar "1" berbeda dari "8" dan seluruh baris bergeser tiap update. */
+  font-variant-numeric: tabular-nums;
+}
+
+/* Satu gaya fokus untuk seluruh dashboard: cincin ganda supaya tetap
+   terlihat baik di atas permukaan terang maupun di atas tombol aksen. */
+.app-shell :focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ds-surface), 0 0 0 4px var(--ds-accent);
+  border-radius: var(--ds-r-sm);
+}
+
 /* Page header (page-level title, sits above panels) */
 
 .page-header {
@@ -8,55 +177,62 @@
   flex-wrap: wrap;
 }
 
+/* Bobot 800 diturunkan ke 600. Pada grotesque, 800 di ukuran judul
+   halaman membaca sebagai iklan, bukan alat kerja — dan tebalnya
+   justru menutupi perbedaan bentuk huruf yang membuat teks terbaca
+   cepat. Skala fluid menggantikan pasangan 28px/23px yang lama. */
 .page-header__title {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--navy);
-  letter-spacing: -0.4px;
-  margin-bottom: 4px;
+  font-size: var(--ds-t-display);
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--ds-ink);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--ds-1);
 }
 
+/* Dulu --blue (#81a283): hanya 2,4:1 di atas putih. Komentar di
+   index.css sudah mencatat kegagalannya, tapi subjudul tetap
+   memakainya. --ds-ink-3 = 5,1:1. */
 .page-header__subtitle {
-  font-size: 14.5px;
-  color: var(--blue);
+  font-size: var(--ds-t-body);
+  color: var(--ds-ink-3);
 }
 
 .page-header__actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--ds-2);
   flex-wrap: wrap;
-}
-
-@media (max-width: 640px) {
-  .page-header__title {
-    font-size: 23px;
-  }
 }
 
 /* Shared panel shell */
 
+/* Panel tidak lagi glass. Backdrop-filter di sini tidak pernah punya
+   tugas nyata — di belakangnya cuma latar polos — sementara biayanya
+   satu lapisan komposit per panel. Yang tersisa: permukaan, garis,
+   bayangan. --glass-* sengaja dibiarkan utuh di index.css karena
+   Landing.css masih memakainya. */
 .panel {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  padding: 28px 32px;
-  box-shadow: var(--shadow-md);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-r-lg);
+  padding: var(--ds-6);
+  box-shadow: var(--ds-e-1);
 }
 
 .panel__title {
-  font-size: 19px;
-  font-weight: 700;
-  color: var(--navy);
-  margin-bottom: 6px;
+  font-size: var(--ds-t-h2);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--ds-ink);
+  letter-spacing: -0.01em;
+  margin-bottom: var(--ds-1);
 }
 
 .panel__subtitle {
-  font-size: 14px;
-  color: var(--blue);
-  margin-bottom: 20px;
+  font-size: var(--ds-t-sm);
+  color: var(--ds-ink-3);
+  margin-bottom: var(--ds-5);
 }
 
 .loading {
@@ -72,63 +248,12 @@
   border-radius: var(--radius-lg);
 }
 
-/* Buttons */
-
-.glykos-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 22px;
-  border: 1.5px solid var(--btn-border, transparent);
-  border-radius: var(--radius-sm);
-  background: var(--btn-bg, transparent);
-  color: var(--btn-text, var(--navy));
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.2;
-  white-space: nowrap;
-  transition: transform 0.15s ease, box-shadow 0.15s ease,
-    background-color 0.15s ease, border-color 0.15s ease;
-}
-
-.glykos-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.glykos-btn:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: none;
-}
-
-.glykos-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.glykos-btn--outline:hover:not(:disabled) {
-  background: rgba(68, 106, 69, 0.05);
-}
-
-.glykos-btn--chip {
-  background: transparent;
-  border-color: transparent;
-  color: var(--blue);
-  padding: 9px 18px;
-}
-
-.glykos-btn--chip:hover:not(:disabled) {
-  background: rgba(129, 162, 131, 0.1);
-  box-shadow: none;
-  transform: none;
-}
-
-.glykos-btn--chip.glykos-btn--active {
-  background: var(--navy);
-  color: var(--cream);
-  box-shadow: var(--shadow-sm);
-}
+/* Buttons
+   ---------------------------------------------------------------------------
+   Aturan .glykos-btn SENGAJA TIDAK ADA DI SINI — sudah pindah ke index.css.
+   App.css hanya diimpor DashboardLayout.jsx, sedangkan komponen Button dipakai
+   juga oleh halaman depan, Login, dan Register. Jangan pindahkan kembali;
+   alasan lengkapnya ada di index.css. */
 
 .btn-group {
   display: inline-flex;
@@ -142,16 +267,20 @@
 
 /* App shell */
 
+/* Tiga radial-gradient yang lama dihapus. Itu bukan sekadar selera:
+   gradasinya membuat setiap permukaan tembus pandang berubah warna
+   menurut POSISI-nya di layar, sehingga kartu yang sama tampil
+   kehijauan di kiri dan kemerahmudaan di kanan — yang memaksa seluruh
+   kartu jadi opak sebagai penangkal. Dengan latar rata, permukaan
+   boleh jujur lagi. `background-attachment: fixed` juga dibuang:
+   memaksa repaint tiap frame scroll di peramban seluler. */
 .app-shell {
   display: flex;
   flex-direction: row;
-  min-height: 100vh;
-  background:
-    radial-gradient(680px circle at 6% -8%, rgba(134, 167, 136, 0.5), transparent 60%),
-    radial-gradient(620px circle at 100% 0%, rgba(228, 174, 197, 0.4), transparent 55%),
-    radial-gradient(820px circle at 46% 115%, rgba(68, 106, 69, 0.14), transparent 60%),
-    var(--bg);
-  background-attachment: fixed;
+  /* dvh, bukan vh — bilah alamat iOS Safari membuat vh melompat. */
+  min-height: 100dvh;
+  background: var(--ds-bg);
+  color: var(--ds-ink);
 }
 
 /* Desktop sidebar navigation */
@@ -165,44 +294,59 @@
   z-index: 25;
   display: flex;
   flex-direction: column;
-  padding: 20px 16px;
-  background: var(--glass-bg-strong);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border-right: 1px solid var(--glass-border);
+  padding: var(--ds-5) var(--ds-3);
+  background: var(--ds-surface);
+  border-right: 1px solid var(--ds-line);
 }
 
 .app-sidebar__nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   flex: 1;
-  margin-top: 20px;
+  margin-top: var(--ds-5);
   overflow-y: auto;
 }
 
+/* Item aktif dulunya blok solid maroon-kehijauan penuh. Diganti rel
+   kiri + latar aksen tipis: penanda yang sama jelasnya, tapi tidak
+   menaruh satu blok gelap berkontras tinggi di sudut mata sepanjang
+   sesi. --ds-ink-2 (6,8:1) menggantikan --blue yang hanya 2,4:1. */
 .app-sidebar__link {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--blue);
+  gap: var(--ds-3);
+  padding: 10px var(--ds-3);
+  border-radius: var(--ds-r-sm);
+  font-size: var(--ds-t-body);
+  font-weight: 500;
+  color: var(--ds-ink-2);
   text-decoration: none;
-  transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
+  transition: background-color var(--ds-dur-1) var(--ds-ease),
+    color var(--ds-dur-1) var(--ds-ease);
 }
 
 .app-sidebar__link:hover {
-  background: rgba(129, 162, 131, 0.1);
-  color: var(--navy);
+  background: var(--ds-surface-2);
+  color: var(--ds-ink);
 }
 
 .app-sidebar__link--active {
-  background: var(--navy);
-  color: var(--cream);
-  box-shadow: var(--shadow-sm);
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+  font-weight: 600;
+}
+
+.app-sidebar__link--active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: var(--ds-r-pill);
+  background: var(--ds-accent);
 }
 
 .app-sidebar__icon {
@@ -221,16 +365,15 @@
   height: 16px;
   padding: 0 4px;
   border-radius: 999px;
-  background: var(--red);
-  color: var(--cream);
+  background: var(--ds-danger);
+  color: var(--ds-surface);
   font-size: 10px;
-  font-weight: 700;
-  animation: pulse-badge 2.4s ease-in-out infinite;
+  font-weight: 600;
 }
 
 .app-sidebar__footer {
-  border-top: 1px solid var(--glass-border);
-  padding-top: 12px;
+  border-top: 1px solid var(--ds-line);
+  padding-top: var(--ds-3);
 }
 
 .app-sidebar__footer .app-topbar__user {
@@ -255,11 +398,9 @@
   align-items: center;
   gap: 14px;
   min-height: var(--topbar-height);
-  padding: 12px 20px;
-  background: var(--glass-bg-strong);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border-bottom: 1px solid var(--glass-border);
+  padding: var(--ds-3) var(--ds-5);
+  background: var(--ds-surface);
+  border-bottom: 1px solid var(--ds-line);
 }
 
 /* On desktop, branding & account live in the sidebar — hide the topbar's copies */
@@ -272,10 +413,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--navy);
-  letter-spacing: -0.3px;
+  font-size: var(--ds-t-h3);
+  font-weight: 600;
+  color: var(--ds-ink);
+  letter-spacing: -0.01em;
   flex-shrink: 0;
 }
 
@@ -288,18 +429,19 @@
   align-items: center;
   gap: 8px;
   padding: 4px 10px 4px 4px;
-  border-radius: 999px;
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg-strong);
-  color: var(--blue);
+  border-radius: var(--ds-r-pill);
+  border: 1px solid var(--ds-line);
+  background: var(--ds-surface);
+  color: var(--ds-ink-2);
   flex-shrink: 0;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: background-color var(--ds-dur-1) var(--ds-ease),
+    color var(--ds-dur-1) var(--ds-ease), border-color var(--ds-dur-1) var(--ds-ease);
 }
 
 .app-topbar__user:hover {
-  background: rgba(110, 25, 54, 0.08);
-  border-color: rgba(110, 25, 54, 0.25);
-  color: var(--red);
+  background: var(--ds-danger-soft);
+  border-color: var(--ds-danger);
+  color: var(--ds-danger);
 }
 
 .app-topbar__avatar {
@@ -314,23 +456,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--navy);
-  color: var(--cream);
-  font-size: 12px;
-  font-weight: 700;
+  background: var(--ds-accent);
+  color: var(--ds-accent-ink);
+  font-size: var(--ds-t-xs);
+  font-weight: 600;
 }
 
 .app-main {
   flex: 1;
   width: 100%;
-  max-width: 1180px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 28px 24px 40px;
+  padding: var(--ds-8) var(--ds-6) var(--ds-10);
 }
 
 .app-footer {
-  border-top: 1px solid var(--border);
-  padding: 16px 20px 24px;
+  border-top: 1px solid var(--ds-line);
+  padding: var(--ds-4) var(--ds-5) var(--ds-6);
+  color: var(--ds-ink-3);
+  font-size: var(--ds-t-sm);
 }
 
 /* Bottom tab bar (mobile-app style navigation) */
@@ -340,11 +484,8 @@
   bottom: 0;
   z-index: 20;
   display: flex;
-  background: var(--glass-bg-strong);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border-top: 1px solid var(--glass-border);
-  box-shadow: 0 -8px 30px -12px rgba(68, 106, 69, 0.25);
+  background: var(--ds-surface);
+  border-top: 1px solid var(--ds-line);
   padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
 }
 
@@ -399,7 +540,10 @@
   font-size: 10px;
   font-weight: 700;
   box-shadow: 0 0 0 0 rgba(110, 25, 54, 0.5);
-  animation: pulse-badge 2.4s ease-in-out infinite;
+  /* Tiga kali denyut, bukan tanpa henti — alasan yang sama dengan
+     .metric-card--danger. Lencana yang berkedip selamanya di bilah tab
+     berhenti terbaca sebagai peringatan dalam hitungan menit. */
+  animation: pulse-badge 2s ease-in-out 3;
 }
 
 .chatbot-page {
@@ -422,7 +566,7 @@
   gap: 14px;
   padding: 18px 24px;
   border-bottom: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--ds-surface-2);
 }
 
 .chatbot-header__avatar {
@@ -557,8 +701,13 @@
   align-self: flex-end;
 }
 
+/* Warna dikunci ke --cream lalu diredupkan lewat opacity, bukan
+   ditulis sebagai rgba krem tersendiri. Dengan begitu jamnya selalu
+   mengikuti warna teks gelembungnya, dan tidak perlu diperbarui lagi
+   kalau warna gelembung berubah. */
 .chat-bubble--user .chat-bubble__time {
-  color: rgba(254, 253, 235, 0.75);
+  color: var(--cream);
+  opacity: 0.75;
 }
 
 .chat-bubble__body--typing {
@@ -646,7 +795,7 @@
   gap: 10px;
   padding: 16px 24px 8px;
   border-top: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--ds-surface-2);
 }
 
 .chatbot-composer__input {
@@ -935,6 +1084,28 @@
   box-shadow: 0 0 14px rgba(110, 25, 54, 0.3);
 }
 
+/* Penanda wake lock (hooks/useWakeLock.js). Sengaja lebih tenang daripada
+   .connection-pill: ini keterangan, bukan status yang perlu direspons. */
+.wakelock-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--status-warning);
+  background: rgba(156, 101, 16, 0.1);
+  border: 1px solid rgba(156, 101, 16, 0.22);
+  flex-shrink: 0;
+}
+
+@media (max-width: 767.98px) {
+  .wakelock-pill__label {
+    display: none;
+  }
+}
+
 .connection-pill__time {
   opacity: 0.75;
   font-weight: 500;
@@ -1067,9 +1238,12 @@
 
 /* Foot sensor map */
 
+/* Dulu latar merah muda opak (#ffe3e3) — aksen kedua di halaman yang
+   aksennya sage, persis pelanggaran kunci konsistensi warna. Panelnya
+   sekarang memakai permukaan sistem seperti panel lain; pembeda
+   visualnya datang dari isinya, bukan dari warna latarnya. */
 .foot-map-panel {
-  background: #ffe3e3;
-  border-color: rgba(250, 200, 200, 0.75);
+  background: var(--ds-surface-2);
 }
 
 .foot-map-panel__visual {
@@ -1140,92 +1314,132 @@
 .alerts-page {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: var(--ds-6);
 }
 
+/* Peta sensor adalah gambar yang perlu ruang; panel aktivitas isinya
+   teks pendek. Membaginya 50/50 memberi ruang lebih pada yang tidak
+   membutuhkannya. */
 .dashboard__row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
+  grid-template-columns: 1fr;
+  gap: var(--ds-4);
   align-items: start;
 }
 
-/* Metric cards */
+/* ---------- Kartu metrik ----------
+   Susunan lama `repeat(3, 1fr)` memberi bobot visual yang sama pada
+   ketiga metrik. Secara klinis itu keliru: selisih suhu antar area
+   adalah prediktor pre-ulkus terkuat di antara ketiganya, dan kode
+   ini sudah tahu itu — lihat `metric-card__alert` di MetricCards.jsx
+   yang menyalakan peringatan pada selisih >2,2 °C. Grid barunya
+   mencerminkan bobot tersebut: satu kartu utama, dua pendukung.
 
+   Sekaligus memperbaiki lompatan 3 kolom -> 1 kolom di 960px. Di
+   rentang 961–1200px, sidebar 260px menyisakan ~940px untuk tiga
+   kartu — sekitar 234px konten per kartu setelah padding. */
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  grid-template-columns: 1fr;
+  gap: var(--ds-4);
 }
 
-/* Kartu metrik OPAK — bukan glass.
-   `.app-shell` melapisi latar krem dengan tiga radial-gradient hijau & pink,
-   jadi permukaan tembus pandang akan ikut berubah warna tergantung POSISI
-   kartu di layar: kartu yang sama bisa tampil kehijauan di kiri dan kemerah-
-   mudaan di kanan. Digabung dengan tint status yang juga transparan, ketiga
-   status berakhir di rentang mid-tone yang sama dan saling tabrakan.
-   Permukaan opak membuat warna kartu deterministik; kontras terhadap halaman
-   dijaga oleh putih vs krem + border + shadow. */
+@media (min-width: 768px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .metric-card--lead {
+    grid-column: 1 / -1;
+  }
+
+  .dashboard__row {
+    grid-template-columns: 1.25fr 1fr;
+  }
+}
+
+@media (min-width: 1280px) {
+  .metrics-grid {
+    grid-template-columns: 1.5fr 1fr 1fr;
+  }
+
+  .metric-card--lead {
+    grid-column: auto;
+  }
+}
+
 .metric-card {
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg);
-  padding: 28px;
+  position: relative;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-r-lg);
+  padding: var(--ds-5);
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  box-shadow: var(--shadow-md);
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  gap: var(--ds-4);
+  box-shadow: var(--ds-e-1);
+  transition: border-color var(--ds-dur-2) var(--ds-ease),
+    box-shadow var(--ds-dur-2) var(--ds-ease);
 }
 
+/* Hover lama memakai translateY(-3px). Pada kartu yang isinya angka
+   berubah tiap detik, mengangkatnya saat kursor lewat membuat teks
+   bergeser tepat ketika sedang dibaca. Umpan baliknya dipindah ke
+   garis tepi dan bayangan — terlihat, tapi tidak menggeser apa pun. */
 .metric-card:hover {
-  transform: translateY(-3px);
+  border-color: var(--ds-line-strong);
+  box-shadow: var(--ds-e-2);
 }
 
-/* Status dibaca dari rel atas + pill + semburat tipis yang MELUNTUR jadi
-   putih dalam 150px pertama. Badan kartu tetap putih di ketiga status,
-   sehingga kartu bersebelahan terbaca sebagai satu keluarga, bukan tiga
+.metric-card--lead {
+  padding: var(--ds-6);
+}
+
+/* Status dibawa oleh rel atas + warna ikon + pill. Semburat latarnya
+   sangat tipis dan luruh dalam 120px pertama, supaya kartu-kartu
+   bersebelahan tetap terbaca sebagai satu keluarga alih-alih tiga
    blok warna yang berebut perhatian. */
 .metric-card--safe {
-  background:
-    linear-gradient(180deg, rgba(63, 122, 67, 0.13), rgba(63, 122, 67, 0) 150px),
-    var(--surface);
-  border-color: rgba(63, 122, 67, 0.3);
-  border-top: 4px solid var(--status-safe);
-  box-shadow: var(--shadow-md), 0 12px 32px -12px rgba(63, 122, 67, 0.45);
+  background: linear-gradient(180deg, var(--ds-safe-soft), transparent 120px),
+    var(--ds-surface);
+  border-top: 3px solid var(--ds-safe);
 }
 
 .metric-card--warning {
-  background:
-    linear-gradient(180deg, rgba(156, 101, 16, 0.14), rgba(156, 101, 16, 0) 150px),
-    var(--surface);
-  border-color: rgba(156, 101, 16, 0.32);
-  border-top: 4px solid var(--status-warning);
-  box-shadow: var(--shadow-md), 0 12px 32px -12px rgba(156, 101, 16, 0.42);
+  background: linear-gradient(180deg, var(--ds-warn-soft), transparent 120px),
+    var(--ds-surface);
+  border-top: 3px solid var(--ds-warn);
 }
 
 .metric-card--danger {
-  background:
-    linear-gradient(180deg, rgba(110, 25, 54, 0.14), rgba(110, 25, 54, 0) 150px),
-    var(--surface);
-  border-color: rgba(110, 25, 54, 0.32);
-  border-top: 4px solid var(--status-danger);
-  box-shadow: var(--shadow-md), var(--glow-danger);
-  animation: pulse-danger 2.4s ease-in-out infinite;
+  background: linear-gradient(180deg, var(--ds-danger-soft), transparent 120px),
+    var(--ds-surface);
+  border-top: 3px solid var(--ds-danger);
+  /* Dulu `infinite`. Kartu yang berdenyut tanpa henti sepanjang sesi
+     adalah sumber klasik alarm fatigue: dalam beberapa menit denyutnya
+     berhenti dibaca sebagai peringatan dan mulai dibaca sebagai latar.
+     Tiga kali denyut menarik perhatian saat status berubah, lalu diam
+     dan menyerahkan tugasnya pada rel merah + pill yang tetap ada. */
+  animation: pulse-danger 2s var(--ds-ease) 3;
 }
 
 .metric-card--empty {
-  border-top: 4px solid var(--border-strong);
-  opacity: 0.7;
+  border-top: 3px solid var(--ds-line-strong);
+}
+
+/* opacity: 0.7 yang lama meredupkan SEMUA isinya, termasuk teks
+   penjelas yang justru paling perlu dibaca saat belum ada data. */
+.metric-card--empty .metric-card__value strong {
+  color: var(--ds-ink-3);
 }
 
 @keyframes pulse-danger {
   0%,
   100% {
-    box-shadow: var(--shadow-md), var(--glow-danger);
+    box-shadow: var(--ds-e-1);
   }
   50% {
-    box-shadow: var(--shadow-md), 0 14px 42px -4px rgba(110, 25, 54, 0.7);
+    box-shadow: var(--ds-e-1), 0 0 0 4px var(--ds-danger-soft);
   }
 }
 
@@ -1238,13 +1452,12 @@
 .metric-card__header {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
+  gap: var(--ds-3);
 }
 
 .metric-card__trend {
   margin-left: auto;
   flex-shrink: 0;
-  opacity: 0.85;
 }
 
 .sparkline {
@@ -1257,87 +1470,105 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
-  border-radius: var(--radius-sm);
-  background: rgba(63, 122, 67, 0.12);
-  color: var(--status-safe);
+  border-radius: var(--ds-r-sm);
+  background: var(--ds-safe-soft);
+  color: var(--ds-safe);
 }
 
 .metric-card--warning .metric-card__icon {
-  background: rgba(156, 101, 16, 0.14);
-  color: var(--status-warning);
+  background: var(--ds-warn-soft);
+  color: var(--ds-warn);
 }
 
 .metric-card--danger .metric-card__icon {
-  background: rgba(110, 25, 54, 0.12);
-  color: var(--status-danger);
+  background: var(--ds-danger-soft);
+  color: var(--ds-danger);
+}
+
+.metric-card--empty .metric-card__icon {
+  background: var(--ds-surface-2);
+  color: var(--ds-ink-3);
 }
 
 .metric-card__title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--navy);
-  margin-bottom: 8px;
+  font-size: var(--ds-t-h3);
+  font-weight: 500;
+  color: var(--ds-ink-2);
+  margin-bottom: var(--ds-2);
 }
 
 .metric-card__value {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--ds-2);
 }
 
+/* Sempat memakai Geist Mono untuk mengunci lebar digit, lalu dibatalkan
+   setelah dilihat hasil rendernya: di font mono titik desimal menempati
+   satu sel selebar digit, sehingga "32.8" tampil sebagai "32 . 8" dengan
+   celah menganga di kedua sisi titik. Kestabilan lebar yang dicari sudah
+   didapat dari `font-variant-numeric: tabular-nums` di .app-shell — itu
+   memberi angka berlebar sama TANPA memperlebar tanda baca. */
 .metric-card__value strong {
-  font-size: 44px;
-  font-weight: 800;
-  color: var(--navy);
-  line-height: 1.1;
-  letter-spacing: -1px;
+  font-size: 2rem;
+  font-weight: 500;
+  color: var(--ds-ink);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.metric-card--lead .metric-card__value strong {
+  font-size: var(--ds-t-readout);
 }
 
 .metric-card__value span {
-  font-size: 16px;
-  color: var(--text-muted);
-  font-weight: 600;
+  font-size: var(--ds-t-sm);
+  color: var(--ds-ink-3);
+  font-weight: 500;
 }
 
 .metric-card__detail {
-  font-size: 14px;
-  color: var(--text-muted);
+  font-size: var(--ds-t-sm);
+  color: var(--ds-ink-3);
 }
 
 /* Tanpa `opacity` — 0.85 di atas teks yang sudah muted menurunkan kontras
    lagi di bawah ambang AA. Peredupan dibawa oleh warnanya sendiri. */
 .metric-card__note {
-  font-size: 13px;
-  color: var(--text-muted);
-  line-height: 1.6;
+  font-size: var(--ds-t-sm);
+  color: var(--ds-ink-3);
+  line-height: 1.55;
 }
 
 .metric-card__note--secondary {
-  margin-top: 6px;
-  padding-top: 10px;
-  border-top: 1px dashed var(--border);
+  margin-top: var(--ds-1);
+  padding-top: var(--ds-2);
+  border-top: 1px solid var(--ds-line);
 }
 
 .metric-card__alert {
-  font-size: 13px;
-  color: var(--red);
-  font-weight: 600;
-  background: rgba(110, 25, 54, 0.08);
-  padding: 8px 10px;
-  border-radius: 8px;
+  font-size: var(--ds-t-sm);
+  color: var(--ds-danger);
+  font-weight: 500;
+  line-height: 1.5;
+  background: var(--ds-danger-soft);
+  border-left: 2px solid var(--ds-danger);
+  padding: var(--ds-2) var(--ds-3);
+  border-radius: 0 var(--ds-r-sm) var(--ds-r-sm) 0;
 }
 
+/* uppercase + letter-spacing dilepas. Pada label sependek "Aman" itu
+   memperlambat pengenalan bentuk kata tanpa menambah informasi, dan
+   pada 11px huruf kapital semua justru menurunkan keterbacaan. */
 .status-pill {
   display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 3px 8px;
-  border-radius: 20px;
+  font-size: var(--ds-t-xs);
+  font-weight: 500;
+  padding: 2px var(--ds-2);
+  border-radius: var(--ds-r-pill);
 }
 
 /* Pill SOLID, bukan wash 12-25% seperti sebelumnya: pada wash, label
@@ -1345,18 +1576,18 @@
    ketiganya jadi sama-sama lemah. Ketiga warna di bawah sudah dicek >=4,9:1
    untuk teks putih (WCAG AA). */
 .status-pill--safe {
-  background: var(--status-safe);
-  color: #fff;
+  background: var(--ds-safe);
+  color: var(--ds-surface);
 }
 
 .status-pill--warning {
-  background: var(--status-warning);
-  color: #fff;
+  background: var(--ds-warn);
+  color: var(--ds-surface);
 }
 
 .status-pill--danger {
-  background: var(--status-danger);
-  color: #fff;
+  background: var(--ds-danger);
+  color: var(--ds-surface);
 }
 
 /* Overview status banner */
@@ -1376,19 +1607,24 @@
   box-shadow: var(--shadow-sm);
 }
 
+/* Ketiganya dulu rgba mati yang, di atas permukaan baru, bercampur jadi
+   cokelat keabuan yang keruh. Sekarang memakai token status yang sama
+   dengan kartu, jadi spanduk dan kartu berbicara dalam warna yang sama.
+   --warning yang lama (#e4aec5) sengaja tidak dipakai: merah muda itu
+   sekeluarga dengan maroon danger dan justru paling sering tertukar. */
 .status-banner--safe {
-  background: rgba(129, 162, 131, 0.16);
-  box-shadow: var(--shadow-sm), var(--glow-safe);
+  background: var(--ds-safe-soft);
+  border-color: var(--ds-safe);
 }
 
 .status-banner--warning {
-  background: rgba(228, 174, 197, 0.26);
-  box-shadow: var(--shadow-sm), var(--glow-warning);
+  background: var(--ds-warn-soft);
+  border-color: var(--ds-warn);
 }
 
 .status-banner--danger {
-  background: rgba(110, 25, 54, 0.1);
-  box-shadow: var(--shadow-sm), var(--glow-danger);
+  background: var(--ds-danger-soft);
+  border-color: var(--ds-danger);
 }
 
 .status-banner__main {
@@ -1525,6 +1761,117 @@
   }
 }
 
+/* --------------------------------------------------------------------------
+   Spanduk tren suhu (components/TemperatureTrendBanner.jsx)
+
+   Sengaja lebih tegas daripada .status-banner: yang itu merangkum kondisi
+   SEKARANG dan selalu ada, sementara yang ini hanya muncul kalau ada pola
+   berhari-hari yang perlu ditindaklanjuti — dan membawa daftar langkahnya.
+   -------------------------------------------------------------------------- */
+.trend-banner {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  padding: 22px 26px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-left-width: 5px;
+  box-shadow: var(--shadow-md);
+}
+
+.trend-banner--warning {
+  border-left-color: var(--status-warning);
+}
+
+.trend-banner--danger {
+  border-left-color: var(--status-danger);
+  box-shadow: var(--glow-danger);
+}
+
+.trend-banner__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: rgba(156, 101, 16, 0.14);
+  color: var(--status-warning);
+}
+
+.trend-banner--danger .trend-banner__icon {
+  background: rgba(110, 25, 54, 0.12);
+  color: var(--status-danger);
+}
+
+.trend-banner__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.trend-banner__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.trend-banner__heading h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 0;
+}
+
+.trend-banner__message {
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.6;
+  color: var(--navy);
+  margin: 0;
+  max-width: 640px;
+}
+
+.trend-banner__period {
+  font-size: 13px;
+  color: var(--blue);
+  margin: 0;
+}
+
+.trend-banner__steps {
+  margin: 2px 0 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--blue);
+  max-width: 640px;
+}
+
+.trend-banner__disclaimer {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  max-width: 640px;
+}
+
+@media (max-width: 640px) {
+  .trend-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+  }
+}
+
 .point-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1567,9 +1914,14 @@
   text-align: center;
 }
 
+/* Blok ini menyala saat selisih >= TEMP_DELTA_WARNING — dan pada ambang
+   yang sama MetricCards.jsx menetapkan status kartu jadi 'warning'.
+   Warna maroon yang lama berarti satu kartu menampilkan dua bahasa
+   sekaligus: rel atas & pill berkata "Perhatian", blok ini berkata
+   "Risiko". */
 .temp-compare > div.highlight {
-  background: rgba(110, 25, 54, 0.1);
-  border-color: rgba(110, 25, 54, 0.35);
+  background: var(--ds-warn-soft);
+  border-color: var(--ds-warn);
 }
 
 .temp-compare span {
@@ -1800,6 +2152,12 @@
   background: rgba(68, 106, 69, 0.14);
   border-color: rgba(68, 106, 69, 0.3);
   border-top-color: var(--navy);
+}
+
+.history-chart-card--temperatureDelta {
+  background: rgba(156, 101, 16, 0.12);
+  border-color: rgba(156, 101, 16, 0.28);
+  border-top-color: var(--status-warning);
 }
 
 .history-chart-card--humidity {
@@ -2131,6 +2489,18 @@
   opacity: 0.7;
 }
 
+/* Angka yang melewati ambangnya sendiri di dalam tabel — dipakai kolom
+   Selisih Suhu. Bukan hanya diwarnai: warna saja tidak terbaca oleh sebagian
+   pengguna, jadi nilainya juga ditebalkan dan diberi latar. */
+.data-table__flag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--status-warning);
+  background: rgba(156, 101, 16, 0.12);
+}
+
 .data-table__empty {
   text-align: center;
   color: var(--blue);
@@ -2304,21 +2674,22 @@
 
 /* Responsive */
 
-@media (min-width: 961px) {
+/* Breakpoint diseragamkan ke 640 / 768 / 1024 / 1280. Sebelumnya
+   berkas ini memakai 480, 640, 900, 960 dan 961 bercampur, jadi tidak
+   ada satu pun lebar layar yang bisa dijadikan acuan saat menambah
+   aturan baru.
+
+   Peralihan sidebar dipindah dari 960 ke 1024. Aturan kolom untuk
+   .metrics-grid dan .dashboard__row juga dikeluarkan dari sini:
+   keduanya sekarang mobile-first di dekat definisinya, dan menimpanya
+   kembali di sini akan membatalkan tahap dua kolom di 768–1023px. */
+@media (min-width: 1024px) {
   .app-bottom-nav {
     display: none;
   }
 }
 
-@media (max-width: 960px) {
-  .metrics-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboard__row {
-    grid-template-columns: 1fr;
-  }
-
+@media (max-width: 1023.98px) {
   .app-shell {
     flex-direction: column;
   }
@@ -2333,15 +2704,15 @@
   }
 
   .app-topbar {
-    padding: 12px 16px;
+    padding: var(--ds-3) var(--ds-4);
   }
 
   .app-main {
-    padding: 22px 20px 32px;
+    padding: var(--ds-6) var(--ds-4) var(--ds-8);
   }
 
   .app-footer {
-    padding: 16px 20px 24px;
+    padding: var(--ds-4) var(--ds-4) var(--ds-6);
   }
 }
 
@@ -2378,6 +2749,9 @@
   }
 }
 
+/* Satu-satunya breakpoint di luar skala 640/768/1024/1280, disengaja:
+   ponsel selebar 360–400px tidak muat menampilkan wordmark, label
+   koneksi, dan pemilih perangkat sekaligus di satu baris topbar. */
 @media (max-width: 480px) {
   .app-topbar {
     gap: 8px;

@@ -19,6 +19,26 @@ const MAX_HISTORY_MESSAGES = 12
 const SYSTEM_INSTRUCTION =
   'Anda adalah asisten untuk proyek sol sepatu pintar diabetes Glykos. Jawablah hanya pertanyaan yang berkaitan dengan proyek ini, kesehatan kaki penderita diabetes, sensor sepatu pintar, serta pemantauan tekanan, suhu, dan kelembapan. Gunakan bahasa Indonesia dalam semua jawaban. Jangan menjawab pertanyaan di luar cakupan tersebut.'
 
+// Aturan tambahan yang HANYA berlaku saat data pengguna ikut dikirim.
+//
+// Dua kalimat terakhir adalah yang paling penting. Begitu model memegang angka
+// sungguhan, godaan terbesarnya adalah mengisi yang kosong — menyebut nilai
+// yang tidak ada di ringkasan, atau melangkah dari "tekanan Anda tinggi" ke
+// kesimpulan klinis. Alat ini memantau; yang mendiagnosis tetap manusia.
+const DATA_INSTRUCTION = [
+  'Anda diberi ringkasan pembacaan sensor milik pengguna di bawah ini.',
+  'Pakai angka tersebut bila relevan: sebut nilainya, bandingkan dengan ambangnya, dan jelaskan artinya dengan bahasa sehari-hari.',
+  'JANGAN pernah menyebut angka pembacaan yang tidak ada dalam ringkasan ini. Kalau pengguna menanyakan sesuatu yang tidak tercakup, katakan terus terang bahwa datanya tidak tersedia.',
+  'JANGAN memberi diagnosis, vonis, atau instruksi pengobatan. Untuk pola yang menetap atau tanda luka, arahkan pengguna memeriksakan diri ke tenaga kesehatan.',
+].join(' ')
+
+// Diekspor terpisah supaya bisa diuji tanpa memanggil jaringan.
+export function buildSystemInstruction(context) {
+  const trimmed = typeof context === 'string' ? context.trim() : ''
+  if (!trimmed) return SYSTEM_INSTRUCTION
+  return `${SYSTEM_INSTRUCTION}\n\n${DATA_INSTRUCTION}\n\n${trimmed}`
+}
+
 // Menyusun `contents` multi-turn dari riwayat chat di UI.
 //
 // Sebelumnya hanya prompt terakhir yang dikirim, jadi meski tampilannya berupa
@@ -45,7 +65,9 @@ export function buildContents(history, prompt) {
   return [...recent.slice(start), { role: 'user', parts: [{ text: prompt }] }]
 }
 
-export async function sendGeminiMessage(prompt, history = []) {
+// `context` berisi ringkasan sensor pengguna (utils/sensorContext.js). Kosong
+// atau tidak diisi = perilaku lama, yaitu menjawab tanpa data pengguna.
+export async function sendGeminiMessage(prompt, history = [], context = '') {
   if (!API_KEY) {
     throw new Error('Konfigurasi AI belum lengkap. VITE_GEMINI_API_KEY belum diatur.')
   }
@@ -57,7 +79,7 @@ export async function sendGeminiMessage(prompt, history = []) {
       'x-goog-api-key': API_KEY,
     },
     body: JSON.stringify({
-      system_instruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+      system_instruction: { parts: [{ text: buildSystemInstruction(context) }] },
       contents: buildContents(history, prompt),
     }),
   })

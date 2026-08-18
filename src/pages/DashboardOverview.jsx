@@ -7,12 +7,14 @@ import HistoryChart from '../components/HistoryChart'
 import SensorFootMap from '../components/SensorFootMap'
 import PageHeader from '../components/PageHeader'
 import StatusBanner from '../components/StatusBanner'
+import TemperatureTrendBanner from '../components/TemperatureTrendBanner'
 import Button, { LinkButton } from '../components/Button'
 import { IconDownload, IconFileText, IconRefreshCw } from '../components/icons'
 import { exportToCsv, exportToPdf } from '../utils/exportData'
 
 export default function DashboardOverview() {
-  const { data, isLive, isStale, updatedAtMs, refresh, history, fatigue, ble } = useOutletContext()
+  const { data, isLive, isStale, updatedAtMs, refresh, history, fatigue, temperatureTrend, ble } =
+    useOutletContext()
 
   return (
     <div className="dashboard-overview">
@@ -48,10 +50,24 @@ export default function DashboardOverview() {
         <DeviceOnboardingBanner ble={ble} />
       )}
 
+      {/* Ditaruh di atas kartu metrik: pola berhari-hari lebih penting
+          daripada angka satu detik terakhir, dan komponennya sendiri tidak
+          merender apa pun selama kondisinya normal. */}
+      <TemperatureTrendBanner trend={temperatureTrend} />
+
+      {/* Urutan mengikuti bobot klinis, bukan urutan sensor di firmware.
+          Selisih suhu antar area adalah prediktor pre-ulkus terkuat dari
+          ketiganya — komponen ini sudah menyalakan peringatan sendiri di
+          atas 2,2 °C — jadi kartu Suhu yang memegang kolom utama dan angka
+          terbesar. Tekanan dan kelembapan jadi pendukung. */}
       <section className="metrics-grid">
+        <TemperatureCard temperature={data.temperatureObj} history={history} lead />
         <PressureCard pressure={data.pressure} history={history} />
-        <TemperatureCard temperature={data.temperatureObj} history={history} />
-        <HumidityCard humidity={data.humidity} history={history} airTemperature={data.airTemperature} />
+        <HumidityCard
+          humidity={data.humidity}
+          history={history}
+          airTemperature={data.airTemperature}
+        />
       </section>
 
       <div className="dashboard__row">
@@ -75,13 +91,18 @@ export default function DashboardOverview() {
         <div className="history-panel__header">
           <div>
             <h2 className="panel__title">Histori Tren</h2>
-            <p className="panel__subtitle">Pola tekanan, suhu &amp; kelembapan — 7 hari terakhir</p>
+            <p className="panel__subtitle">
+              Pola tekanan, suhu, selisih suhu &amp; kelembapan — 7 hari terakhir
+            </p>
           </div>
           <LinkButton to="/dashboard/history" variant="outline">
             Lihat Selengkapnya
           </LinkButton>
         </div>
-        <HistoryChart history={history} metrics={['pressure', 'temperature', 'humidity']} />
+        <HistoryChart
+          history={history}
+          metrics={['pressure', 'temperature', 'temperatureDelta', 'humidity']}
+        />
       </section>
     </div>
   )

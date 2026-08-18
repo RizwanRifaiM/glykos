@@ -1,5 +1,26 @@
 import { describe, expect, it } from 'vitest'
-import { buildContents } from './gemini'
+import { buildContents, buildSystemInstruction } from './gemini'
+
+describe('buildSystemInstruction', () => {
+  it('tanpa konteks, perilakunya sama seperti sebelumnya', () => {
+    const instruction = buildSystemInstruction('')
+    expect(instruction).toContain('asisten untuk proyek sol sepatu pintar diabetes Glykos')
+    expect(instruction).not.toContain('ringkasan pembacaan sensor')
+  })
+
+  it('menempelkan konteks sensor beserta pagar pembatasnya', () => {
+    const instruction = buildSystemInstruction('KONDISI TERKINI:\n- Tekanan puncak: 236 kPa')
+    expect(instruction).toContain('236 kPa')
+    // Dua pagar yang tidak boleh hilang begitu model memegang angka nyata:
+    // jangan mengarang pembacaan, jangan mendiagnosis.
+    expect(instruction).toContain('JANGAN pernah menyebut angka pembacaan yang tidak ada')
+    expect(instruction).toContain('JANGAN memberi diagnosis')
+  })
+
+  it('memperlakukan konteks berisi spasi saja sebagai tidak ada', () => {
+    expect(buildSystemInstruction('   \n  ')).toBe(buildSystemInstruction())
+  })
+})
 
 describe('buildContents', () => {
   it('menyertakan percakapan sebelumnya, bukan hanya pertanyaan terakhir', () => {

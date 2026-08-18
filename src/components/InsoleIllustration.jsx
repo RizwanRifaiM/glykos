@@ -1,5 +1,11 @@
 import { COLORS } from '../constants/theme'
 
+// Nilai tekanan datang dari pemanggilnya. Default 0 hanya berlaku kalau
+// tidak ada yang dikirim — dan di halaman pemasaran itu berarti tiga chip
+// bertuliskan "0.0 kPa", yang terbaca sebagai perangkat rusak, bukan
+// sebagai contoh tampilan. LandingPage.jsx mengirim nilai contoh yang
+// seluruhnya di rentang aman (<200 kPa menurut constants/thresholds.js),
+// supaya hero tidak sekaligus memperagakan kondisi bermasalah.
 export default function InsoleIllustration({ pressurePoints = {} }) {
   const toePressure = Number(pressurePoints.toe ?? 0)
   const metatarsalPressure = Number(pressurePoints.metatarsal ?? 0)
@@ -41,25 +47,25 @@ export default function InsoleIllustration({ pressurePoints = {} }) {
 
       {/* Chip: Tekanan Jari Kaki — sejajar titik toe (y=109) */}
       <g>
-        <rect x="10" y="86" width="190" height="46" rx="14" fill="#414141" stroke="#c9d9c5" />
-        <text x="26" y="116" fontSize="20">⚡</text>
-        <text x="56" y="108" fontSize="14" fontWeight="800" fill={COLORS.navy}>{toePressure.toFixed(1)} kPa</text>
+        <rect x="10" y="86" width="190" height="46" rx="14" fill="#ffffff" stroke="#c9d9c5" />
+        <circle cx="34" cy="109" r="5" fill={COLORS.lightBlue} />
+        <text x="56" y="108" fontSize="14" fontWeight="600" fill={COLORS.navy}>{toePressure.toFixed(1)} kPa</text>
         <text x="56" y="122" fontSize="10" fill={COLORS.blue}>Jari Kaki</text>
       </g>
 
       {/* Chip: Tekanan Metatarsal — sejajar titik metatarsal (y=223) */}
       <g>
         <rect x="630" y="200" width="190" height="46" rx="14" fill="#ffffff" stroke="#c9d9c5" />
-        <text x="646" y="230" fontSize="20">⚡</text>
-        <text x="676" y="222" fontSize="14" fontWeight="800" fill={COLORS.navy}>{metatarsalPressure.toFixed(1)} kPa</text>
+        <circle cx="654" cy="223" r="5" fill={COLORS.lightBlue} />
+        <text x="676" y="222" fontSize="14" fontWeight="600" fill={COLORS.navy}>{metatarsalPressure.toFixed(1)} kPa</text>
         <text x="676" y="236" fontSize="10" fill={COLORS.blue}>Metatarsal</text>
       </g>
 
       {/* Chip: Tekanan Tumit — sejajar titik heel (y=540) */}
       <g>
         <rect x="630" y="517" width="190" height="46" rx="14" fill="#ffffff" stroke="#c9d9c5" />
-        <text x="646" y="547" fontSize="20">⚡</text>
-        <text x="676" y="539" fontSize="14" fontWeight="800" fill={COLORS.navy}>{heelPressure.toFixed(1)} kPa</text>
+        <circle cx="654" cy="540" r="5" fill={COLORS.lightBlue} />
+        <text x="676" y="539" fontSize="14" fontWeight="600" fill={COLORS.navy}>{heelPressure.toFixed(1)} kPa</text>
         <text x="676" y="553" fontSize="10" fill={COLORS.blue}>Tumit</text>
       </g>
     </svg>

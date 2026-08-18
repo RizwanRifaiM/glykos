@@ -29,9 +29,33 @@ function StatusPill({ status }) {
 // diukur — kartu Suhu menampilkan "Aman" dan kartu Kelembapan "Perhatian"
 // padahal perangkat belum pernah tersambung. Polanya mengikuti
 // HistorySummaryCards.jsx yang sudah memakai .metric-card--empty.
-function MetricCard({ icon, title, value, unit, status, detail, trend, empty = false, children }) {
+//
+// `lead` = kartu ini memegang metrik terpenting di halaman dan mendapat
+// bobot visual lebih besar (kolom lebih lebar, angka lebih besar). Yang
+// memutuskan kartu mana adalah halamannya, bukan kartunya sendiri —
+// prioritas itu milik konteks halaman, bukan milik satu metrik.
+function MetricCard({
+  icon,
+  title,
+  value,
+  unit,
+  status,
+  detail,
+  trend,
+  empty = false,
+  lead = false,
+  children,
+}) {
+  const classes = [
+    'metric-card',
+    empty ? 'metric-card--empty' : `metric-card--${status}`,
+    lead ? 'metric-card--lead' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
-    <article className={`metric-card ${empty ? 'metric-card--empty' : `metric-card--${status}`}`}>
+    <article className={classes}>
       <div className="metric-card__header">
         <span className="metric-card__icon" aria-hidden="true">
           {icon}
@@ -74,7 +98,7 @@ export function PressureCard({ pressure, history }) {
 
   return (
     <MetricCard
-      icon={<IconGauge size={22} />}
+      icon={<IconGauge size={20} />}
       title="Tekanan Puncak"
       value={peak}
       unit="kPa"
@@ -103,7 +127,7 @@ export function PressureCard({ pressure, history }) {
   )
 }
 
-export function TemperatureCard({ temperature, history }) {
+export function TemperatureCard({ temperature, history, lead = false }) {
   const tObj =
     typeof temperature === 'object' && temperature !== null
       ? temperature
@@ -126,12 +150,13 @@ export function TemperatureCard({ temperature, history }) {
 
   return (
     <MetricCard
-      icon={<IconThermometer size={22} />}
+      icon={<IconThermometer size={20} />}
       title="Suhu Kulit"
       value={highest}
       unit="°C"
       status={status}
       empty={isEmpty}
+      lead={lead}
       detail={isEmpty ? undefined : `Area terpanas: ${location}`}
       trend={
         <Sparkline
@@ -192,7 +217,7 @@ export function HumidityCard({ humidity, history, airTemperature }) {
 
   return (
     <MetricCard
-      icon={<IconDroplet size={22} />}
+      icon={<IconDroplet size={20} />}
       title="Kelembapan Sepatu"
       value={rh}
       unit="% RH"

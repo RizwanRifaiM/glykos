@@ -1,4 +1,4 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useMemo, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import BrandMark from '../components/BrandMark'
 import DeviceSelector from '../components/DeviceSelector'
@@ -20,6 +20,9 @@ import { useAlerts, useAlertMonitor } from '../hooks/useAlerts'
 import { useFatigueMonitor } from '../hooks/useFatigueMonitor'
 import { useStepCounter } from '../hooks/useStepCounter'
 import { useFirestoreSync } from '../hooks/useFirestoreSync'
+import { useTemperatureTrendAlert } from '../hooks/useTemperatureTrendAlert'
+import { useWakeLock } from '../hooks/useWakeLock'
+import { evaluateTemperatureTrend } from '../utils/temperatureTrend'
 import { useAuth } from '../contexts/auth-context'
 import {
   IconLayoutDashboard,
@@ -28,6 +31,7 @@ import {
   IconIdCard,
   IconLogOut,
   IconMessageCircle,
+  IconSunDot,
 } from '../components/icons'
 import '../App.css'
 
@@ -53,6 +57,13 @@ function TopbarUser() {
   const label = user?.displayName || user?.email || 'Pengguna'
   const initial = label.charAt(0).toUpperCase()
 
+  // Menyimpan URL yang GAGAL, bukan sekadar flag boolean: dengan begini
+  // statusnya pulih sendiri saat pengguna berganti akun (photoURL berubah),
+  // tanpa perlu effect untuk mereset.
+  const [failedPhoto, setFailedPhoto] = useState(null)
+  const photoURL = user?.photoURL
+  const showPhoto = Boolean(photoURL) && failedPhoto !== photoURL
+
   return (
     <button
       type="button"
@@ -61,8 +72,22 @@ function TopbarUser() {
       title={`Keluar (${label})`}
       aria-label="Keluar"
     >
-      {user?.photoURL ? (
-        <img className="app-topbar__avatar" src={user.photoURL} alt="" />
+      {showPhoto ? (
+        <img
+          className="app-topbar__avatar"
+          src={photoURL}
+          alt=""
+          // Google membalas 403 untuk URL avatar lh3.googleusercontent.com bila
+          // browser mengirim header Referer dari origin yang tidak dikenalnya —
+          // localhost adalah kasus paling seringnya. Tanpa baris ini, fotonya
+          // gagal dimuat dan yang tampil adalah ikon gambar rusak, yang mudah
+          // disalahartikan sebagai elemen yang belum di-styling.
+          referrerPolicy="no-referrer"
+          // Jaring pengaman untuk semua sebab lain (offline, URL kedaluwarsa,
+          // pemblokir konten): jatuh ke inisial yang memang sudah bergaya,
+          // bukan membiarkan gambar rusak.
+          onError={() => setFailedPhoto(photoURL)}
+        />
       ) : (
         <span className="app-topbar__avatar app-topbar__avatar--fallback">{initial}</span>
       )}
@@ -121,6 +146,11 @@ export default function DashboardLayout() {
   // menampilkannya lewat jalur yang sama seperti data Firestore.
   const stepCounter = useStepCounter(deviceId, rawData, isLive)
 
+  // Layar ditahan menyala HANYA selama BLE benar-benar tersambung — layar mati
+  // membekukan halaman, dan halaman inilah satu-satunya jalur data perangkat.
+  // Lihat useWakeLock.js.
+  const wakeLockStatus = useWakeLock(bleActive)
+
   // Firmware tidak punya WiFi — web app ini yang menuliskan pembacaan BLE ke
   // Firestore (live/current + history) selama perangkat tersambung.
   // Dipanggil SETELAH useStepCounter karena jumlah langkah ikut disimpan;
@@ -153,6 +183,16 @@ export default function DashboardLayout() {
   const historyLoading = demoMode ? false : realHistoryLoading
   const alerts = demoMode ? DEMO_ALERTS : realAlerts
   const alertsLoading = demoMode ? false : realAlertsLoading
+
+  // Aturan "selisih suhu bertahan berhari-hari" dihitung dari rangkuman
+  // HARIAN, bukan pembacaan live — jadi sumbernya `history`, bukan `data`.
+  // Lihat utils/temperatureTrend.js.
+  const temperatureTrend = useMemo(() => evaluateTemperatureTrend(history), [history])
+
+  // uid `null` saat mode demo membuat hook-nya no-op, dengan alasan yang sama
+  // seperti useAlertMonitor di atas: angka contoh tidak boleh mengendap di
+  // Firestore sebagai peringatan sungguhan.
+  useTemperatureTrendAlert(demoMode ? null : uid, deviceId, temperatureTrend)
   // Ditandai live supaya banner onboarding "belum ada data" tidak menutupi
   // kartu metrik yang justru ingin ditinjau. Ajakan menyambungkan perangkat
   // tidak hilang — pindah ke DemoModeBanner yang membawa tombol Bluetooth-nya.
@@ -209,6 +249,18 @@ export default function DashboardLayout() {
             onDisconnect={ble.disconnect}
           />
 
+          {/* Menahan layar menyala adalah perubahan perilaku yang terasa di
+              baterai pengguna — jadi dinyatakan, bukan dilakukan diam-diam. */}
+          {wakeLockStatus === 'active' && (
+            <span
+              className="wakelock-pill"
+              title="Layar ditahan menyala selama insole tersambung, supaya data tidak terputus saat layar mati."
+            >
+              <IconSunDot size={14} />
+              <span className="wakelock-pill__label">Layar aktif</span>
+            </span>
+          )}
+
           <ConnectionBar
             connection={
               data?.connection || {
@@ -255,6 +307,11 @@ export default function DashboardLayout() {
                 alerts,
                 alertsLoading,
                 fatigue,
+                temperatureTrend,
+                // Dibutuhkan ChatbotPage: angka contoh harus ditandai sebagai
+                // contoh sebelum dikirim ke model, bukan disajikan sebagai
+                // kondisi kaki pengguna. Lihat utils/sensorContext.js.
+                demoMode,
                 ble,
               }}
             />

@@ -11,6 +11,7 @@ import { SkeletonForm } from '../components/Skeleton'
 import {
   getNotificationPermission,
   isNotificationSupported,
+  notify,
   requestNotificationPermission,
 } from '../utils/notifications'
 
@@ -30,6 +31,7 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [savedAt, setSavedAt] = useState(null)
   const [permission, setPermission] = useState(getNotificationPermission())
+  const [testResult, setTestResult] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -72,6 +74,19 @@ export default function ProfilePage() {
   async function handleEnableNotifications() {
     const result = await requestNotificationPermission()
     setPermission(result)
+  }
+
+  async function handleTestNotification() {
+    const delivered = await notify(
+      'Glykos — Notifikasi Uji',
+      'Notifikasi berhasil dikirim. Peringatan sungguhan akan tampil seperti ini.',
+      { tag: 'glykos-test' },
+    )
+    setTestResult(
+      delivered
+        ? 'Terkirim — periksa notifikasi perangkat Anda.'
+        : 'Gagal dikirim. Periksa izin notifikasi di pengaturan browser atau sistem.',
+    )
   }
 
   return (
@@ -157,7 +172,21 @@ export default function ProfilePage() {
         {!isNotificationSupported() ? (
           <p>Browser ini tidak mendukung notifikasi.</p>
         ) : permission === 'granted' ? (
-          <p className="profile-form__saved">Notifikasi aktif di browser ini.</p>
+          <>
+            <p className="profile-form__saved">Notifikasi aktif di browser ini.</p>
+            {/* Tombol uji ini bukan pemanis. Notifikasi peringatan hanya
+                muncul saat status benar-benar naik ke Risiko — jadi tanpa cara
+                mencobanya, kegagalan pengiriman (izin dicabut, service worker
+                belum aktif, notifikasi dibungkam OS) baru ketahuan tepat pada
+                saat peringatan yang sungguhan gagal sampai. */}
+            <div className="profile-form__actions">
+              <Button variant="outline" onClick={handleTestNotification}>
+                <IconBell size={16} />
+                Kirim Notifikasi Uji
+              </Button>
+              {testResult && <span className="profile-form__saved">{testResult}</span>}
+            </div>
+          </>
         ) : permission === 'denied' ? (
           <p>Notifikasi diblokir. Aktifkan lewat pengaturan izin situs pada browser Anda.</p>
         ) : (

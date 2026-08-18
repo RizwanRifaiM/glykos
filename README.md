@@ -51,7 +51,45 @@ Bagian itu harus cocok persis dengan firmware.
 | `src/services/firebase.js` / `firestore.js` | Auth dan Firestore sengaja dipisah demi ukuran bundle |
 | `src/hooks/` | Sumber data & logika sesi (BLE, sinkronisasi, langkah, kelelahan, peringatan) |
 | `src/constants/thresholds.js` | Ambang tekanan/suhu/kelembapan yang dipakai seluruh UI |
+| `src/utils/temperatureTrend.js` | Aturan selisih suhu yang bertahan antar hari (lihat di bawah) |
+| `src/utils/sensorContext.js` | Ringkasan sensor yang dikirim ke chatbot — sekaligus batas privasinya |
+| `public/sw.js` | Service worker: jalur notifikasi + cache offline |
 | `firestore.rules` | Aturan akses — berpasangan dengan `paths.js` |
+
+## Selisih suhu antar area
+
+Selisih suhu antar titik pada kaki yang sama adalah prediktor pre-ulkus paling
+bernilai di sistem ini. Ada **dua aturan** yang berbeda, dan keduanya perlu:
+
+| Aturan | Sumber data | Berkas |
+|--------|-------------|--------|
+| Selisih ≥ 2,2 °C pada pembacaan sekarang | pembacaan live | `utils/alertRules.js` |
+| Selisih bertahan **2 hari berturut-turut** | rangkuman harian | `utils/temperatureTrend.js` |
+
+Yang kedua yang memicu saran mengurangi beban. Hari tanpa pemakaian tidak
+menjembatani rangkaian — tanpa pembacaan, tidak ada dasar menyebut selisihnya
+bertahan.
+
+## Notifikasi & wake lock
+
+Notifikasi dikirim lewat `registration.showNotification()` pada service worker.
+Konstruktor `new Notification()` ditolak Chrome di Android, jadi jalur lama
+gagal diam-diam persis di perangkat yang paling mungkin dipakai. Ada tombol
+**Kirim Notifikasi Uji** di halaman Profil untuk memastikannya benar-benar
+sampai.
+
+Service worker **hanya aktif di build produksi**. Di `npm run dev` ia justru
+dibatalkan pendaftarannya beserta cache-nya — lapisan cache di antara kode dan
+tampilan membuat perubahan yang sudah benar terlihat tidak berubah. Untuk
+menguji notifikasi secara lokal:
+
+```bash
+npm run build && npm run preview
+```
+
+Selama BLE tersambung, layar ditahan menyala (Screen Wake Lock) — layar mati
+membekukan halaman, dan halaman inilah satu-satunya jalur data perangkat.
+Statusnya terlihat sebagai penanda "Layar aktif" di topbar.
 
 ## Keamanan data
 
@@ -76,6 +114,10 @@ antar sesi, selalu disertai banner, dan **tidak pernah menulis ke Firestore**.
 
 - **Kunci Gemini ikut ter-bundle** (`VITE_GEMINI_API_KEY`) — hanya boleh key
   free-tier dengan HTTP referrer restriction. Perbaikan tuntasnya adalah backend proxy.
+  Sejak chatbot ikut mengirim ringkasan sensor, taruhannya naik dari kuota ke
+  privasi: yang dikirim dibatasi pada **angka sensor agregat** — tanpa nama,
+  uid, id perangkat, atau isi profil medis (`utils/sensorContext.js`, diuji di
+  `sensorContext.test.js`). Backend proxy jadi lebih layak didahulukan.
 - **Fallback FSR belum dikalibrasi** — `FSR_MV_TO_KPA` masih placeholder linear,
   hanya terpakai bila firmware tidak mengirim `P1/P2/P3`.
 - **Laju paket BLE ~3,3 Hz** membatasi penghitungan langkah; lihat catatan sample

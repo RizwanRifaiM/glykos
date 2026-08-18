@@ -1,0 +1,10 @@
+<!-- Varian maskable: seluruh kanvas berlatar penuh dan lambangnya diperkecil ke
+     dalam safe zone (lingkaran ~80% tengah), supaya tidak terpotong saat
+     Android memangkasnya jadi lingkaran/squircle. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" fill="#446a45" />
+  <g transform="translate(256 256) scale(0.62) translate(-256 -256)">
+    <path d="M256 128c-21 64-85 107-85 171a85 85 0 00170 0c0-64-64-107-85-171z" fill="#86a788" />
+    <path d="M192 384c21 43 64 64 64 64s43-21 64-64" stroke="#fefdeb" stroke-width="21" fill="none" stroke-linecap="round" />
+  </g>
+</svg>

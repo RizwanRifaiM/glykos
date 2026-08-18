@@ -1,18 +1,23 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useOutletContext } from 'react-router-dom'
 import { sendGeminiMessage } from '../services/gemini'
+import { buildSensorContext } from '../utils/sensorContext'
 import { IconSend, IconSparkles, IconMessageCircle } from '../components/icons'
 
 const INITIAL_CHAT = [
   {
     role: 'assistant',
     content:
-      'Halo! Saya asisten Glykos. Tanyakan apa saja seputar perawatan kaki diabetes, cara kerja insole pintar, atau makna data tekanan, suhu, dan kelembapan Anda. Pilih salah satu pertanyaan cepat di bawah untuk memulai.',
+      'Halo! Saya asisten Glykos. Saya bisa membaca angka insole Anda — tanyakan kondisi kaki Anda hari ini, arti tekanan/suhu/kelembapan yang terbaca, atau perawatan kaki diabetes pada umumnya.',
   },
 ]
 
+// Dua pertanyaan pertama sengaja mengarah ke DATA pengguna sendiri: itu yang
+// membedakan asisten ini dari mesin pencari, dan sebelumnya tidak mungkin
+// dijawab karena halaman ini tidak pernah membaca data apa pun.
 const QUICK_QUESTIONS = [
-  'Apa saja yang bisa dilakukan alat ini?',
-  'Apa hubungan tekanan dengan diabetes?',
+  'Bagaimana kondisi kaki saya hari ini?',
+  'Apa yang perlu saya perhatikan dari data minggu ini?',
   'Kenapa suhu kulit dipantau?',
   'Mengapa kelembapan dalam sepatu berbahaya?',
 ]
@@ -22,6 +27,19 @@ function timeLabel() {
 }
 
 export default function ChatbotPage() {
+  const { data, history, fatigue, temperatureTrend, isLive, demoMode } = useOutletContext()
+
+  // Ringkasan dibangun ulang tiap kali datanya berubah, bukan sekali di awal:
+  // percakapan bisa berlangsung sementara pembacaan terus masuk, dan jawaban
+  // harus mengacu ke angka yang sedang dilihat pengguna.
+  //
+  // Isinya angka sensor agregat saja — batas privasinya dijelaskan di
+  // utils/sensorContext.js.
+  const sensorContext = useMemo(
+    () => buildSensorContext({ data, history, trend: temperatureTrend, fatigue, isLive, demoMode }),
+    [data, history, temperatureTrend, fatigue, isLive, demoMode],
+  )
+
   const [chat, setChat] = useState(() =>
     INITIAL_CHAT.map((m) => ({ ...m, time: timeLabel() })),
   )
@@ -56,7 +74,7 @@ export default function ChatbotPage() {
     try {
       // `chat` di sini masih berisi percakapan SEBELUM pesan ini — persis
       // riwayat yang dibutuhkan model untuk menjawab pertanyaan susulan.
-      const reply = await sendGeminiMessage(trimmed, chat)
+      const reply = await sendGeminiMessage(trimmed, chat, sensorContext)
       setChat((prev) => [
         ...prev,
         { role: 'assistant', content: reply, time: timeLabel() },
@@ -183,8 +201,12 @@ export default function ChatbotPage() {
             <IconSend size={18} />
           </button>
         </form>
+        {/* Dinyatakan terbuka: pengguna berhak tahu bahwa angka insole-nya
+            ikut dikirim ke layanan AI, dan apa saja yang TIDAK ikut. */}
         <p className="chatbot-disclaimer">
-          Informasi bersifat edukatif dan bukan pengganti diagnosis dokter.
+          Jawaban memakai pembacaan sensor insole Anda (tekanan, suhu, kelembapan, langkah). Data
+          profil seperti nama, HbA1c, dan riwayat luka tidak dikirim. Informasi bersifat edukatif
+          dan bukan pengganti diagnosis dokter.
         </p>
       </section>
     </div>

@@ -46,6 +46,12 @@ export function buildDemoHistory(days = 7) {
     // Suhu kulit: 29,4 °C naik pelan ke ~33 °C.
     const temperature = 29.4 + progress * 3.4 + (noise(i + 7) - 0.5) * 0.6
 
+    // Selisih suhu antar-area: 0,6 °C (normal) menanjak melewati ambang
+    // TEMP_DELTA_WARNING (2,2 °C) pada beberapa hari TERAKHIR berturut-turut —
+    // sengaja, supaya aturan persistensi di utils/temperatureTrend.js ikut
+    // terlihat aktif di mode demo, bukan cuma grafiknya.
+    const temperatureDelta = 0.6 + progress * 2.2 + (noise(i + 17) - 0.5) * 0.3
+
     // Kelembapan: 44 % RH naik melewati ambang 70 %.
     const humidity = 44 + progress * 32 + (noise(i + 13) - 0.5) * 5
 
@@ -60,6 +66,7 @@ export function buildDemoHistory(days = 7) {
       timestamp: d.getTime(),
       pressure: round1(Math.max(0, pressure)),
       temperature: round1(temperature),
+      temperatureDelta: round1(Math.max(0, temperatureDelta)),
       humidity: round1(Math.min(100, Math.max(0, humidity))),
       steps,
     })

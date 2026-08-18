@@ -63,7 +63,7 @@
   align-items: center;
   gap: 10px;
   font-size: 19px;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.3px;
   color: var(--navy);
   flex-shrink: 0;
@@ -185,7 +185,7 @@
   margin: 0 auto;
   padding: clamp(40px, 6vw, 76px) 24px clamp(32px, 5vw, 56px);
   display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
+  grid-template-columns: 1.15fr 0.85fr;
   gap: clamp(32px, 5vw, 56px);
   align-items: center;
   scroll-margin-top: 76px;
@@ -205,11 +205,16 @@
   margin-bottom: 22px;
 }
 
+/* Turun dari maks 54px ke 44px dan kolomnya dilebarkan dari 1.05fr ke
+   1.15fr. Pada 54px judul ini pecah jadi TIGA baris, sementara batasnya
+   dua — dan judul tiga baris mendorong tombol ke bawah lipatan pada
+   laptop 1366x768. Ukurannya diperiksa dengan render sungguhan, bukan
+   dikira-kira. */
 .hero__title {
-  font-size: clamp(34px, 5vw, 54px);
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -1.4px;
+  font-size: clamp(32px, 3.6vw, 44px);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
   text-wrap: balance;
   color: var(--navy);
   margin-bottom: 20px;
@@ -239,22 +244,33 @@
   font-size: 15px;
 }
 
-.hero__stats {
+/* ---------- Pita spesifikasi ----------
+   Dulu .hero__stats dan berada di dalam hero. Sekarang pita tersendiri
+   selebar halaman: perannya sama, tapi tidak lagi jadi elemen teks kelima
+   yang berebut perhatian dengan judul. */
+
+.spec-strip {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 0 24px clamp(28px, 4vw, 44px);
+}
+
+.spec-strip__list {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 28px;
+  gap: 16px 40px;
   margin: 0;
-  padding-top: 26px;
+  padding-top: 24px;
   border-top: 1px solid var(--border);
 }
 
-.hero__stat {
+.spec-strip__item {
   display: flex;
   align-items: center;
   gap: 11px;
 }
 
-.hero__stat-icon {
+.spec-strip__icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -266,32 +282,65 @@
   color: var(--navy);
 }
 
-.hero__stat dt {
+.spec-strip__item dt {
   font-size: 17px;
-  font-weight: 800;
-  letter-spacing: -0.3px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--navy);
   line-height: 1.2;
 }
 
-.hero__stat dd {
+.spec-strip__item dd {
   margin: 0;
   font-size: 12.5px;
   color: var(--blue);
 }
 
+/* ---------- Panggung hero ----------
+   Sepatu 3D duduk di sini. Lapisan cahaya dan cincin tetap CSS murni dan
+   tergambar seketika, jadi hero tidak pernah berupa kotak kosong selama
+   three.js beserta modelnya masih diunduh.
+
+   Kemiringan mengikuti pointer sudah dihapus dari panggung ini: modelnya
+   sendiri berputar dan bisa diseret, dan memiringkan kanvas WebGL lewat
+   transform CSS hanya akan menjungkirkan gambar yang sudah dirender —
+   bukan menambah kedalaman, justru merusak perspektif yang sudah benar. */
+
+/* Kolom visual jadi kolom: panggung di atas, petunjuk gestur di bawahnya.
+   Petunjuk ini tidak dihitung sebagai elemen teks hero — ia milik visual,
+   bukan bagian dari tumpukan lencana/judul/subjudul/tombol. */
 .hero__visual {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.hero__visual-hint {
+  font-size: 12.5px;
+  color: var(--blue);
+  text-align: center;
+}
+
+.hero__stage {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  aspect-ratio: 850 / 640;
+}
+
+.hero__layer {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.hero__visual::before {
-  content: '';
-  position: absolute;
-  inset: 8%;
-  z-index: -1;
+.hero__layer--glow {
+  transform: scale(1.15);
   background:
     radial-gradient(circle at 30% 25%, var(--pink-2), transparent 60%),
     radial-gradient(circle at 75% 70%, rgba(134, 167, 136, 0.55), transparent 60%);
@@ -299,6 +348,27 @@
   opacity: 0.8;
   border-radius: 50%;
 }
+
+.hero__layer--ring {
+  transform: scale(0.96);
+  border: 1px solid rgba(129, 162, 131, 0.35);
+  border-radius: 50%;
+}
+
+.hero__layer--ring::after {
+  content: '';
+  position: absolute;
+  inset: 12%;
+  border: 1px dashed rgba(129, 162, 131, 0.28);
+  border-radius: 50%;
+}
+
+/* .hero-illustration dibatasi 480px karena dipakai bersama SensorFootMap
+   di dashboard. Di dalam panggung, lebarnya diambil alih oleh panggung. */
+.hero__layer--art .hero-illustration {
+  max-width: 100%;
+}
+
 
 /* .hero-illustration & .hero-pulse juga dipakai oleh SensorFootMap.jsx di
    dashboard (bundel CSS Vite digabung jadi satu, jadi kelas ini global).
@@ -363,7 +433,7 @@
 
 .section-heading h2 {
   font-size: clamp(25px, 3.2vw, 36px);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.8px;
   text-wrap: balance;
@@ -389,12 +459,68 @@
   color: rgba(254, 253, 235, 0.78);
 }
 
-/* Problem */
+/* ---------- Problem: split lengket ----------
+   Keluarga layout tersendiri. Judul menempel di kiri sementara ketiga poin
+   bergulir melewatinya, jadi pembaca tidak pernah kehilangan konteks
+   pertanyaan yang sedang dijawab. */
 
-.problem__grid {
+@media (min-width: 1024px) {
+  .problem {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: 72px;
+    align-items: start;
+  }
+
+  .problem__heading {
+    position: sticky;
+    top: 104px;
+    text-align: left;
+    max-width: none;
+    margin: 0;
+  }
+}
+
+.problem__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  gap: 16px;
+}
+
+/* Sempat memakai nomor 01/02/03 lewat counter CSS, lalu dibatalkan:
+   section .steps di halaman yang SAMA sudah memakai penanda 01/02/03, dan
+   di sana angkanya punya arti (langkahnya memang berurutan). Ketiga poin
+   di sini tidak berurutan — memberinya angka membuat satu perangkat visual
+   berarti dua hal berbeda di satu halaman.
+
+   Penggantinya garis aksen pendek: menandai awal kartu tanpa mengklaim
+   urutan apa pun, dan warnanya ikut aksen tiap kartu. */
+.problem__card::before {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 3px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.55;
+  margin-bottom: 16px;
+}
+
+.problem__card--rose::before {
+  color: var(--warning);
+  opacity: 1;
+}
+
+.problem__card--danger::before {
+  color: var(--red);
+  opacity: 1;
+}
+
+.problem__card--green::before {
+  color: var(--light-blue);
+  opacity: 1;
 }
 
 .problem__card {
@@ -480,7 +606,7 @@
 
 .science__value {
   font-size: clamp(38px, 4.6vw, 50px);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1;
   letter-spacing: -2px;
   color: var(--cream);
@@ -510,10 +636,69 @@
 
 /* Features */
 
+/* ---------- Features: bento ----------
+   Enam kartu berukuran sama membaca sebagai daftar; enam kartu berukuran
+   berbeda membaca sebagai komposisi. --span disuntikkan per kartu dari
+   FEATURE_SPAN di LandingPage.jsx dengan ritme 4-2 / 2-4 / 3-3 — jumlahnya
+   18, tepat tiga baris penuh pada grid 6 kolom, tanpa sel kosong. */
+
 .features__grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 640px) {
+  .features__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .features__grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .feature-card {
+    grid-column: span var(--span, 3);
+  }
+}
+
+/* Butir pre-flight "Bento Background Diversity": bento yang keenam selnya
+   sama-sama kartu teks berlatar rata membaca sebagai tabel, bukan
+   komposisi. Dua sel terlebar (span 4, yaitu kartu ke-1 dan ke-4) dapat
+   lapisan dekoratif nyata — kisi titik dan gradasi radial, keduanya murni
+   CSS sehingga tidak menambah satu byte pun permintaan jaringan.
+   Ditaruh di ::after dengan z-index negatif supaya tidak pernah menutupi
+   teks, dan pointer-events none supaya tidak mencuri hover dari tilt. */
+.feature-card {
+  position: relative;
+  isolation: isolate;
+}
+
+.feature-card:nth-child(1)::after,
+.feature-card:nth-child(4)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.feature-card:nth-child(1)::after {
+  background-image: radial-gradient(rgba(110, 25, 54, 0.16) 1px, transparent 1px);
+  background-size: 14px 14px;
+  -webkit-mask-image: linear-gradient(115deg, transparent 45%, #000 100%);
+  mask-image: linear-gradient(115deg, transparent 45%, #000 100%);
+}
+
+.feature-card:nth-child(4)::after {
+  background: radial-gradient(
+    120% 90% at 100% 100%,
+    rgba(129, 162, 131, 0.32),
+    transparent 62%
+  );
 }
 
 .feature-card {
@@ -536,9 +721,14 @@
   border-top-color: var(--warning);
 }
 
+/* translateY(-3px) dihapus. vanilla-tilt menulis transform INLINE pada
+   elemen yang sama; transform dari CSS hover akan langsung ditimpanya,
+   dan pada kartu yang tidak kebagian tilt (layar sentuh) hasilnya dua
+   perilaku hover yang berbeda di halaman yang sama. Umpan baliknya
+   dipindah ke bayangan dan garis tepi, yang tidak bertabrakan. */
 .feature-card:hover {
-  transform: translateY(-3px);
   box-shadow: var(--shadow-md);
+  border-color: rgba(129, 162, 131, 0.45);
 }
 
 .feature-card__icon {
@@ -622,7 +812,7 @@
   background: var(--navy);
   color: var(--cream);
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.3px;
 }
 
@@ -686,8 +876,9 @@
   border-top-color: var(--red);
 }
 
+/* Sama seperti .feature-card: kartu ini target tilt, jadi transform-nya
+   diserahkan sepenuhnya ke vanilla-tilt. */
 .team-card:hover {
-  transform: translateY(-3px);
   box-shadow: var(--shadow-md);
 }
 
@@ -702,7 +893,7 @@
   justify-content: center;
   color: var(--cream);
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: 0.02em;
   flex-shrink: 0;
 }
@@ -764,7 +955,7 @@
 
 .cta-banner h2 {
   font-size: clamp(24px, 3vw, 32px);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.7px;
   text-wrap: balance;
@@ -870,6 +1061,65 @@
   opacity: 0.75;
 }
 
+/* ---------- Panggung ilustrasi insole ----------
+   Sebelumnya .shoe-showcase; sepatu 3D-nya pindah ke hero dan tempat ini
+   diisi ilustrasi insole yang ditukar dari sana. */
+
+.insole-showcase {
+  max-width: 620px;
+  margin: 0 auto clamp(32px, 4vw, 48px);
+  text-align: center;
+}
+
+.insole-showcase .hero-illustration {
+  width: 100%;
+  max-width: 520px;
+}
+
+.insole-showcase__hint {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--blue);
+}
+
+/* Tanpa panel: tidak ada latar, garis tepi, atau radius. Viewer ini duduk
+   di dalam .hero__layer--art, dan yang jadi latarnya adalah lapisan cahaya
+   serta cincin di belakangnya. Memberi latar sendiri di sini akan menutupi
+   keduanya dan mengembalikan sepatu ke atas kotak putih. */
+.shoe-viewer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  /* pan-y, BUKAN none. `touch-action: none` memang membuat seretan horizontal
+     mulus, tapi sekaligus menelan gulir vertikal — di ponsel, jari yang
+     kebetulan mendarat di sini tidak bisa lagi menggulir halaman, dan blok
+     ini jadi perangkap di tengah bacaan. pan-y menyerahkan gulir vertikal
+     ke halaman dan menyisakan gerakan horizontal untuk memutar model. */
+  touch-action: pan-y;
+}
+
+.shoe-viewer:active {
+  cursor: grabbing;
+}
+
+.shoe-viewer canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.shoe-viewer__note {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--blue);
+}
+
 /* Scroll reveal — kelas penyembunyi hanya aktif setelah observer terpasang
    (.reveal-ready di <html>), jadi tanpa JS konten tetap tampil. */
 
@@ -884,6 +1134,77 @@
   transform: none;
 }
 
+/* ---------- Reveal bertahap ----------
+   Sebelumnya satu section muncul sebagai satu blok utuh. Menahan anaknya
+   sedikit lebih lama satu per satu membuat mata menelusuri grid mengikuti
+   urutan bacaan, alih-alih disodori enam kartu sekaligus.
+
+   Jedanya dipasang di ANAK, bukan di kontainer, dan hanya sesudah
+   kontainernya ditandai .is-revealed — jadi hitungannya mulai saat section
+   benar-benar masuk layar, bukan saat halaman dimuat.
+
+   Jeda maksimum 300ms: di atas itu kartu terakhir baru muncul setelah mata
+   sudah pindah ke sana, dan animasinya berubah dari penuntun jadi penghambat. */
+.reveal-ready [data-reveal] .features__grid > *,
+.reveal-ready [data-reveal] .problem__list > *,
+.reveal-ready [data-reveal] .team__grid > *,
+.reveal-ready [data-reveal] .steps > * {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.5s var(--ease, ease), transform 0.5s var(--ease, ease);
+}
+
+.reveal-ready [data-reveal].is-revealed .features__grid > *,
+.reveal-ready [data-reveal].is-revealed .problem__list > *,
+.reveal-ready [data-reveal].is-revealed .team__grid > *,
+.reveal-ready [data-reveal].is-revealed .steps > * {
+  opacity: 1;
+  transform: none;
+}
+
+.reveal-ready [data-reveal].is-revealed :is(.features__grid, .problem__list, .team__grid, .steps)
+  > *:nth-child(1) {
+  transition-delay: 0ms;
+}
+.reveal-ready [data-reveal].is-revealed :is(.features__grid, .problem__list, .team__grid, .steps)
+  > *:nth-child(2) {
+  transition-delay: 60ms;
+}
+.reveal-ready [data-reveal].is-revealed :is(.features__grid, .problem__list, .team__grid, .steps)
+  > *:nth-child(3) {
+  transition-delay: 120ms;
+}
+.reveal-ready [data-reveal].is-revealed :is(.features__grid, .problem__list, .team__grid, .steps)
+  > *:nth-child(4) {
+  transition-delay: 180ms;
+}
+.reveal-ready [data-reveal].is-revealed :is(.features__grid, .problem__list, .team__grid, .steps)
+  > *:nth-child(5) {
+  transition-delay: 240ms;
+}
+.reveal-ready [data-reveal].is-revealed :is(.features__grid, .problem__list, .team__grid, .steps)
+  > *:nth-child(n + 6) {
+  transition-delay: 300ms;
+}
+
+/* ---------- Dukungan tilt ----------
+   preserve-3d diperlukan supaya isi kartu ikut miring bersama kartunya,
+   bukan tetap datar di atas permukaan yang miring. `will-change` sengaja
+   TIDAK dipasang: kartunya banyak, dan mempromosikan semuanya ke layer
+   compositor sendiri justru menghabiskan memori GPU di ponsel kelas bawah
+   demi efek yang di ponsel bahkan tidak pernah menyala. */
+[data-tilt-card] {
+  transform-style: preserve-3d;
+}
+
+/* Elemen kilau disuntikkan vanilla-tilt ke dalam kartu sebagai anak
+   pertama. Tanpa dipotong mengikuti radius kartu, kilaunya keluar sebagai
+   persegi di atas sudut yang membulat. */
+[data-tilt-card] .js-tilt-glare {
+  border-radius: inherit;
+  overflow: hidden;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-pulse {
     animation: none;
@@ -896,6 +1217,16 @@
   }
 
   .reveal-ready [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  /* Reveal bertahap ikut dimatikan. Tanpa baris ini, anak-anaknya tetap
+     tersembunyi selamanya: aturan yang memunculkannya kembali bergantung
+     pada .is-revealed, sementara observer-nya memang tidak dipasang saat
+     reduced-motion — jadi kelas itu tidak akan pernah datang. */
+  .reveal-ready [data-reveal] :is(.features__grid, .problem__list, .team__grid, .steps) > * {
     opacity: 1;
     transform: none;
     transition: none;

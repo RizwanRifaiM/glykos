@@ -65,7 +65,11 @@ function saveState(uid, deviceId, state) {
   }
 }
 
-async function logAlert(uid, deviceId, item) {
+// Diekspor supaya jalur pencatatan peringatan tetap SATU. Dipakai juga oleh
+// useTemperatureTrendAlert.js yang sumber datanya rangkuman harian, bukan
+// pembacaan live — bentuk dokumennya harus tetap identik supaya halaman
+// Peringatan dan kolom Peringatan di Riwayat tidak perlu tahu asal-usulnya.
+export async function logAlert(uid, deviceId, item) {
   try {
     await addDoc(alertsCollection(uid, deviceId), {
       metric: item.metric,

@@ -35,7 +35,7 @@
   /* --blue (#81a283) hanya ~2,4:1 di atas putih — gagal WCAG AA untuk teks
      kecil. Token ini 4,7:1, dipakai untuk teks sekunder di dalam kartu. */
   --text-muted: #587c59;
-  --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  --mono: 'Geist Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 
   /* Warna status kartu metrik.
      Sebelumnya safe/warning/danger memakai sage-pucat / pink-pucat / maroon
@@ -76,7 +76,10 @@
   --topbar-height: 68px;
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
 
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+  /* Geist menggantikan Inter. Inter adalah default yang paling sering dipakai
+     tanpa alasan; Geist punya angka yang lebih tegas membedakan 1/7 dan 0/O —
+     penting untuk layar yang isinya pembacaan sensor. */
+  font-family: 'Geist Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
   font-size: 16px;
   line-height: 1.5;
@@ -419,4 +422,79 @@ a {
     animation: none;
     opacity: 0.55;
   }
+}
+
+/* --------------------------------------------------------------------------
+   Tombol bersama (components/Button.jsx)
+
+   ADA DI SINI, BUKAN DI App.css — dan itu keputusan yang perlu dipertahankan.
+
+   `variantProps()` di components/button-variants.js SELALU memasang class
+   `glykos-btn` pada setiap Button, LinkButton, dan AnchorButton. Komponen itu
+   dipakai di halaman depan, Login, dan Register — tiga halaman yang berada di
+   LUAR DashboardLayout, satu-satunya berkas yang mengimpor App.css.
+
+   Selama aturan ini tinggal di App.css, tombol pada ketiga halaman tersebut
+   tampil tanpa gaya sama sekali pada pemuatan langsung, dan baru terlihat
+   benar kalau pengguna kebetulan sudah membuka dashboard lebih dulu di sesi
+   yang sama (App.css sudah terlanjur ter-inject). Gejala yang menyesatkan:
+   tampilannya berubah-ubah tergantung urutan navigasi.
+
+   index.css diimpor main.jsx, jadi selalu dimuat di semua rute.
+   -------------------------------------------------------------------------- */
+
+.glykos-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border: 1.5px solid var(--btn-border, transparent);
+  border-radius: var(--radius-sm);
+  background: var(--btn-bg, transparent);
+  color: var(--btn-text, var(--navy));
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.glykos-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.glykos-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.glykos-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.glykos-btn--outline:hover:not(:disabled) {
+  background: rgba(68, 106, 69, 0.05);
+}
+
+.glykos-btn--chip {
+  background: transparent;
+  border-color: transparent;
+  color: var(--blue);
+  padding: 9px 18px;
+}
+
+.glykos-btn--chip:hover:not(:disabled) {
+  background: rgba(129, 162, 131, 0.1);
+  box-shadow: none;
+  transform: none;
+}
+
+.glykos-btn--chip.glykos-btn--active {
+  background: var(--navy);
+  color: var(--cream);
+  box-shadow: var(--shadow-sm);
 }

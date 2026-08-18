@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { LinkButton } from '../components/Button'
 import { variantProps } from '../components/button-variants'
 import { useAuth } from '../contexts/auth-context'
 import InsoleIllustration from '../components/InsoleIllustration'
+import ShoeViewer from '../components/ShoeViewer'
 import { COLORS } from '../constants/theme'
 import {
   IconGauge,
@@ -15,6 +16,7 @@ import {
   IconMenu,
   IconX,
 } from '../components/icons'
+import { useTilt } from '../hooks/useTilt'
 import './Landing.css'
 
 const FEATURES = [
@@ -122,6 +124,10 @@ const STEPS = [
   },
 ]
 
+// Ritme bento untuk .features__grid pada grid 6 kolom: 4+2, 2+4, 3+3.
+// Jumlahnya 18 = tepat tiga baris penuh untuk enam kartu.
+const FEATURE_SPAN = [4, 2, 2, 4, 3, 3]
+
 const HERO_STATS = [
   { icon: IconGauge, value: '4', label: 'Jenis sensor' },
   { icon: IconActivity, value: '3', label: 'Titik tekanan' },
@@ -217,6 +223,25 @@ export default function LandingPage() {
   const activeSection = useActiveSection()
   useScrollReveal()
 
+  // Tilt kartu. Objek opsinya di-memo karena ia masuk daftar dependensi
+  // effect di useTilt — literal baru tiap render akan memasang ulang tilt
+  // pada setiap render.
+  const cardsRef = useRef(null)
+  const tiltOptions = useMemo(
+    () => ({
+      max: 6,
+      speed: 700,
+      perspective: 1100,
+      scale: 1.015,
+      glare: true,
+      'max-glare': 0.12,
+      gyroscope: false,
+      easing: 'cubic-bezier(0.2, 0, 0, 1)',
+    }),
+    [],
+  )
+  useTilt(cardsRef, '[data-tilt-card]', tiltOptions)
+
   useEffect(() => {
     document.body.style.overflow = navOpen ? 'hidden' : ''
     return () => {
@@ -307,7 +332,7 @@ export default function LandingPage() {
         )}
       </header>
 
-      <main id="konten">
+      <main id="konten" ref={cardsRef}>
         <section className="hero" id="top">
           <div className="hero__content">
             <span className="hero__badge">Wearable Health-Tech</span>
@@ -322,36 +347,71 @@ export default function LandingPage() {
             </p>
             <div className="hero__actions">
               <LinkButton to="/register" variant="primary" className="hero__cta">
-                Daftar Sekarang
+                Daftar Gratis
               </LinkButton>
               <a href="#cara-kerja" {...variantProps('outline', false, 'hero__cta')}>
                 Lihat Cara Kerja
               </a>
             </div>
 
-            <dl className="hero__stats">
-              {HERO_STATS.map((stat) => (
-                <div key={stat.label} className="hero__stat">
-                  <span className="hero__stat-icon" aria-hidden="true">
-                    <stat.icon size={18} />
-                  </span>
-                  <div>
-                    <dt>{stat.value}</dt>
-                    <dd>{stat.label}</dd>
-                  </div>
-                </div>
-              ))}
-            </dl>
           </div>
 
+          {/* Lapisan cahaya & cincin tetap CSS murni sehingga langsung
+              tergambar tanpa menunggu apa pun — hero tidak pernah kosong
+              selama three.js dan modelnya diunduh. Kemiringan mengikuti
+              pointer DIHAPUS di sini: modelnya sendiri sudah bisa diputar
+              dengan seretan, dan dua mekanisme rotasi pada satu objek
+              membuat keduanya terasa salah. */}
           <div className="hero__visual">
-            <InsoleIllustration />
+            <div className="hero__stage">
+              <span className="hero__layer hero__layer--glow" aria-hidden="true" />
+              <span className="hero__layer hero__layer--ring" aria-hidden="true" />
+              <div className="hero__layer hero__layer--art">
+                <ShoeViewer
+                  fallback={
+                    <InsoleIllustration
+                      pressurePoints={{ toe: 84.2, metatarsal: 162.5, heel: 118.4 }}
+                    />
+                  }
+                />
+              </div>
+            </div>
+            {/* aria-hidden: ini petunjuk gestur untuk pengguna pointer/sentuh.
+                Pembaca layar tidak bisa memutar model apa pun, dan viewer-nya
+                sudah punya aria-label yang menjelaskan isinya. */}
+            <p className="hero__visual-hint" aria-hidden="true">
+              Seret ke samping &amp; ke atas untuk memutar
+            </p>
           </div>
         </section>
 
+        {/* Dulu berada DI DALAM hero sebagai elemen teks kelima. Hero yang
+            memuat lencana, judul, subjudul, tombol, DAN strip angka membuat
+            mata tidak tahu harus mendarat di mana. Sekarang jadi pita tipis
+            tersendiri: perannya tetap sama, tapi tidak lagi berebut dengan
+            judul. */}
+        <section className="spec-strip" aria-label="Spesifikasi ringkas">
+          <dl className="spec-strip__list">
+            {HERO_STATS.map((stat) => (
+              <div key={stat.label} className="spec-strip__item">
+                <span className="spec-strip__icon" aria-hidden="true">
+                  <stat.icon size={18} />
+                </span>
+                <div>
+                  <dt>{stat.value}</dt>
+                  <dd>{stat.label}</dd>
+                </div>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        {/* Keluarga layout: split lengket. Judulnya menempel di kiri sementara
+            ketiga poin bergulir melewatinya, jadi pembaca selalu tahu poin ini
+            menjawab pertanyaan apa. Sebelumnya section ini judul-di-atas-grid,
+            sama persis dengan tiga section lain di halaman yang sama. */}
         <section className="problem" id="tentang" data-reveal>
-          <div className="section-heading">
-            <span className="section-eyebrow">Mengapa Glykos</span>
+          <div className="section-heading problem__heading">
             <h2>Mengapa Kaki Diabetes Butuh Perhatian Ekstra?</h2>
             <p>
               Banyak penderita diabetes mengalami <strong>neuropati</strong> — mati rasa pada
@@ -361,29 +421,29 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="problem__grid">
-            <article className="problem__card problem__card--rose">
+          <ol className="problem__list">
+            <li className="problem__card problem__card--rose">
               <h3>Sulit Disadari Sejak Dini</h3>
               <p>
                 Neuropati membuat tanda-tanda awal luka — tekanan berlebih, panas, dan lembap
                 — sulit dirasakan langsung oleh penderita.
               </p>
-            </article>
-            <article className="problem__card problem__card--danger">
+            </li>
+            <li className="problem__card problem__card--danger">
               <h3>Berisiko Menjadi Luka Kronis</h3>
               <p>
                 Tanpa deteksi dini, cedera kecil dapat berkembang menjadi luka yang sulit
                 sembuh dan berisiko komplikasi lebih lanjut.
               </p>
-            </article>
-            <article className="problem__card problem__card--green">
+            </li>
+            <li className="problem__card problem__card--green">
               <h3>Perlu Pemantauan Berkelanjutan</h3>
               <p>
                 Pemantauan rutin membantu pasien, keluarga, dan dokter mengambil tindakan
                 preventif sebelum kondisi memburuk.
               </p>
-            </article>
-          </div>
+            </li>
+          </ol>
         </section>
 
         <section className="science" id="dasar">
@@ -416,17 +476,22 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Keluarga layout: bento. Enam kartu berukuran identik membaca sebagai
+            daftar; enam kartu berukuran berbeda membaca sebagai komposisi.
+            FEATURE_SPAN memberi ritme 4-2 / 2-4 / 3-3 pada grid 6 kolom —
+            enam sel untuk enam kartu, tanpa sel kosong menggantung. */}
         <section className="features" id="fitur" data-reveal>
           <div className="section-heading">
-            <span className="section-eyebrow">Fitur</span>
             <h2>Semua yang Dibutuhkan untuk Memantau Kaki</h2>
             <p>Empat jenis sensor, satu dashboard, dipantau kapan saja.</p>
           </div>
 
           <div className="features__grid">
-            {FEATURES.map((feature) => (
+            {FEATURES.map((feature, index) => (
               <article
                 key={feature.title}
+                data-tilt-card
+                style={{ '--span': FEATURE_SPAN[index] }}
                 className={`feature-card feature-card--${feature.accent}`}
               >
                 <span className={`feature-card__icon feature-card__icon--${feature.accent}`}>
@@ -441,9 +506,24 @@ export default function LandingPage() {
 
         <section className="how-it-works" id="cara-kerja" data-reveal>
           <div className="section-heading">
-            <span className="section-eyebrow">Cara Kerja</span>
             <h2>Tiga Langkah Menuju Kaki yang Terpantau</h2>
             <p>Dari memasang insole sampai membaca hasilnya di dashboard.</p>
+          </div>
+
+          {/* Ilustrasi insole pindah ke sini dari hero, ditukar dengan model
+              sepatu. Gambar ini bukan dekorasi — ia melabeli tiga titik sensor
+              tekanan beserta nilainya, dan itu penjelasan yang akan hilang
+              kalau sekadar dibuang. Di section inilah tempatnya paling masuk
+              akal: halaman memang sedang menerangkan apa yang direkam
+              sensornya. */}
+          <div className="insole-showcase" data-reveal>
+            <InsoleIllustration
+              pressurePoints={{ toe: 84.2, metatarsal: 162.5, heel: 118.4 }}
+            />
+            <p className="insole-showcase__hint">
+              Tiga titik sensor tekanan: jari kaki, metatarsal, dan tumit. Angka pada gambar
+              adalah contoh pembacaan di rentang aman.
+            </p>
           </div>
 
           <ol className="steps">
@@ -461,17 +541,33 @@ export default function LandingPage() {
 
         <section className="team" id="tim" data-reveal>
           <div className="section-heading">
-            <span className="section-eyebrow">Tim</span>
             <h2>Tim di Balik Glykos</h2>
             <p>Tim inti yang membangun Glykos dari riset hingga produk.</p>
           </div>
 
           <div className="team__grid">
             {TEAM.map((member) => (
-              <article key={member.name} className={`team-card team-card--${member.accent}`}>
+              <article
+                key={member.name}
+                data-tilt-card
+                className={`team-card team-card--${member.accent}`}
+              >
                 <div className={`team-card__avatar team-card__avatar--${member.accent}`}>
                   {member.photo ? (
-                    <img src={member.photo} alt="" />
+                    // alt sengaja kosong: nama orangnya sudah ada di <h3>
+                    // tepat di bawah, jadi mengisinya berarti pembaca layar
+                    // mengumumkan nama yang sama dua kali.
+                    // width/height eksplisit mencegah kartu melompat saat
+                    // foto selesai dimuat; lazy karena section tim ada jauh
+                    // di bawah lipatan.
+                    <img
+                      src={member.photo}
+                      alt=""
+                      width="96"
+                      height="96"
+                      loading="lazy"
+                      decoding="async"
+                    />
                   ) : (
                     <span aria-hidden="true">{initials(member.name)}</span>
                   )}
@@ -490,7 +586,7 @@ export default function LandingPage() {
               Gratis untuk mendaftar — hubungkan perangkat Glykos Anda dalam hitungan menit.
             </p>
             <LinkButton to="/register" variant="primary" className="cta-banner__btn">
-              Daftar Sekarang
+              Daftar Gratis
             </LinkButton>
           </div>
         </section>

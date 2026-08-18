@@ -17,6 +17,10 @@ const STATUS_LABELS = { warning: 'Perhatian', danger: 'Risiko' }
 const METRIC_ICONS = {
   pressure: IconGauge,
   temperature: IconThermometer,
+  // Selisih suhu yang bertahan berhari-hari (useTemperatureTrendAlert.js) —
+  // metrik terpisah dari `temperature` karena sumbernya rangkuman harian,
+  // bukan pembacaan live.
+  temperatureTrend: IconThermometer,
   humidity: IconDroplet,
   fatigue: IconActivity,
 }

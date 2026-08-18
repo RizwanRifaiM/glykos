@@ -4,10 +4,11 @@ import Button from '../components/Button'
 import HistoryChart from '../components/HistoryChart'
 import HistorySummaryCards from '../components/HistorySummaryCards'
 import PageHeader from '../components/PageHeader'
+import TemperatureTrendBanner from '../components/TemperatureTrendBanner'
 import { SkeletonTableRows } from '../components/Skeleton'
 import { IconDownload, IconFileText, IconHistory } from '../components/icons'
 import { exportToCsv, exportToPdf } from '../utils/exportData'
-import { getPressureLabel, getPressureStatus } from '../constants/thresholds'
+import { getPressureLabel, getPressureStatus, TEMP_DELTA_WARNING } from '../constants/thresholds'
 import { HISTORY_METRICS_CONFIG } from '../constants/historyMetrics'
 import { toDateKey } from '../utils/formatTime'
 
@@ -42,7 +43,7 @@ function buildAlertsByDate(alerts) {
 }
 
 export default function HistoryPage() {
-  const { data, history, historyLoading, historyRange, setHistoryRange, alerts } =
+  const { data, history, historyLoading, historyRange, setHistoryRange, alerts, temperatureTrend } =
     useOutletContext()
   const [visibleMetrics, setVisibleMetrics] = useState(METRIC_KEYS)
   const [sortDesc, setSortDesc] = useState(true)
@@ -86,6 +87,8 @@ export default function HistoryPage() {
         }
       />
 
+      <TemperatureTrendBanner trend={temperatureTrend} />
+
       <HistorySummaryCards
         history={history}
         rangeLabel={historyRange === '7d' ? '7 Hari Terakhir' : '30 Hari Terakhir'}
@@ -96,7 +99,7 @@ export default function HistoryPage() {
           <div>
             <h2 className="panel__title">Tren Historis</h2>
             <p className="panel__subtitle">
-              Pola tekanan, suhu &amp; kelembapan — {rangeText} terakhir
+              Pola tekanan, suhu, selisih suhu &amp; kelembapan — {rangeText} terakhir
             </p>
           </div>
           <div className="metric-toggle-group" role="group" aria-label="Tampilkan metrik">
@@ -153,6 +156,10 @@ export default function HistoryPage() {
                 <th>Tanggal</th>
                 <th className="data-table__num">Tekanan (kPa)</th>
                 <th className="data-table__num">Suhu (°C)</th>
+                {/* Selisih suhu antar-area — prediktor pre-ulkus, lihat
+                    utils/temperatureTrend.js. Sudah lama ikut tersimpan di
+                    rangkuman harian tapi belum pernah ditampilkan. */}
+                <th className="data-table__num">Selisih (°C)</th>
                 <th className="data-table__num">Kelembapan (%RH)</th>
                 <th className="data-table__num">Langkah</th>
                 <th>Status</th>
@@ -166,7 +173,7 @@ export default function HistoryPage() {
                   ini pengguna melihat tabel penuh berisi "—" yang terbaca
                   seperti "tidak ada data" padahal datanya masih dalam
                   perjalanan. */}
-              {historyLoading && <SkeletonTableRows rows={sortedHistory.length || 7} columns={7} />}
+              {historyLoading && <SkeletonTableRows rows={sortedHistory.length || 7} columns={8} />}
               {!historyLoading && sortedHistory.map((row) => {
                 const hasEntry = row.pressure > 0 || row.temperature > 0 || row.humidity > 0
                 const status = hasEntry ? getPressureStatus(row.pressure) : null
@@ -176,6 +183,21 @@ export default function HistoryPage() {
                     <td>{row.label}</td>
                     <td className="data-table__num">{hasEntry ? row.pressure : '—'}</td>
                     <td className="data-table__num">{hasEntry ? row.temperature : '—'}</td>
+                    <td className="data-table__num">
+                      {hasEntry && row.temperatureDelta > 0 ? (
+                        <span
+                          className={
+                            row.temperatureDelta >= TEMP_DELTA_WARNING
+                              ? 'data-table__flag'
+                              : undefined
+                          }
+                        >
+                          {row.temperatureDelta.toFixed(1)}
+                        </span>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
                     <td className="data-table__num">{hasEntry ? row.humidity : '—'}</td>
                     <td className="data-table__num">
                       {row.steps > 0 ? row.steps.toLocaleString('id-ID') : '—'}
@@ -205,7 +227,7 @@ export default function HistoryPage() {
               })}
               {!historyLoading && sortedHistory.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="data-table__empty">
+                  <td colSpan={8} className="data-table__empty">
                     <IconHistory size={22} />
                     Belum ada data histori.
                   </td>
