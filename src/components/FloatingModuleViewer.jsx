@@ -26,13 +26,23 @@ import { bob } from '../utils/sceneMath'
 // pembaca layar tidak kehilangan apa pun, dan tombol CTA di depannya tetap
 // bisa diklik seperti tidak ada apa-apa di belakangnya.
 
-// x, y, skala, laju putar (rad/detik), fase ayunan. Nilainya sengaja tidak
-// simetris dan lajunya tidak kelipatan satu sama lain, jadi ketiganya tidak
-// pernah sejajar dalam pola yang sama dua kali.
+// Posisi ditulis sebagai PECAHAN dari setengah bingkai yang terlihat, bukan
+// koordinat dunia tetap. Dua alasan, keduanya terlihat di halaman jadi:
+//
+//   1. Dengan koordinat tetap, modul ketiga mendarat tepat di belakang judul
+//      CTA pada lebar desktop — terbaca sebagai cacat render di tengah
+//      kalimat, bukan sebagai hiasan.
+//   2. Banner ini sangat lebar di desktop dan hampir bujur sangkar di ponsel.
+//      Koordinat yang pas di satu ukuran melempar modulnya keluar bingkai di
+//      ukuran lain, dan hiasannya hilang sama sekali.
+//
+// |fx| >= 0,68 menjaga ketiganya di sepertiga tepi kiri/kanan, tempat teks
+// banner tidak pernah sampai. z tetap koordinat dunia: ia mengatur kedalaman,
+// bukan penempatan pada bidang layar.
 const MODULES = [
-  { x: -3.1, y: 0.85, z: -1.4, scale: 0.9, spinY: 0.34, spinX: 0.19, phase: 0 },
-  { x: 3.25, y: -0.65, z: -0.6, scale: 1.15, spinY: -0.26, spinX: 0.13, phase: 2.4 },
-  { x: 0.4, y: 1.55, z: -2.6, scale: 0.62, spinY: 0.44, spinX: -0.22, phase: 4.1 },
+  { fx: -0.82, fy: 0.42, z: -1.4, scale: 0.9, spinY: 0.34, spinX: 0.19, phase: 0 },
+  { fx: 0.86, fy: -0.34, z: -0.6, scale: 1.15, spinY: -0.26, spinX: 0.13, phase: 2.4 },
+  { fx: -0.66, fy: -0.62, z: -2.6, scale: 0.62, spinY: 0.44, spinX: -0.22, phase: 4.1 },
 ]
 
 const BOB_AMPLITUDE = 0.22
@@ -88,6 +98,11 @@ export default function FloatingModuleViewer({ className = '' }) {
         key.position.set(3, 5, 6)
         scene.add(key)
 
+        // Setengah tinggi bidang yang terlihat pada z = 0, dari FOV vertikal
+        // kamera. Setengah lebarnya tinggal dikalikan aspect — dihitung ulang
+        // tiap kali kanvasnya berubah ukuran.
+        const halfHeight = Math.tan((camera.fov * Math.PI) / 360) * camera.position.z
+
         const items = MODULES.map((config) => {
           const { group, led } = createSensorModule(THREE, disposer, {
             len: 1.0,
@@ -99,14 +114,23 @@ export default function FloatingModuleViewer({ className = '' }) {
           // itu, ayunan vertikalnya ikut terputar dan berubah jadi goyangan
           // menyamping begitu sudutnya jauh dari nol.
           const holder = new THREE.Group()
-          holder.position.set(config.x, config.y, config.z)
+          holder.position.z = config.z
           holder.scale.setScalar(config.scale)
           holder.add(group)
           scene.add(holder)
           return { config, holder, spinner: group, led }
         })
 
-        const sizing = trackSize(host, renderer, camera)
+        // Penempatan ulang dijalankan lewat callback resize trackSize, bukan
+        // di loop render: nilainya hanya berubah saat bingkainya berubah.
+        const layout = () => {
+          items.forEach(({ config, holder }) => {
+            holder.position.x = config.fx * halfHeight * camera.aspect
+            holder.position.y = config.fy * halfHeight
+          })
+        }
+
+        const sizing = trackSize(host, renderer, camera, layout)
         const visibility = trackVisibility(host)
 
         let raf = 0
@@ -123,7 +147,8 @@ export default function FloatingModuleViewer({ className = '' }) {
           items.forEach(({ config, holder, spinner, led }) => {
             spinner.rotation.y += config.spinY * delta
             spinner.rotation.x += config.spinX * delta
-            holder.position.y = config.y + bob(elapsed, BOB_AMPLITUDE, BOB_SPEED, config.phase)
+            holder.position.y =
+              config.fy * halfHeight + bob(elapsed, BOB_AMPLITUDE, BOB_SPEED, config.phase)
             // Fase ikut digeser supaya ketiga LED tidak berdenyut serempak —
             // tiga lampu sefase terbaca sebagai satu lampu yang dicerminkan.
             pulseLed(led, elapsed + config.phase)

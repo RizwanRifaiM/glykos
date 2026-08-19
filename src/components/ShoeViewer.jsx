@@ -16,22 +16,12 @@ import {
   DEMO_PRESSURE_POINTS,
   SENSOR_ALONG,
   SENSOR_ORDER,
+  pressureColor,
   pulseHotspot,
   sensorLabelHtml,
 } from '../three/sensorPoints'
-import {
-  addWireframeOverlay,
-  createGlowTexture,
-  createParticleField,
-  createScanRing,
-  scanSweep,
-} from '../three/holo'
-import {
-  applyEnvironment,
-  applyToneMapping,
-  createBloomComposer,
-  createContactShadow,
-} from '../three/renderQuality'
+import { createGlowSprite, createGlowTexture, createScanRing, scanSweep } from '../three/holo'
+import { applyEnvironment, applyToneMapping, createContactShadow } from '../three/renderQuality'
 import {
   bob,
   damp,
@@ -56,10 +46,16 @@ const CFG = { pos: 0.3, hgt: 0.55, len: 1.0, bh: 0.55, bw: 0.26, gap: -0.02, sid
 // dari SENSOR_ALONG (dipakai bersama tampilan urai); yang khas hero hanyalah
 // ketinggian ini.
 //
-// Jauh lebih rendah daripada modul (CFG.hgt = 0,55) dengan sengaja: sensor
-// tekanan berada di dalam sol, jadi tempatnya memang di garis bawah sepatu.
-// Itu juga yang menjaga keduanya tidak pernah saling menimpa di layar.
-const SENSOR_HEIGHT = { heel: 0.15, metatarsal: 0.13, toe: 0.12 }
+// Tetap di bawah modul (CFG.hgt = 0,55) supaya keduanya tidak pernah saling
+// menimpa di layar dan titiknya tetap terbaca berada di ketinggian sol.
+//
+// Dinaikkan dari 0,15 / 0,13 / 0,12. Diukur di halaman yang sudah jalan: pada
+// ketinggian itu raycast titik JARI KAKI tidak pernah mengenai dinding sepatu
+// sama sekali — sampleWall() mengembalikan null, dan titik itu beserta
+// labelnya tidak pernah dibuat. Hero menjanjikan tiga titik tekanan tapi cuma
+// pernah punya dua. Ketinggian sekarang membuat ketiganya mendarat, dan tetap
+// jauh di bawah modul (CFG.hgt = 0,55) sehingga masih terbaca di garis sol.
+const SENSOR_HEIGHT = { heel: 0.22, metatarsal: 0.2, toe: 0.19 }
 
 // Seberapa jauh kamera & kemiringan bergerak mengikuti gulir.
 const SCROLL_PITCH = 0.4
@@ -87,10 +83,6 @@ const BOB_AMPLITUDE = 0.03
 const BOB_ROLL = 0.045
 const BOB_SPEED = 0.9
 
-// Kemunculan titik sensor: menunggu animasi masuk modelnya selesai, lalu
-// muncul satu per satu.
-const HOTSPOT_STAGGER = { offset: INTRO_SEC * 0.7, delay: 0.22, duration: 0.55 }
-
 // Bagian jarak yang TERSISA setelah satu detik. Makin kecil makin cepat
 // mengejar; 0,0005 kira-kira setara "sampai dalam ~0,3 detik".
 const SCROLL_SMOOTHING = 0.0005
@@ -101,38 +93,30 @@ const SCROLL_SMOOTHING = 0.0005
 // ikut kabur.
 const INTRO_SEC = 0.9
 
-// Warna lapisan holografik: --glykos-light-blue yang dicerahkan. Warna merek
-// aslinya (#86a788) dipilih untuk teks di atas kertas krem dan terlalu redup
-// untuk berperan sebagai cahaya; versi ini mempertahankan rona sage-nya tapi
-// cukup terang untuk terbaca sebagai pendar di atas panggung gelap.
-const HOLO_COLOR = 0xb6e3c4
+// Kemunculan titik sensor: menunggu animasi masuk modelnya selesai, lalu
+// muncul satu per satu.
+//
+// HARUS berada di bawah INTRO_SEC. Sebelumnya di atas, dan `INTRO_SEC * 0.7`
+// di sana dievaluasi sebelum konstantanya ada — offset-nya jadi NaN, seluruh
+// perhitungan kemunculan ikut NaN, dan ketiga titik sensor beserta labelnya
+// diberi skala NaN alias tidak pernah terlihat sama sekali di hero.
+const HOTSPOT_STAGGER = { offset: INTRO_SEC * 0.7, delay: 0.22, duration: 0.55 }
 
-// Harus sama persis dengan --bg pada .landing di Landing.css. Kanvasnya buram
-// (lihat createRenderer), jadi selisih sekecil apa pun akan terlihat sebagai
-// persegi yang sedikit beda warna di tengah halaman.
-const SCENE_BG = 0x060d0a
-
-// Pengali kecerahan untuk benda yang HARUS berpendar. Bloom bekerja dengan
-// ambang: apa pun di bawahnya tidak berpendar sama sekali. Warna sage biasa
-// nilainya jauh di bawah ambang, jadi tanpa dorongan ini titik sensor dan
-// garis pindai hanya jadi bentuk berwarna — persis keadaan sebelum bloom ada.
-// Nilai di atas 1 selamat sampai ke pass bloom karena EffectComposer memakai
-// render target setengah-presisi float, bukan 8 bit per kanal.
-const EMISSIVE_BOOST = 2.4
+// Warna garis pindai: --glykos-light-blue apa adanya. Panggungnya sekarang
+// TERANG — kanvasnya transparan di atas latar krem halaman — jadi warna merek
+// aslinya justru yang terbaca. Versi mint yang dicerahkan dulu dipilih supaya
+// menyala di atas panel gelap; di atas krem, warna seterang itu hilang.
+const SCAN_COLOR = 0x86a788
 
 // Satu sapuan pindai penuh, detik. Cukup lambat untuk terbaca sebagai
 // pengukuran, cukup sering untuk tidak terlewat oleh orang yang hanya
 // memandang beberapa detik.
 const SCAN_PERIOD = 4.6
 
-// Kerangka wireframe tidak pernah hilang sama sekali — ada dasar tipis yang
-// selalu terlihat, lalu menguat saat garis pindai melewatinya. Nol di antara
-// sapuan membuat kemunculannya terasa seperti gangguan, bukan lapisan yang
-// memang ada.
-const WIRE_BASE_OPACITY = 0.05
-const WIRE_SCAN_OPACITY = 0.17
-
-const PARTICLE_COUNT = 90
+// Puncak kepekatan garis pindai. Di atas latar terang, cincin sepekat panggung
+// gelap dulu terbaca sebagai coretan yang menutupi sepatu, bukan sebagai
+// sapuan yang melintasinya.
+const SCAN_OPACITY = 0.28
 
 const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3)
 
@@ -201,28 +185,28 @@ export default function ShoeViewer({ className = '', fallback = null }) {
 
         const scene = new THREE.Scene()
         const camera = new THREE.PerspectiveCamera(34, 1, 0.05, 200)
-        renderer = createRenderer(THREE, host, { clearColor: SCENE_BG })
-        applyToneMapping(THREE, renderer)
+        // Tanpa clearColor: kanvasnya TRANSPARAN, jadi yang jadi latar sepatu
+        // adalah lapisan cahaya CSS dan warna krem halaman itu sendiri —
+        // bukan persegi buram yang warnanya harus dijaga sama dengan halaman.
+        renderer = createRenderer(THREE, host)
+        applyToneMapping(THREE, renderer, 1.02)
         applyEnvironment(THREE, kit.RoomEnvironment, renderer, scene, disposer)
 
-        // Cahaya dihangatkan. Sumbernya memakai biru dingin (0xdfe8ff /
-        // 0x9fc0ff) karena dirancang untuk latar hitam; di atas halaman krem,
-        // cahaya sedingin itu membuat sepatunya tampak seperti potongan
-        // gambar dari tempat lain.
-        // Intensitasnya diturunkan dari sebelumnya (1,0 / 1,9 / 0,55 / 0,75).
-        // Environment map sekarang ikut menyumbang cahaya sekeliling; menahan
-        // nilai lama di atasnya membuat sepatu terlalu terang dan menembus
-        // ambang bloom, sehingga SELURUH badannya ikut berpendar — bukan hanya
-        // titik cahayanya.
-        scene.add(new THREE.HemisphereLight(0xdff0e4, 0x1a2b20, 0.5))
-        const key = new THREE.DirectionalLight(0xffffff, 1.15)
+        // Pencahayaan studio siang, bukan HUD. Warna pantulan lantai
+        // (argumen kedua HemisphereLight) sekarang krem halaman, bukan hijau
+        // gelap: benda yang berdiri di ruang terang menerima pantulan terang
+        // dari bawah, dan tanpa itu bagian bawah sepatu tetap gelap seolah
+        // masih berada di panggung yang sudah tidak ada.
+        scene.add(new THREE.HemisphereLight(0xfffdf3, 0xe6ded0, 0.85))
+        const key = new THREE.DirectionalLight(0xffffff, 1.45)
         key.position.set(4, 7, 5)
-        const fill = new THREE.DirectionalLight(0xbfe6cd, 0.35)
+        const fill = new THREE.DirectionalLight(0xe8f1e6, 0.45)
         fill.position.set(-5, 3, -3)
-        // Cahaya tepi berwarna mint: pada latar gelap, garis terang di sisi
-        // yang membelakangi cahaya utama itulah yang memisahkan siluet sepatu
-        // dari latarnya.
-        const rim = new THREE.DirectionalLight(HOLO_COLOR, 1.1)
+        // Cahaya tepi turun jauh (dulu 1,1 dan berwarna mint). Di atas latar
+        // gelap ia yang memisahkan siluet dari latarnya; di atas krem tugas
+        // itu selesai dengan sendirinya, dan tepi mint yang tersisa hanya
+        // membuat sepatunya berpendar tanpa alasan.
+        const rim = new THREE.DirectionalLight(0xffffff, 0.4)
         rim.position.set(-2, 2, -6)
         scene.add(key, fill, rim)
 
@@ -317,11 +301,11 @@ export default function ShoeViewer({ className = '', fallback = null }) {
         const hotspots = []
         const discNormal = new THREE.Vector3(0, 0, 1)
 
-        // Tekstur gradien tinggal dipakai partikel. Sprite halo pada titik
-        // sensor dan LED SUDAH DIBUANG: itu tiruan pendar yang dibuat sebelum
-        // ada bloom, dan menumpuk keduanya menghasilkan kabut ganda — halo
-        // tiruan tidak tahu apa-apa tentang kecerahan sesungguhnya, jadi ia
-        // menyala sama rata untuk benda terang maupun redup.
+        // Halo titik sensor kembali memakai sprite setelah bloom dibuang.
+        // Sprite tidak sepintar bloom — ia tidak tahu apa-apa tentang
+        // kecerahan sesungguhnya — tapi di scene ini cuma titik sensor yang
+        // perlu berpendar, dan ukuran serta warnanya sudah diketahui sejak
+        // awal. Sebagai gantinya kanvasnya boleh transparan.
         const glowTexture = createGlowTexture(THREE, disposer)
 
         SENSOR_ORDER.forEach((area) => {
@@ -343,9 +327,18 @@ export default function ShoeViewer({ className = '', fallback = null }) {
           // ukurannya langsung penuh — kalau tidak, titiknya tidak pernah ada.
           hotspot.group.scale.setScalar(reduced ? 1 : 0)
           hotspot.appear = reduced ? 1 : 0
-          // Didorong melewati ambang bloom supaya pendarnya datang dari pass
-          // bloom, bukan dari sprite tempelan.
-          hotspot.disc.material.color.multiplyScalar(EMISSIVE_BOOST)
+          // Halo ikut di dalam grup titiknya, jadi ia ikut membesar pada
+          // animasi kemunculan dan ikut berputar bersama sepatu tanpa
+          // perhitungan tambahan di loop render.
+          const halo = createGlowSprite(
+            THREE,
+            disposer,
+            glowTexture,
+            pressureColor(kpa),
+            shoeLength * 0.15,
+          )
+          halo.material.opacity = 0.42
+          hotspot.group.add(halo)
           inner.add(hotspot.group)
 
           hotspot.label = labels.add(
@@ -362,34 +355,20 @@ export default function ShoeViewer({ className = '', fallback = null }) {
         // margin di sana mencegah ujung sepatu terpotong pada sebagian putaran.
         const radius = Math.max(size.x, size.y, size.z)
 
-        // ---- Lapisan holografik ---------------------------------------------
-        // Ditambahkan SETELAH seluruh raycast di atas selesai — lihat catatan
-        // urutan pada addWireframeOverlay di three/holo.js.
-        const wireMaterial = addWireframeOverlay(THREE, disposer, shoeMeshes, HOLO_COLOR)
-
-        // Cincin pindai dan partikel duduk di `scene`, BUKAN di dalam grup
-        // yang berputar. Garis pindai yang ikut berputar bersama sepatu tidak
-        // lagi terbaca sebagai alat yang mengukur benda — ia jadi bagian dari
-        // bendanya sendiri.
-        const scanRing = createScanRing(THREE, disposer, radius * 0.6, HOLO_COLOR)
-        scanRing.material.color.multiplyScalar(EMISSIVE_BOOST)
+        // Cincin pindai duduk di `scene`, BUKAN di dalam grup yang berputar.
+        // Garis pindai yang ikut berputar bersama sepatu tidak lagi terbaca
+        // sebagai alat yang mengukur benda — ia jadi bagian dari bendanya
+        // sendiri.
+        const scanRing = createScanRing(THREE, disposer, radius * 0.6, SCAN_COLOR)
         scene.add(scanRing)
 
-        // Bayangan kontak memberi sepatu bobot. Tanpa ini benda melayang di
-        // ruang hitam tanpa hubungan apa pun dengan bidang di bawahnya, dan
-        // itu justru ciri render mentah yang ingin dihindari.
-        const contactShadow = createContactShadow(THREE, disposer, radius * 0.5, 0.55)
+        // Bayangan kontak memberi sepatu bobot. Tanpa ini benda melayang
+        // tanpa hubungan apa pun dengan bidang di bawahnya, dan itu justru
+        // ciri render mentah yang ingin dihindari. Kepekatannya turun dari
+        // 0,55: di atas krem, bayangan sepekat itu jadi noda gelap yang
+        // terbaca lebih dulu daripada sepatunya.
+        const contactShadow = createContactShadow(THREE, disposer, radius * 0.5, 0.38)
         scene.add(contactShadow)
-
-        const field = createParticleField(
-          THREE,
-          disposer,
-          glowTexture,
-          PARTICLE_COUNT,
-          radius * 0.95,
-          HOLO_COLOR,
-        )
-        scene.add(field.points)
 
         const shoeMinY = box.min.y
         const shoeHeight = box.max.y - box.min.y
@@ -398,13 +377,7 @@ export default function ShoeViewer({ className = '', fallback = null }) {
         camera.position.copy(baseCamera)
         camera.lookAt(0, 0, 0)
 
-        const post = createBloomComposer(THREE, kit, renderer, scene, camera, {
-          strength: 0.55,
-          radius: 0.5,
-          threshold: 0.72,
-        })
-
-        const sizing = trackSize(host, renderer, camera, post.setSize)
+        const sizing = trackSize(host, renderer, camera)
         const visibility = trackVisibility(host)
         const scroll = createScrollTracker(host)
 
@@ -524,22 +497,14 @@ export default function ShoeViewer({ className = '', fallback = null }) {
             scanRing.position.y =
               pitchGroup.position.y + (shoeMinY + shoeHeight * sweep.position) * modelScale
             scanRing.scale.setScalar(modelScale)
-            scanRing.material.opacity = sweep.intensity * 0.55 * intro
-
-            // Kerangka menguat tepat saat garis pindai melintasinya — dua
-            // isyarat untuk satu kejadian, jadi keduanya saling menjelaskan.
-            wireMaterial.opacity =
-              (WIRE_BASE_OPACITY + sweep.intensity * WIRE_SCAN_OPACITY) * intro
-
-            field.update(elapsed)
-            field.points.material.opacity = 0.45 * intro
+            scanRing.material.opacity = sweep.intensity * SCAN_OPACITY * intro
 
             // Makin tinggi sepatu mengambang, makin lebar dan makin pudar
             // bayangannya — satu-satunya isyarat yang membuat ayunan terbaca
             // sebagai ketinggian, bukan sekadar geser ke atas.
             const lift = pitchGroup.position.y / (radius * BOB_AMPLITUDE || 1)
             contactShadow.position.y = shoeMinY * modelScale - radius * 0.03
-            contactShadow.material.opacity = (0.5 - lift * 0.09) * intro
+            contactShadow.material.opacity = (0.38 - lift * 0.07) * intro
             contactShadow.scale.setScalar(1 + lift * 0.06)
 
             hotspots.forEach((hotspot, index) => {
@@ -566,9 +531,7 @@ export default function ShoeViewer({ className = '', fallback = null }) {
             outer.rotation.y += spin * delta
           }
 
-          // composer.render(), BUKAN renderer.render(): seluruh rantai
-          // (render -> bloom -> tone mapping) berjalan di dalamnya.
-          post.render()
+          renderer.render(scene, camera)
 
           // Label diperbarui SETELAH render, saat matriks kamera sudah pasti
           // yang dipakai menggambar frame ini. Titik yang sedang berada di
@@ -592,7 +555,6 @@ export default function ShoeViewer({ className = '', fallback = null }) {
           visibility.stop()
           scroll.stop()
           labels.dispose()
-          post.dispose()
           host.removeEventListener('pointerdown', onPointerDown)
           host.removeEventListener('pointermove', onPointerMove)
           host.removeEventListener('pointerup', onPointerUp)

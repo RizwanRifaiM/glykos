@@ -1,11 +1,12 @@
 // src/three/holo.js
-// Lapisan "holografik" untuk scene 3D landing page: halo cahaya, kerangka
-// wireframe, garis pindai, dan partikel data.
+// Dua hal yang membuat scene 3D landing page terbaca sebagai ALAT UKUR, bukan
+// sekadar benda berputar: halo cahaya pada titik sensor, dan cincin yang
+// menyapu model dari tumit ke ujung seperti pembacaan yang sedang berjalan.
 //
-// Semuanya bertema satu hal — perangkat ini MEMINDAI kaki. Itu sebabnya
-// bentuk yang dipilih di sini bukan kilau dekoratif sembarangan melainkan
-// bahasa alat ukur: kerangka yang muncul-hilang seperti pembacaan yang
-// menyegarkan diri, dan bidang cahaya yang menyapu dari tumit ke ujung.
+// Dulu berkas ini juga berisi kerangka wireframe dan medan partikel. Keduanya
+// DIBUANG: keduanya lahir untuk panggung gelap bergaya HUD, dan di atas
+// halaman krem yang hangat kerangka itu membuat sepatunya terbaca setengah
+// jadi sementara partikelnya terbaca sebagai kotoran pada gambar.
 //
 // Seperti sceneKit.js, modul three.js DITERIMA sebagai argumen — tidak
 // diimpor — supaya file ini tidak menarik three.js ke chunk yang memuatnya.
@@ -61,42 +62,6 @@ export function createGlowSprite(THREE, disposer, texture, color, size) {
   return sprite
 }
 
-// Kerangka wireframe yang ditumpangkan pada mesh yang sudah ada.
-//
-// Geometry-nya DIPAKAI BERSAMA dengan mesh aslinya — tidak disalin. Untuk
-// model yang datang dari cache (lihat loadThree.js) itu artinya nol tambahan
-// memori GPU: yang baru hanya satu material. Karena itu pula geometry-nya
-// TIDAK didaftarkan ke disposer; yang dibuang cuma materialnya.
-//
-// PENTING: panggil SETELAH semua raycast selesai. Kerangka ini menjadi anak
-// dari mesh aslinya, dan `intersectObjects(..., true)` menelusuri anak — tanpa
-// penjagaan, penempatan modul dan titik sensor akan mengenai kerangka ini
-// alih-alih permukaan sepatu. Penjagaannya ada di baris `raycast` di bawah,
-// tapi urutannya tetap jangan dibalik.
-export function addWireframeOverlay(THREE, disposer, meshes, color) {
-  const material = disposer.track(
-    new THREE.MeshBasicMaterial({
-      color,
-      wireframe: true,
-      transparent: true,
-      opacity: 0,
-      depthWrite: false,
-    }),
-  )
-
-  meshes.forEach((mesh) => {
-    const wire = new THREE.Mesh(mesh.geometry, material)
-    // Tidak pernah ikut raycast, apa pun urutan pemanggilannya.
-    wire.raycast = () => {}
-    // Digambar setelah permukaan padatnya, kalau tidak garis-garisnya
-    // tenggelam di dalam permukaan yang menutupinya.
-    wire.renderOrder = 3
-    mesh.add(wire)
-  })
-
-  return material
-}
-
 // Bidang cahaya yang menyapu naik-turun menembus model.
 //
 // Cincin, bukan cakram: cakram penuh menutupi sepatu setiap kali melintas.
@@ -130,58 +95,4 @@ export function scanSweep(elapsedSec, periodSec = 4.5) {
   const t = (elapsedSec % periodSec) / periodSec
   // Sinus setengah gelombang: nol di kedua ujung, puncak di tengah.
   return { position: t, intensity: Math.sin(t * Math.PI) }
-}
-
-// Butir data yang melayang di sekitar model. Bukan bintang, bukan salju —
-// sebarannya dibuat pada cangkang bola berongga supaya tidak ada yang
-// menumpuk tepat di tengah tempat sepatunya berada.
-export function createParticleField(THREE, disposer, texture, count, radius, color) {
-  const positions = new Float32Array(count * 3)
-  const drift = new Float32Array(count)
-
-  for (let i = 0; i < count; i++) {
-    // Arah acak yang merata pada permukaan bola. Mengacak ketiga sumbu secara
-    // terpisah akan memusatkan titik di sudut-sudut kubus.
-    const theta = Math.random() * Math.PI * 2
-    const phi = Math.acos(2 * Math.random() - 1)
-    const r = radius * (0.75 + Math.random() * 0.6)
-
-    positions[i * 3] = r * Math.sin(phi) * Math.cos(theta)
-    positions[i * 3 + 1] = r * Math.cos(phi) * 0.55
-    positions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta)
-    drift[i] = Math.random() * Math.PI * 2
-  }
-
-  const geometry = disposer.track(new THREE.BufferGeometry())
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-
-  const material = disposer.track(
-    new THREE.PointsMaterial({
-      map: texture,
-      color,
-      size: radius * 0.055,
-      transparent: true,
-      opacity: 0.5,
-      depthWrite: false,
-      sizeAttenuation: true,
-    }),
-  )
-
-  const points = new THREE.Points(geometry, material)
-  const baseY = Float32Array.from({ length: count }, (_, i) => positions[i * 3 + 1])
-
-  return {
-    points,
-    // Hanya sumbu Y yang digerakkan, dan hanya sedikit. Partikel yang melayang
-    // ke segala arah menarik perhatian ke dirinya sendiri; yang dibutuhkan di
-    // sini cuma isyarat bahwa udaranya "hidup".
-    update(elapsedSec) {
-      const attr = geometry.getAttribute('position')
-      for (let i = 0; i < count; i++) {
-        attr.array[i * 3 + 1] = baseY[i] + Math.sin(elapsedSec * 0.35 + drift[i]) * radius * 0.05
-      }
-      attr.needsUpdate = true
-      points.rotation.y = elapsedSec * 0.03
-    },
-  }
 }

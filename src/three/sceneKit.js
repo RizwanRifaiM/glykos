@@ -28,12 +28,12 @@ export function prefersReducedMotion() {
 // `clearColor` null = kanvas transparan, latarnya diserahkan ke CSS di
 // belakangnya. Diberi warna = kanvas buram.
 //
-// Yang memakai bloom HARUS buram. EffectComposer merender ke render target
-// lalu menyalinnya kembali ke kanvas; alpha tidak selamat melewati rantai itu
-// tanpa penanganan khusus di tiap pass, dan gejalanya berupa kotak hitam di
-// tempat yang seharusnya tembus pandang. Sejak halaman ini bertema gelap,
-// kanvas buram berwarna sama dengan latar halaman tidak terlihat bedanya —
-// jadi jalan yang rumit itu tidak perlu ditempuh sama sekali.
+// KETIGA scene halaman ini memakai yang transparan, dan itu keputusan
+// tampilan, bukan kebetulan: halaman bertema krem hangat, dan kanvas buram
+// apa pun warnanya akan berdiri sebagai persegi yang bukan bagian dari
+// halaman. Syaratnya cuma satu — jangan ada rantai postprocessing, karena
+// alpha tidak selamat melewatinya. Itu sebabnya bloom dibuang dari
+// renderQuality.js.
 export function createRenderer(THREE, host, { clearColor = null } = {}) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: clearColor === null })
   if (clearColor !== null) renderer.setClearColor(clearColor, 1)
@@ -53,10 +53,9 @@ export function createRenderer(THREE, host, { clearColor = null } = {}) {
 // Nilai width/height disimpan supaya proyeksi label tidak perlu membaca
 // clientWidth tiap frame — pembacaan itu memaksa browser menghitung ulang
 // layout di tengah loop render.
-// `onResize` dipakai rantai postprocessing: EffectComposer punya render target
-// sendiri yang tidak ikut berubah saat renderer.setSize dipanggil, jadi ukuran
-// barunya harus diteruskan — kalau tidak, gambarnya melar begitu jendela
-// diubah ukurannya.
+// `onResize` opsional: dipakai scene yang punya penempatan bergantung ukuran
+// bingkai (lihat modul melayang di banner CTA, yang menaruh benda relatif
+// terhadap tepi kanvas alih-alih pada koordinat tetap).
 export function trackSize(host, renderer, camera, onResize) {
   const size = { width: 0, height: 0 }
 

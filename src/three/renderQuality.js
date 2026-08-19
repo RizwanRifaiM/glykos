@@ -1,7 +1,12 @@
 // src/three/renderQuality.js
-// Tiga hal yang memisahkan render "WebGL mentah" dari render kelas produk:
-// tone mapping, environment map, dan bloom. Ketiganya standar di situs produk
-// yang memakai 3D, dan ketiganya absen di versi sebelumnya.
+// Yang memisahkan render "WebGL mentah" dari render kelas produk: tone
+// mapping, environment map, dan bayangan kontak.
+//
+// Bloom pernah ada di sini dan sudah DIBUANG. Rantai postprocessing merender
+// ke render target lalu menyalinnya kembali, dan alpha tidak selamat melewati
+// itu — jadi kanvasnya wajib buram, dan kanvas buram di halaman krem berarti
+// pelat berwarna sendiri yang menabrak tata warna halaman. Yang memang perlu
+// berpendar (titik sensor) sekarang memakai sprite halo di three/holo.js.
 //
 // Modul three.js DITERIMA sebagai argumen, tidak diimpor — lihat catatan yang
 // sama di sceneKit.js.
@@ -45,55 +50,7 @@ export function applyEnvironment(THREE, RoomEnvironment, renderer, scene, dispos
   return target.texture
 }
 
-// ---- 3. Bloom -------------------------------------------------------------
-// Pendar sungguhan: piksel yang lebih terang dari ambang disebar ke
-// sekitarnya. Versi sebelumnya memakai sprite gradien sebagai tiruan — itu
-// menempel pada satu titik dan tidak tahu apa-apa tentang kecerahan
-// sesungguhnya, jadi LED, titik sensor, dan garis pindai semuanya "bercahaya"
-// dengan cara yang persis sama tanpa memandang seberapa terang aslinya.
-//
-// EffectComposer menggantikan renderer.render(): pemanggilnya harus memanggil
-// composer.render() dan meneruskan perubahan ukuran ke sini.
-export function createBloomComposer(THREE, kit, renderer, scene, camera, options = {}) {
-  const { EffectComposer, RenderPass, UnrealBloomPass, OutputPass } = kit
-  const {
-    strength = 0.62,
-    radius = 0.45,
-    // Ambang tinggi dengan sengaja: hanya sumber cahaya sungguhan (LED, titik
-    // sensor, garis pindai) yang boleh berpendar. Ambang rendah membuat
-    // seluruh badan sepatu ikut bersinar dan gambarnya berkabut.
-    threshold = 0.72,
-  } = options
-
-  const composer = new EffectComposer(renderer)
-  composer.addPass(new RenderPass(scene, camera))
-
-  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), strength, radius, threshold)
-  composer.addPass(bloom)
-
-  // OutputPass yang menerapkan tone mapping dan konversi ruang warna di ujung
-  // rantai. Tanpa pass ini hasilnya keluar dalam ruang linear dan tampak pucat
-  // — gejala yang mudah salah didiagnosis sebagai "bloom-nya terlalu kuat".
-  composer.addPass(new OutputPass())
-
-  return {
-    composer,
-    bloom,
-    setSize(width, height) {
-      composer.setSize(width, height)
-      bloom.setSize(width, height)
-    },
-    render() {
-      composer.render()
-    },
-    dispose() {
-      composer.dispose()
-      bloom.dispose()
-    },
-  }
-}
-
-// ---- 4. Bayangan kontak ---------------------------------------------------
+// ---- 3. Bayangan kontak ---------------------------------------------------
 // Bukan bayangan sungguhan dari shadow map — hanya cakram gelap kabur di bawah
 // benda. Itu cukup: yang membuat benda terlihat punya bobot adalah adanya
 // sesuatu yang lebih gelap tepat di bawahnya, bukan ketepatan bentuknya.

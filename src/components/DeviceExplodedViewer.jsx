@@ -11,17 +11,14 @@ import {
   webglAvailable,
 } from '../three/sceneKit'
 import { createSensorModule, pulseLed } from '../three/sensorModule'
-import {
-  applyEnvironment,
-  applyToneMapping,
-  createBloomComposer,
-  createContactShadow,
-} from '../three/renderQuality'
+import { createGlowSprite, createGlowTexture } from '../three/holo'
+import { applyEnvironment, applyToneMapping, createContactShadow } from '../three/renderQuality'
 import {
   createHotspot,
   DEMO_PRESSURE_POINTS,
   SENSOR_ALONG,
   SENSOR_ORDER,
+  pressureColor,
   pulseHotspot,
 } from '../three/sensorPoints'
 import {
@@ -118,16 +115,15 @@ const CAMERA_PULLBACK = 0.78
 // Sepatu dibuat tembus pandang supaya insole di dalamnya terlihat saat
 // keadaan masih tersusun; begitu terurai, ia dipadatkan lagi karena tidak ada
 // lagi yang perlu ditembus.
-// Dinaikkan dari 0,2 / 0,55: nilai itu dipilih untuk latar krem, dan sepatu
-// setipis itu di atas latar gelap praktis lenyap.
-const SHOE_OPACITY_PACKED = 0.3
-const SHOE_OPACITY_APART = 0.7
+//
+// Kembali ke nilai yang dipilih untuk latar krem setelah panggung gelapnya
+// dibuang. Sempat dinaikkan ke 0,3 / 0,7 karena di atas latar gelap sepatu
+// setipis itu praktis lenyap; di atas krem, nilai setinggi itu justru
+// menutupi insole yang seharusnya terlihat menembusnya.
+const SHOE_OPACITY_PACKED = 0.22
+const SHOE_OPACITY_APART = 0.62
 
 const SMOOTHING = 0.0008
-
-// Sama dengan --bg pada .landing. Lihat catatan di ShoeViewer.jsx.
-const SCENE_BG = 0x060d0a
-const EMISSIVE_BOOST = 2.4
 
 // `fallback` mengikuti pola ShoeViewer: tanpa WebGL, section ini tidak boleh
 // kehilangan penjelasannya. Pemanggil mengirim ilustrasi insole — gambar yang
@@ -178,22 +174,21 @@ export default function DeviceExplodedViewer({ className = '', fallback = null }
 
         const scene = new THREE.Scene()
         const camera = new THREE.PerspectiveCamera(32, 1, 0.05, 200)
-        renderer = createRenderer(THREE, host, { clearColor: SCENE_BG })
-        applyToneMapping(THREE, renderer)
+        // Kanvas transparan — lihat catatan yang sama di ShoeViewer.jsx.
+        renderer = createRenderer(THREE, host)
+        applyToneMapping(THREE, renderer, 1.02)
         applyEnvironment(THREE, kit.RoomEnvironment, renderer, scene, disposer)
 
-        // Pencahayaan disamakan dengan hero. Dua scene berisi perangkat yang
-        // sama di satu halaman: warna yang berbeda di antara keduanya akan
-        // terbaca sebagai dua produk, bukan dua sudut pandang.
-        // Diturunkan seperti di hero — environment map sudah menyumbang
-        // cahaya sekeliling, dan kelebihan cahaya akan menembus ambang bloom
-        // sehingga seluruh badan ikut berpendar, bukan hanya titik cahayanya.
-        scene.add(new THREE.HemisphereLight(0xdff0e4, 0x1a2b20, 0.45))
-        const key = new THREE.DirectionalLight(0xffffff, 1.05)
+        // Pencahayaan disamakan dengan hero, termasuk nilainya. Dua scene
+        // berisi perangkat yang sama di satu halaman: warna yang berbeda di
+        // antara keduanya akan terbaca sebagai dua produk, bukan dua sudut
+        // pandang.
+        scene.add(new THREE.HemisphereLight(0xfffdf3, 0xe6ded0, 0.85))
+        const key = new THREE.DirectionalLight(0xffffff, 1.45)
         key.position.set(4, 7, 5)
-        const fill = new THREE.DirectionalLight(0xbfe6cd, 0.35)
+        const fill = new THREE.DirectionalLight(0xe8f1e6, 0.45)
         fill.position.set(-5, 3, -3)
-        const rim = new THREE.DirectionalLight(0xb6e3c4, 0.9)
+        const rim = new THREE.DirectionalLight(0xffffff, 0.4)
         rim.position.set(-3, 1, -6)
         scene.add(key, fill, rim)
 
@@ -263,6 +258,7 @@ export default function DeviceExplodedViewer({ className = '', fallback = null }
         // Tiga titik sensor, memakai pembuat dan angka yang sama dengan hero.
         // Posisi memanjangnya juga dari SENSOR_ALONG — titik yang sama harus
         // mendarat di tempat yang sama pada dua gambar di halaman ini.
+        const glowTexture = createGlowTexture(THREE, disposer)
         const lateralOffset = { heel: 0.0, metatarsal: 0.1, toe: 0.16 }
         const hotspots = SENSOR_ORDER.map((area) => {
           const kpa = DEMO_PRESSURE_POINTS[area]
@@ -272,7 +268,10 @@ export default function DeviceExplodedViewer({ className = '', fallback = null }
             lateralOffset[area],
             INSOLE_DEPTH + 0.045,
           )
-          hotspot.disc.material.color.multiplyScalar(EMISSIVE_BOOST)
+          // Halo sprite, sama seperti hero — pengganti bloom yang dibuang.
+          const halo = createGlowSprite(THREE, disposer, glowTexture, pressureColor(kpa), 0.52)
+          halo.material.opacity = 0.4
+          hotspot.group.add(halo)
           insoleLayer.add(hotspot.group)
           return hotspot
         })
@@ -301,31 +300,39 @@ export default function DeviceExplodedViewer({ className = '', fallback = null }
 
         // ---- Label ----------------------------------------------------------
         labels = createLabelLayer(THREE, host, 'exploded-viewer__labels')
+        // Kelas penanda per lapisan bukan hiasan: ketiga jangkar ini berada
+        // pada sumbu vertikal yang SAMA, jadi tanpa geseran masing-masing,
+        // label insole dan label modul saling menimpa persis di jarak urai
+        // yang paling sering dilihat orang. Geserannya ditulis di CSS (lihat
+        // .exploded-viewer__label--shoe/--insole/--module di Landing.css)
+        // karena satuannya piksel layar, bukan satuan scene.
         const layerLabels = [
-          labels.add(shoeLayer, 'Badan sepatu', 'exploded-viewer__label'),
+          labels.add(
+            shoeLayer,
+            'Badan sepatu',
+            'exploded-viewer__label exploded-viewer__label--shoe',
+          ),
           labels.add(
             insoleLayer,
             'Insole bersensor<i>3 titik tekanan</i>',
-            'exploded-viewer__label exploded-viewer__label--lead',
+            'exploded-viewer__label exploded-viewer__label--lead exploded-viewer__label--insole',
           ),
-          labels.add(moduleLayer, 'Modul sensor &amp; Bluetooth', 'exploded-viewer__label'),
+          labels.add(
+            moduleLayer,
+            'Modul sensor &amp; Bluetooth',
+            'exploded-viewer__label exploded-viewer__label--module',
+          ),
         ]
 
         const radius = Math.max(size.x, size.y, size.z)
         const baseCamera = new THREE.Vector3(radius * 0.55, radius * 0.5, radius * 1.55)
         const lookAt = new THREE.Vector3(0, 0, 0)
 
-        const contactShadow = createContactShadow(THREE, disposer, radius * 0.55, 0.45)
+        const contactShadow = createContactShadow(THREE, disposer, radius * 0.55, 0.32)
         contactShadow.position.y = box.min.y - size.y * 0.5
         scene.add(contactShadow)
 
-        const post = createBloomComposer(THREE, kit, renderer, scene, camera, {
-          strength: 0.5,
-          radius: 0.5,
-          threshold: 0.74,
-        })
-
-        const sizing = trackSize(host, renderer, camera, post.setSize)
+        const sizing = trackSize(host, renderer, camera)
         const visibility = trackVisibility(host)
         const scroll = createScrollTracker(host)
 
@@ -395,7 +402,7 @@ export default function DeviceExplodedViewer({ className = '', fallback = null }
             applyLayout(elapsed)
           }
 
-          post.render()
+          renderer.render(scene, camera)
           labels.update(camera, sizing.size)
         }
         raf = requestAnimationFrame(tick)
@@ -408,7 +415,6 @@ export default function DeviceExplodedViewer({ className = '', fallback = null }
           visibility.stop()
           scroll.stop()
           labels.dispose()
-          post.dispose()
           // Hanya milik scene ini — material sepatu di sini memang clone,
           // jadi aman dibuang; geometry-nya tidak pernah didaftarkan.
           disposer.dispose()

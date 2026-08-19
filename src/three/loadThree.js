@@ -71,30 +71,24 @@ export async function cloneShoe() {
   return source.clone(true)
 }
 
-// Kit kualitas render: environment map + rantai postprocessing.
+// Kit kualitas render: environment map studio.
 //
 // Dipisahkan dari loadThreeModules() dengan sengaja. Hiasan modul melayang di
-// banner CTA tidak memakai keduanya, dan menggabungkannya ke satu promise akan
+// banner CTA tidak memakainya, dan menggabungkannya ke satu promise akan
 // membuat scene itu menunggu modul yang tidak pernah dipakainya. Chunk hasil
 // build-nya sama, jadi yang dihemat waktu tunggu — bukan unduhan.
+//
+// Rantai postprocessing (EffectComposer + UnrealBloomPass) DIHAPUS dari sini.
+// Bloom memaksa kanvasnya buram — lihat createRenderer di sceneKit.js — dan
+// kanvas buram berarti kedua scene berdiri sebagai pelat berwarna sendiri di
+// tengah halaman krem. Pendar titik sensor sekarang datang dari sprite halo
+// (three/holo.js), yang bekerja di atas kanvas transparan.
 let renderKitPromise = null
 
 export function loadRenderKit() {
   if (!renderKitPromise) {
-    const pending = Promise.all([
-      import('three/examples/jsm/environments/RoomEnvironment.js'),
-      import('three/examples/jsm/postprocessing/EffectComposer.js'),
-      import('three/examples/jsm/postprocessing/RenderPass.js'),
-      import('three/examples/jsm/postprocessing/UnrealBloomPass.js'),
-      import('three/examples/jsm/postprocessing/OutputPass.js'),
-    ]).then(
-      ([
-        { RoomEnvironment },
-        { EffectComposer },
-        { RenderPass },
-        { UnrealBloomPass },
-        { OutputPass },
-      ]) => ({ RoomEnvironment, EffectComposer, RenderPass, UnrealBloomPass, OutputPass }),
+    const pending = import('three/examples/jsm/environments/RoomEnvironment.js').then(
+      ({ RoomEnvironment }) => ({ RoomEnvironment }),
     )
 
     pending.catch(() => {
