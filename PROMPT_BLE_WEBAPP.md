@@ -1,6 +1,6 @@
 # Prompt Claude CLI — Terima Data BLE ESP32 di Web App
 
-Dokumen ini berisi **kontrak BLE** firmware ESP32 Smart Insole sebagai acuan, plus
+Dokumen ini berisi **kontrak BLE** firmware ESP32 perangkat Glykos sebagai acuan, plus
 **prompt siap-tempel** untuk Claude CLI kalau penerima BLE perlu dibangun dari nol
 di project lain.
 
@@ -20,7 +20,7 @@ Salin blok di bawah ini ke Claude CLI di project web app Anda:
 
 ```
 Pastikan web app (index.html) bisa menerima dan menampilkan data BLE dari
-ESP32 firmware Smart Insole. Gunakan Web Bluetooth API. Spesifikasi BLE dari
+ESP32 firmware perangkat Glykos. Gunakan Web Bluetooth API. Spesifikasi BLE dari
 firmware (jangan diubah, harus cocok persis):
 
 - Perangkat BLE bernama: "glykos device"

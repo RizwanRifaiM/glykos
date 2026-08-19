@@ -1,5 +1,5 @@
 // src/services/ble.js
-// Web Bluetooth client untuk ESP32 Smart Insole (Glykos).
+// Web Bluetooth client untuk perangkat Glykos (sepatu pintar berbasis ESP32).
 // Kontrak firmware (JANGAN diubah — harus cocok persis):
 //   - Perangkat BLE bernama "glykos device"
 //   - Nordic UART Service (NUS)

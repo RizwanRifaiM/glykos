@@ -1,8 +1,9 @@
 # Glykos
 
-Web app pemantauan kaki penderita diabetes untuk **Smart Insole ESP32** — membaca
-tekanan, suhu kulit, kelembapan, dan gerak langsung dari perangkat lewat Bluetooth,
-menampilkannya sebagai dashboard, dan menyimpannya sebagai riwayat per pengguna.
+Web app pemantauan kaki penderita diabetes untuk **perangkat Glykos** — sepatu
+pintar berbasis ESP32. Membaca tekanan, suhu kulit, kelembapan, dan gerak langsung
+dari perangkat lewat Bluetooth, menampilkannya sebagai dashboard, dan menyimpannya
+sebagai riwayat per pengguna.
 
 React 19 + Vite · Firebase Auth & Firestore · Web Bluetooth · Gemini (chatbot).
 

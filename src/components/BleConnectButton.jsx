@@ -46,7 +46,7 @@ export default function BleConnectButton({
       className="ble-button"
       onClick={onConnect}
       disabled={connecting}
-      title="Sambungkan ke perangkat Smart Insole via Bluetooth"
+      title="Sambungkan ke perangkat Glykos via Bluetooth"
     >
       <IconBluetooth size={16} />
       <span className="ble-button__label">

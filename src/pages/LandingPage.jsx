@@ -4,6 +4,9 @@ import { variantProps } from '../components/button-variants'
 import { useAuth } from '../contexts/auth-context'
 import InsoleIllustration from '../components/InsoleIllustration'
 import ShoeViewer from '../components/ShoeViewer'
+import DeviceExplodedViewer from '../components/DeviceExplodedViewer'
+import FloatingModuleViewer from '../components/FloatingModuleViewer'
+import { DEMO_PRESSURE_POINTS } from '../three/sensorPoints'
 import { COLORS } from '../constants/theme'
 import {
   IconGauge,
@@ -109,8 +112,8 @@ function initials(name) {
 const STEPS = [
   {
     step: '01',
-    title: 'Pakai Insole Glykos',
-    desc: 'Pasang insole pintar Glykos ke dalam sepatu seperti biasa — tidak mengubah kenyamanan sehari-hari.',
+    title: 'Pakai Sepatu Glykos',
+    desc: 'Pakai seperti sepatu biasa — insole bersensor sudah terpasang di dalamnya, tidak ada yang perlu dirakit sendiri.',
   },
   {
     step: '02',
@@ -341,7 +344,7 @@ export default function LandingPage() {
               <span className="hero__title-accent">Risiko Ulkus Diabetik</span>
             </h1>
             <p className="hero__subtitle">
-              Glykos adalah insole pintar yang memantau tekanan, suhu, kelembapan, dan
+              Glykos adalah sepatu pintar yang memantau tekanan, suhu, kelembapan, dan
               aktivitas kaki secara real-time — membantu penderita diabetes dengan
               neuropati mendeteksi tanda awal luka sebelum menjadi masalah serius.
             </p>
@@ -368,11 +371,7 @@ export default function LandingPage() {
               <span className="hero__layer hero__layer--ring" aria-hidden="true" />
               <div className="hero__layer hero__layer--art">
                 <ShoeViewer
-                  fallback={
-                    <InsoleIllustration
-                      pressurePoints={{ toe: 84.2, metatarsal: 162.5, heel: 118.4 }}
-                    />
-                  }
+                  fallback={<InsoleIllustration pressurePoints={DEMO_PRESSURE_POINTS} />}
                 />
               </div>
             </div>
@@ -507,22 +506,27 @@ export default function LandingPage() {
         <section className="how-it-works" id="cara-kerja" data-reveal>
           <div className="section-heading">
             <h2>Tiga Langkah Menuju Kaki yang Terpantau</h2>
-            <p>Dari memasang insole sampai membaca hasilnya di dashboard.</p>
+            <p>Dari memakai sepatunya sampai membaca hasilnya di dashboard.</p>
           </div>
 
-          {/* Ilustrasi insole pindah ke sini dari hero, ditukar dengan model
-              sepatu. Gambar ini bukan dekorasi — ia melabeli tiga titik sensor
-              tekanan beserta nilainya, dan itu penjelasan yang akan hilang
-              kalau sekadar dibuang. Di section inilah tempatnya paling masuk
-              akal: halaman memang sedang menerangkan apa yang direkam
-              sensornya. */}
-          <div className="insole-showcase" data-reveal>
-            <InsoleIllustration
-              pressurePoints={{ toe: 84.2, metatarsal: 162.5, heel: 118.4 }}
+          {/* Tampilan urai menggantikan ilustrasi insole yang sebelumnya di
+              sini. Yang perlu dijelaskan section ini adalah hubungan RUANG
+              antara tiga bagian satu produk — badan sepatu, insole bersensor di
+              dalamnya, dan modul sensor di sisi luar —
+              dan itu justru yang paling mahal dijelaskan dengan gambar diam
+              maupun kalimat.
+
+              Ilustrasi insole tidak dibuang: ia jadi penggantinya saat WebGL
+              tidak tersedia, jadi penjelasan yang dibawanya (tiga titik sensor
+              beserta angkanya) tetap sampai. Scene ini memakai chunk three.js
+              yang sama dengan hero, jadi tidak ada pustaka kedua yang diunduh. */}
+          <div className="exploded-showcase" data-reveal>
+            <DeviceExplodedViewer
+              fallback={<InsoleIllustration pressurePoints={DEMO_PRESSURE_POINTS} />}
             />
-            <p className="insole-showcase__hint">
-              Tiga titik sensor tekanan: jari kaki, metatarsal, dan tumit. Angka pada gambar
-              adalah contoh pembacaan di rentang aman.
+            <p className="exploded-showcase__hint">
+              Gulir untuk memisahkan ketiga bagiannya: badan sepatu, insole bersensor
+              dengan tiga titik tekanan, dan modul sensor di sisi luar.
             </p>
           </div>
 
@@ -581,6 +585,12 @@ export default function LandingPage() {
 
         <section className="cta-banner" data-reveal>
           <div className="cta-banner__inner">
+            {/* Modul sensor melayang di belakang teks. Murni hiasan — tidak
+                memuat model apa pun, hanya kotak prosedural yang sudah dipakai
+                dua scene lain, jadi tambahannya nyaris tanpa biaya. Diletakkan
+                sebagai lapisan absolut supaya tidak bisa menggeser tata letak
+                banner sedikit pun kalau nanti ukurannya diubah. */}
+            <FloatingModuleViewer />
             <h2>Mulai Pantau Kesehatan Kaki Anda Hari Ini</h2>
             <p>
               Gratis untuk mendaftar — hubungkan perangkat Glykos Anda dalam hitungan menit.
@@ -600,7 +610,7 @@ export default function LandingPage() {
               <span>Glykos</span>
             </div>
             <p>
-              Insole pintar pemantau tekanan, suhu, dan kelembapan kaki untuk membantu deteksi
+              Sepatu pintar pemantau tekanan, suhu, dan kelembapan kaki untuk membantu deteksi
               dini risiko ulkus diabetik.
             </p>
           </div>
@@ -632,7 +642,7 @@ export default function LandingPage() {
 
         <div className="landing-footer__bottom">
           <p>© {new Date().getFullYear()} Glykos</p>
-          <p className="landing-footer__tech">Insole pintar untuk pemantauan kaki diabetes</p>
+          <p className="landing-footer__tech">Sepatu pintar untuk pemantauan kaki diabetes</p>
         </div>
       </footer>
     </div>

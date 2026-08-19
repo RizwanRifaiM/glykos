@@ -18,7 +18,7 @@ export default function DeviceOnboardingBanner({ ble }) {
       <div className="onboarding-banner__body">
         <h2>Belum ada data dari perangkat</h2>
         <p>
-          Sambungkan Smart Insole Anda lewat Bluetooth untuk mulai memantau tekanan, suhu, dan
+          Sambungkan perangkat Glykos Anda lewat Bluetooth untuk mulai memantau tekanan, suhu, dan
           kelembapan kaki secara real-time. Angka 0 di bawah ini bukan hasil pembacaan sensor —
           hanya belum ada data yang tercatat.
         </p>

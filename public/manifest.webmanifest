@@ -1,7 +1,7 @@
 {
   "name": "Glykos — Monitoring Kaki Diabetes",
   "short_name": "Glykos",
-  "description": "Pemantauan tekanan, suhu, dan kelembapan kaki dari insole pintar untuk deteksi dini risiko ulkus diabetik.",
+  "description": "Pemantauan tekanan, suhu, dan kelembapan kaki dari sepatu pintar untuk deteksi dini risiko ulkus diabetik.",
   "lang": "id",
   "dir": "ltr",
   "start_url": "/dashboard",

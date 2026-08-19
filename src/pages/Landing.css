@@ -339,19 +339,19 @@
   justify-content: center;
 }
 
+/* Panggung gelap — "ruang pindai".
+
+   Warna & lapisannya diatur di blok "PANEL INSTRUMEN" di AKHIR berkas ini —
+   di sana kanvas 3D yang buram, cincin HUD, dan garis pemindaian dirancang
+   sebagai satu kesatuan, dan memisahkannya ke dua tempat pernah membuat
+   setengahnya jadi aturan mati yang tertimpa diam-diam. */
 .hero__layer--glow {
-  transform: scale(1.15);
-  background:
-    radial-gradient(circle at 30% 25%, var(--pink-2), transparent 60%),
-    radial-gradient(circle at 75% 70%, rgba(134, 167, 136, 0.55), transparent 60%);
-  filter: blur(40px);
-  opacity: 0.8;
   border-radius: 50%;
 }
 
 .hero__layer--ring {
   transform: scale(0.96);
-  border: 1px solid rgba(129, 162, 131, 0.35);
+  border: 1px solid rgba(182, 227, 196, 0.4);
   border-radius: 50%;
 }
 
@@ -359,8 +359,18 @@
   content: '';
   position: absolute;
   inset: 12%;
-  border: 1px dashed rgba(129, 162, 131, 0.28);
+  border: 1px dashed rgba(182, 227, 196, 0.35);
   border-radius: 50%;
+  /* Cincin dalam berputar sendiri — gerakan yang tidak bergantung pada WebGL
+     sama sekali, jadi panggungnya sudah hidup bahkan sebelum three.js selesai
+     diunduh, dan tetap hidup di perangkat tanpa WebGL. */
+  animation: holo-ring-spin 24s linear infinite;
+}
+
+@keyframes holo-ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* .hero-illustration dibatasi 480px karena dipakai bersama SensorFootMap
@@ -945,12 +955,52 @@
 }
 
 .cta-banner__inner {
+  position: relative;
+  /* Modul yang melayang keluar tepi dipotong oleh radius banner, bukan
+     menggantung di atas latar halaman. */
+  overflow: hidden;
   text-align: center;
   background: var(--pink-2);
   border-radius: var(--radius-xl);
   padding: clamp(40px, 6vw, 64px) 24px;
   color: var(--navy);
   box-shadow: var(--shadow-lg);
+}
+
+/* Lapisan hiasan 3D di belakang teks CTA.
+   `position: absolute` bukan kebetulan: dengan begitu ia tidak punya andil
+   apa pun pada tinggi banner, jadi mengubah ukurannya nanti tidak akan
+   menggeser tombol atau judul di depannya. */
+.floating-modules {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  /* Hiasan tidak boleh mencegat klik — tombol CTA ada tepat di depannya. */
+  pointer-events: none;
+  /* Dipudarkan supaya teks di depannya tetap punya kontras yang cukup.
+     Modul ungu penuh di belakang teks navy akan membuat judulnya harus
+     dibaca dua kali. */
+  opacity: 0;
+  transition: opacity 700ms var(--ease);
+}
+
+.floating-modules--ready {
+  opacity: 0.42;
+}
+
+.floating-modules canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Teks & tombol harus berada DI ATAS lapisan hiasan. Tanpa ini keduanya
+   berbagi konteks tumpukan yang sama dan urutan DOM yang menentukan —
+   kebetulan benar sekarang, tapi pecah begitu ada yang menyisipkan elemen
+   baru di antaranya. */
+.cta-banner__inner > :not(.floating-modules) {
+  position: relative;
+  z-index: 1;
 }
 
 .cta-banner h2 {
@@ -1061,26 +1111,161 @@
   opacity: 0.75;
 }
 
-/* ---------- Panggung ilustrasi insole ----------
-   Sebelumnya .shoe-showcase; sepatu 3D-nya pindah ke hero dan tempat ini
-   diisi ilustrasi insole yang ditukar dari sana. */
+/* ---------- Panggung tampilan urai perangkat ----------
+   Sebelumnya .insole-showcase berisi ilustrasi SVG. Isinya sekarang scene 3D
+   kedua halaman ini; ilustrasi itu tetap dipakai sebagai penggantinya saat
+   WebGL tidak tersedia, jadi aturan .hero-illustration di bawah masih perlu. */
 
-.insole-showcase {
-  max-width: 620px;
+.exploded-showcase {
+  max-width: 720px;
   margin: 0 auto clamp(32px, 4vw, 48px);
   text-align: center;
 }
 
-.insole-showcase .hero-illustration {
+.exploded-viewer {
+  position: relative;
   width: 100%;
-  max-width: 520px;
+  /* Lebih tinggi daripada lebarnya karena susunannya memisah ke ATAS dan
+     BAWAH. Bingkai selebar-lebarnya hanya akan menyisakan ruang kosong di
+     kiri-kanan sementara lapisan teratas dan terbawah terpotong. */
+  aspect-ratio: 5 / 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Tidak ada touch-action khusus di sini: scene ini TIDAK bisa diseret.
+     Gerakannya sepenuhnya milik gulir halaman, jadi jari yang mendarat di
+     sini harus tetap menggulir seperti di bagian halaman lainnya. */
 }
 
-.insole-showcase__hint {
+.exploded-viewer canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 420ms var(--ease);
+}
+
+.exploded-viewer--ready canvas {
+  opacity: 1;
+}
+
+.exploded-viewer__note {
+  max-width: 420px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--blue);
+}
+
+.exploded-showcase__hint {
   margin-top: 8px;
   font-size: 13px;
   line-height: 1.6;
   color: var(--blue);
+}
+
+/* ---------- Label melayang di atas kanvas 3D ----------
+   Dipakai kedua scene. Posisinya ditulis oleh loop render lewat `transform`
+   (lihat createLabelLayer di src/three/sceneKit.js), jadi CSS di sini hanya
+   mengurus tampilannya — jangan menambahkan `transition: transform`, karena
+   nilainya sudah berubah tiap frame dan transisi di atasnya justru membuat
+   label tertinggal di belakang titik yang ditandainya. */
+
+.shoe-viewer__labels,
+.exploded-viewer__labels {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* Label tidak boleh mencegat pointer: tepat di bawahnya ada model yang
+     bisa diseret, dan di sekelilingnya ada halaman yang bisa digulir. */
+  pointer-events: none;
+}
+
+.shoe-viewer__label,
+.exploded-viewer__label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  white-space: nowrap;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--shadow-sm);
+  font-size: 11px;
+  line-height: 1.25;
+  color: var(--blue);
+  text-align: center;
+  /* Hanya dua properti ini yang berubah tiap frame — keduanya bisa
+     dianimasikan browser tanpa menghitung ulang layout halaman. */
+  will-change: transform, opacity;
+}
+
+.shoe-viewer__label b,
+.exploded-viewer__label b {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.shoe-viewer__label i,
+.exploded-viewer__label i {
+  display: block;
+  font-style: normal;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.exploded-viewer__label {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--navy);
+}
+
+/* Label hero berdiri di atas panggung GELAP, jadi ia tidak bisa memakai
+   gaya kaca terang yang sama dengan label tampilan urai. */
+.shoe-viewer__label {
+  /* Digeser ke atas titiknya, lalu disambungkan lagi lewat garis penunjuk di
+     bawah. Label yang menindih titik sensornya sendiri menutupi hal yang
+     ditunjuknya. */
+  margin-top: -42px;
+  border-radius: 5px;
+  border-color: rgba(182, 227, 196, 0.45);
+  background: rgba(11, 26, 18, 0.82);
+  box-shadow: 0 0 18px rgba(182, 227, 196, 0.12);
+  color: rgba(182, 227, 196, 0.85);
+  letter-spacing: 0.02em;
+}
+
+.shoe-viewer__label b {
+  color: #eafff2;
+}
+
+/* Garis penunjuk dari label ke titik sensornya — bahasa anotasi alat ukur.
+   Memudar ke bawah supaya ujungnya menyatu ke titik, bukan berhenti tegas
+   di udara. */
+.shoe-viewer__label::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 1px;
+  height: 28px;
+  background: linear-gradient(to bottom, rgba(182, 227, 196, 0.85), rgba(182, 227, 196, 0));
+}
+
+.exploded-viewer__label--lead {
+  border-color: rgba(68, 106, 69, 0.35);
+  background: var(--navy);
+  color: #fff;
+}
+
+.exploded-viewer__label--lead i {
+  opacity: 0.75;
 }
 
 /* Tanpa panel: tidak ada latar, garis tepi, atau radius. Viewer ini duduk
@@ -1108,6 +1293,33 @@
   display: block;
   width: 100%;
   height: 100%;
+  /* Kanvas ditambahkan ke DOM sebelum frame pertama selesai digambar. Tanpa
+     ini, yang sempat terlihat adalah satu kedipan kanvas kosong tepat sebelum
+     sepatunya muncul. Skala & putaran masuknya dianimasikan DI DALAM scene
+     (lihat INTRO_SEC di ShoeViewer.jsx) — menskalakan kanvas lewat CSS hanya
+     membesarkan gambar yang sudah dirender berikut pikselnya. */
+  opacity: 0;
+  transition: opacity 420ms var(--ease);
+}
+
+.shoe-viewer--ready canvas {
+  opacity: 1;
+}
+
+/* Panggung hero sekarang gelap, sementara ilustrasi insole penggantinya
+   digambar dengan navy di atas latar terang — di atas panggung gelap ia
+   nyaris tak terlihat. Jadi begitu viewer jatuh ke keadaan pengganti, ia
+   membawa alas terangnya sendiri.
+
+   Dilakukan lewat kelas keadaan pada viewer-nya, bukan `:has()` pada
+   panggung: peramban yang tidak mendukung WebGL2 sebagian besar juga
+   peramban lama, dan itu justru golongan yang paling mungkin belum
+   mendukung `:has()` — pengaman yang gagal tepat pada kasus yang harus
+   diamankannya bukan pengaman. */
+.shoe-viewer--unsupported,
+.shoe-viewer--failed {
+  background: radial-gradient(circle at 50% 48%, var(--cream) 0%, var(--cream) 62%, transparent 78%);
+  border-radius: 50%;
 }
 
 .shoe-viewer__note {
@@ -1294,3 +1506,179 @@
     gap: 14px;
   }
 }
+
+/* ---------- Scene 3D pada layar sempit & reduced-motion ---------- */
+
+@media (max-width: 560px) {
+  /* Panggung hero menyusut sampai ~330 px di sini. Tiga label lengkap di
+     lebar itu saling menimpa sampai tidak ada yang terbaca — yang tersisa
+     hanyalah angkanya, dan angka itulah bagian yang penting. Nama areanya
+     sudah disebut ulang di section "Cara Kerja". */
+  .shoe-viewer__label i {
+    display: none;
+  }
+
+  .shoe-viewer__label {
+    padding: 3px 7px;
+  }
+
+  .shoe-viewer__label b {
+    font-size: 11.5px;
+  }
+
+  /* Susunan urai jadi lebih tinggi daripada lebar di ponsel: ruang
+     horizontalnya habis lebih dulu, dan lapisan atas-bawahlah yang butuh
+     tempat. */
+  .exploded-viewer {
+    aspect-ratio: 4 / 5;
+  }
+
+  .exploded-viewer__label {
+    font-size: 10.5px;
+    padding: 4px 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Gerak scene-nya sudah dimatikan di JavaScript (putaran otomatis, denyut,
+     kamera yang mengikuti gulir). Yang tersisa di sini hanyalah transisi CSS
+     kemunculan kanvasnya. */
+  .shoe-viewer canvas,
+  .exploded-viewer canvas {
+    transition: none;
+  }
+
+  /* Cincin HUD berhenti berputar. Gerakan scene-nya sendiri sudah dimatikan
+     di JavaScript, jadi ini satu-satunya gerak yang tersisa di panggung. */
+  .hero__layer--ring::after {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   PANEL INSTRUMEN — panggung gelap untuk kedua scene 3D
+   ==========================================================================
+   Halaman ini bertema TERANG. Dua kanvas 3D di dalamnya tidak bisa ikut:
+   kanvasnya buram (lihat createRenderer di three/sceneKit.js), karena bloom
+   dan kanvas transparan tidak akur — rantai postprocessing merender ke render
+   target lalu menyalinnya kembali, dan alpha tidak selamat melewatinya tanpa
+   penanganan khusus di tiap pass. Gejalanya kotak hitam.
+
+   Jadi alih-alih melawan itu, kanvasnya dijadikan bagian dari rancangan:
+   panel gelap bersudut membulat, seperti layar alat ukur yang ditanam di
+   halaman. Pendar, garis pindai, dan bloom baru punya arti di dalamnya —
+   di atas krem, semua itu hanya jadi noda pucat.
+
+   Warna latarnya HARUS sama dengan SCENE_BG di ShoeViewer.jsx dan
+   DeviceExplodedViewer.jsx. Selisih sekecil apa pun terlihat sebagai persegi
+   yang sedikit beda warna di dalam panel. */
+
+.hero__layer--art,
+.exploded-viewer {
+  border-radius: 26px;
+  overflow: hidden;
+  background: #060d0a;
+  border: 1px solid rgba(126, 226, 184, 0.16);
+}
+
+/* Panggung hero: lapisan cahaya melebar KELUAR panel supaya panel gelapnya
+   tidak berdiri seperti potongan yang ditempel, melainkan duduk di dalam
+   pendar hangat halaman. */
+.hero__layer--glow {
+  z-index: 0;
+  transform: scale(1.32);
+  background:
+    radial-gradient(circle at 50% 45%, rgba(134, 167, 136, 0.5), transparent 62%),
+    radial-gradient(circle at 70% 75%, var(--pink-2), transparent 60%);
+  filter: blur(28px);
+  opacity: 0.9;
+}
+
+/* Garis pemindaian sudah tidak bisa duduk di lapisan cahaya — kanvas buram
+   menutupinya. Dipindah ke ::after milik panggung, jadi ia melintas DI ATAS
+   gambar 3D. Itu justru lebih tepat: garis pada layar alat ukur memang berada
+   di depan yang ditampilkannya, bukan di belakang. */
+.hero__layer--glow::after {
+  content: none;
+}
+
+.hero__layer--art {
+  z-index: 1;
+}
+
+/* Cincin HUD naik ke DEPAN kanvas sebagai bidik. Di belakangnya ia tidak akan
+   terlihat sama sekali. */
+.hero__layer--ring {
+  z-index: 2;
+  /* TANPA `inset` di sini: transform scale(0.96) di atas masih berlaku, dan
+     menumpuk keduanya membuat cincinnya mengecil dua kali. */
+  border-color: rgba(126, 226, 184, 0.3);
+  box-shadow:
+    0 0 30px rgba(126, 226, 184, 0.12),
+    inset 0 0 50px rgba(126, 226, 184, 0.06);
+}
+
+.hero__layer--ring::after {
+  border-color: rgba(126, 226, 184, 0.26);
+}
+
+.hero__stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: 26px;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(126, 226, 184, 0.05) 0 1px,
+    transparent 1px 4px
+  );
+}
+
+/* Panel tampilan urai mendapat pendar yang sama supaya kedua panel terbaca
+   sebagai satu keluarga, bukan dua kebetulan. */
+.exploded-viewer {
+  box-shadow:
+    0 24px 60px rgba(68, 106, 69, 0.18),
+    0 0 40px rgba(126, 226, 184, 0.08);
+}
+
+.exploded-showcase {
+  max-width: 760px;
+}
+
+/* Label pada tampilan urai kini berdiri di atas panel GELAP, jadi ia tidak
+   bisa lagi memakai kaca terang. Disamakan dengan label hero. */
+.exploded-viewer__label {
+  border-color: rgba(126, 226, 184, 0.42);
+  background: rgba(8, 18, 13, 0.82);
+  color: rgba(182, 227, 196, 0.9);
+}
+
+.exploded-viewer__label--lead {
+  background: rgba(126, 226, 184, 0.92);
+  border-color: rgba(126, 226, 184, 0.6);
+  color: #06120c;
+}
+
+.exploded-viewer__note {
+  color: rgba(182, 227, 196, 0.75);
+}
+
+/* Ilustrasi pengganti (tanpa WebGL) digambar dengan navy dari
+   constants/theme.js — konstanta JavaScript, di luar jangkauan token CSS.
+   Karena panelnya gelap, alas terangnya harus eksplisit. */
+.shoe-viewer--unsupported,
+.shoe-viewer--failed,
+.exploded-viewer--unsupported,
+.exploded-viewer--failed {
+  background: #f3f7f0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__stage::after {
+    background: none;
+  }
+}
+
