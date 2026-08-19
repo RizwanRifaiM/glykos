@@ -6,6 +6,8 @@ import InsoleIllustration from '../components/InsoleIllustration'
 import ShoeViewer from '../components/ShoeViewer'
 import DeviceExplodedViewer from '../components/DeviceExplodedViewer'
 import FloatingModuleViewer from '../components/FloatingModuleViewer'
+import SensorInsoleViewer from '../components/SensorInsoleViewer'
+import ModuleShowcaseViewer from '../components/ModuleShowcaseViewer'
 import { DEMO_PRESSURE_POINTS } from '../three/sensorPoints'
 import { COLORS } from '../constants/theme'
 import {
@@ -127,9 +129,11 @@ const STEPS = [
   },
 ]
 
-// Ritme bento untuk .features__grid pada grid 6 kolom: 4+2, 2+4, 3+3.
-// Jumlahnya 18 = tepat tiga baris penuh untuk enam kartu.
-const FEATURE_SPAN = [4, 2, 2, 4, 3, 3]
+// Ritme bento pada grid 6 kolom. Sel modul 3D memakan 2 kolom × 2 baris di
+// pojok kiri atas, jadi dua baris pertama hanya menyisakan 4 kolom untuk
+// kartu (2+2), dan baris ketiga terisi penuh (3+3). Jumlahnya pas — tidak ada
+// sel kosong menggantung di ujung grid.
+const FEATURE_SPAN = [2, 2, 2, 2, 3, 3]
 
 const HERO_STATS = [
   { icon: IconGauge, value: '4', label: 'Jenis sensor' },
@@ -158,6 +162,23 @@ function BrandMark() {
         strokeLinecap="round"
       />
     </svg>
+  )
+}
+
+// Kepala section: nomor, label, judul, kalimat pengantar. Dijadikan komponen
+// karena lima section memakainya dan penomorannya harus konsisten — nomor
+// yang ditulis manual di lima tempat adalah nomor yang cepat atau lambat
+// meleset saat ada section disisipkan.
+function SectionHead({ index, label, title, children, tight = false }) {
+  return (
+    <div className={`section-head${tight ? ' section-head--tight' : ''}`}>
+      <p className="section-head__meta">
+        <span className="section-head__index">{index}</span>
+        <span>{label}</span>
+      </p>
+      <h2>{title}</h2>
+      {children ? <p>{children}</p> : null}
+    </div>
   )
 }
 
@@ -220,11 +241,52 @@ function useActiveSection() {
   return active
 }
 
+// Progres baca, ditulis sebagai custom property pada elemen yang dikirim —
+// BUKAN sebagai state React. Nilainya berubah tiap frame saat menggulir, dan
+// setState secepat itu akan merender ulang seluruh halaman untuk memindahkan
+// satu garis 2px.
+//
+// Pembacaannya ditunda ke rAF: handler scroll hanya menaikkan bendera, jadi
+// trackpad yang mengirim puluhan event per frame tetap menghasilkan satu
+// pembacaan layout per frame.
+function useScrollProgress(targetRef) {
+  useEffect(() => {
+    const el = targetRef.current
+    if (!el || typeof window === 'undefined') return
+
+    let frame = 0
+
+    const measure = () => {
+      frame = 0
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight
+      const progress = scrollable > 0 ? window.scrollY / scrollable : 0
+      el.style.setProperty('--progress', String(Math.min(Math.max(progress, 0), 1)))
+    }
+
+    const onScroll = () => {
+      if (frame) return
+      frame = requestAnimationFrame(measure)
+    }
+
+    measure()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll, { passive: true })
+
+    return () => {
+      if (frame) cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [targetRef])
+}
+
 export default function LandingPage() {
   const { user } = useAuth()
   const [navOpen, setNavOpen] = useState(false)
   const activeSection = useActiveSection()
+  const progressRef = useRef(null)
   useScrollReveal()
+  useScrollProgress(progressRef)
 
   // Tilt kartu. Objek opsinya di-memo karena ia masuk daftar dependensi
   // effect di useTilt — literal baru tiap render akan memasang ulang tilt
@@ -232,12 +294,12 @@ export default function LandingPage() {
   const cardsRef = useRef(null)
   const tiltOptions = useMemo(
     () => ({
-      max: 6,
+      max: 5,
       speed: 700,
       perspective: 1100,
-      scale: 1.015,
+      scale: 1.012,
       glare: true,
-      'max-glare': 0.12,
+      'max-glare': 0.1,
       gyroscope: false,
       easing: 'cubic-bezier(0.2, 0, 0, 1)',
     }),
@@ -305,6 +367,11 @@ export default function LandingPage() {
           </button>
         </div>
 
+        {/* Bilah progres baca — hiasan yang membawa informasi, jadi ia
+            aria-hidden: pembaca layar sudah punya penanda posisi yang lebih
+            baik lewat heading dan landmark. */}
+        <span ref={progressRef} className="landing-nav__progress" aria-hidden="true" />
+
         {navOpen && (
           <div className="landing-nav__mobile">
             <div className="landing-nav__mobile-header">
@@ -338,7 +405,10 @@ export default function LandingPage() {
       <main id="konten" ref={cardsRef}>
         <section className="hero" id="top">
           <div className="hero__content">
-            <span className="hero__badge">Wearable Health-Tech</span>
+            <span className="hero__badge">
+              <span className="hero__badge-dot" aria-hidden="true" />
+              Wearable Health-Tech
+            </span>
             <h1 className="hero__title">
               Sepatu Pintar Pendeteksi Dini{' '}
               <span className="hero__title-accent">Risiko Ulkus Diabetik</span>
@@ -348,23 +418,23 @@ export default function LandingPage() {
               aktivitas kaki secara real-time — membantu penderita diabetes dengan
               neuropati mendeteksi tanda awal luka sebelum menjadi masalah serius.
             </p>
+
             <div className="hero__actions">
               <LinkButton to="/register" variant="primary" className="hero__cta">
                 Daftar Gratis
               </LinkButton>
+              {/* Anchor biasa, bukan LinkButton: tujuannya jangkar di halaman
+                  yang sama, dan Link dari react-router akan memperlakukannya
+                  sebagai rute. */}
               <a href="#cara-kerja" {...variantProps('outline', false, 'hero__cta')}>
                 Lihat Cara Kerja
               </a>
             </div>
-
           </div>
 
-          {/* Lapisan cahaya & cincin tetap CSS murni sehingga langsung
-              tergambar tanpa menunggu apa pun — hero tidak pernah kosong
-              selama three.js dan modelnya diunduh. Kemiringan mengikuti
-              pointer DIHAPUS di sini: modelnya sendiri sudah bisa diputar
-              dengan seretan, dan dua mekanisme rotasi pada satu objek
-              membuat keduanya terasa salah. */}
+          {/* Panggung 3D. Lapisan cahaya dan cincin murni CSS dan tergambar
+              seketika, jadi hero tidak pernah berupa kotak kosong selama
+              three.js beserta modelnya masih diunduh. */}
           <div className="hero__visual">
             <div className="hero__stage">
               <span className="hero__layer hero__layer--glow" aria-hidden="true" />
@@ -375,26 +445,21 @@ export default function LandingPage() {
                 />
               </div>
             </div>
-            {/* aria-hidden: ini petunjuk gestur untuk pengguna pointer/sentuh.
-                Pembaca layar tidak bisa memutar model apa pun, dan viewer-nya
-                sudah punya aria-label yang menjelaskan isinya. */}
             <p className="hero__visual-hint" aria-hidden="true">
               Seret ke samping &amp; ke atas untuk memutar
             </p>
           </div>
         </section>
 
-        {/* Dulu berada DI DALAM hero sebagai elemen teks kelima. Hero yang
-            memuat lencana, judul, subjudul, tombol, DAN strip angka membuat
-            mata tidak tahu harus mendarat di mana. Sekarang jadi pita tipis
-            tersendiri: perannya tetap sama, tapi tidak lagi berebut dengan
-            judul. */}
-        <section className="spec-strip" aria-label="Spesifikasi ringkas">
-          <dl className="spec-strip__list">
+        {/* Pita spesifikasi: tiga angka yang paling sering ditanyakan, dibaca
+            sebagai baris data alat — bukan sebagai tiga kartu statistik yang
+            berebut perhatian dengan judul hero. */}
+        <section className="spec-rail" aria-label="Spesifikasi ringkas">
+          <dl className="spec-rail__list">
             {HERO_STATS.map((stat) => (
-              <div key={stat.label} className="spec-strip__item">
-                <span className="spec-strip__icon" aria-hidden="true">
-                  <stat.icon size={18} />
+              <div key={stat.label} className="spec-rail__item">
+                <span className="spec-rail__icon" aria-hidden="true">
+                  <stat.icon size={19} />
                 </span>
                 <div>
                   <dt>{stat.value}</dt>
@@ -405,87 +470,112 @@ export default function LandingPage() {
           </dl>
         </section>
 
-        {/* Keluarga layout: split lengket. Judulnya menempel di kiri sementara
-            ketiga poin bergulir melewatinya, jadi pembaca selalu tahu poin ini
-            menjawab pertanyaan apa. Sebelumnya section ini judul-di-atas-grid,
-            sama persis dengan tiga section lain di halaman yang sama. */}
-        <section className="problem" id="tentang" data-reveal>
-          <div className="section-heading problem__heading">
-            <h2>Mengapa Kaki Diabetes Butuh Perhatian Ekstra?</h2>
-            <p>
-              Banyak penderita diabetes mengalami <strong>neuropati</strong> — mati rasa pada
-              saraf kaki — sehingga tidak menyadari tekanan berlebih atau peradangan dini yang
-              berisiko menjadi ulkus diabetik. Glykos hadir sebagai &ldquo;indera
-              pengganti&rdquo; yang bekerja diam-diam di dalam sepatu.
-            </p>
-          </div>
+        {/* Judulnya menempel di kiri sementara ketiga poin bergulir
+            melewatinya, jadi pembaca selalu tahu poin ini menjawab pertanyaan
+            apa. */}
+        <section className="section problem" id="tentang" data-reveal>
+          <div className="problem__layout">
+            <div className="problem__aside">
+              <SectionHead
+                index="01"
+                label="Mengapa Glykos"
+                title="Mengapa Kaki Diabetes Butuh Perhatian Ekstra?"
+                tight
+              >
+                Banyak penderita diabetes mengalami neuropati — mati rasa pada saraf kaki —
+                sehingga tidak menyadari tekanan berlebih atau peradangan dini yang berisiko
+                menjadi ulkus diabetik. Glykos hadir sebagai &ldquo;indera pengganti&rdquo;
+                yang bekerja diam-diam di dalam sepatu.
+              </SectionHead>
+            </div>
 
-          <ol className="problem__list">
-            <li className="problem__card problem__card--rose">
-              <h3>Sulit Disadari Sejak Dini</h3>
-              <p>
-                Neuropati membuat tanda-tanda awal luka — tekanan berlebih, panas, dan lembap
-                — sulit dirasakan langsung oleh penderita.
-              </p>
-            </li>
-            <li className="problem__card problem__card--danger">
-              <h3>Berisiko Menjadi Luka Kronis</h3>
-              <p>
-                Tanpa deteksi dini, cedera kecil dapat berkembang menjadi luka yang sulit
-                sembuh dan berisiko komplikasi lebih lanjut.
-              </p>
-            </li>
-            <li className="problem__card problem__card--green">
-              <h3>Perlu Pemantauan Berkelanjutan</h3>
-              <p>
-                Pemantauan rutin membantu pasien, keluarga, dan dokter mengambil tindakan
-                preventif sebelum kondisi memburuk.
-              </p>
-            </li>
-          </ol>
+            <ol className="problem__list">
+              <li className="problem__card problem__card--rose">
+                <h3>Sulit Disadari Sejak Dini</h3>
+                <p>
+                  Neuropati membuat tanda-tanda awal luka — tekanan berlebih, panas, dan
+                  lembap — sulit dirasakan langsung oleh penderita.
+                </p>
+              </li>
+              <li className="problem__card problem__card--danger">
+                <h3>Berisiko Menjadi Luka Kronis</h3>
+                <p>
+                  Tanpa deteksi dini, cedera kecil dapat berkembang menjadi luka yang sulit
+                  sembuh dan berisiko komplikasi lebih lanjut.
+                </p>
+              </li>
+              <li className="problem__card problem__card--green">
+                <h3>Perlu Pemantauan Berkelanjutan</h3>
+                <p>
+                  Pemantauan rutin membantu pasien, keluarga, dan dokter mengambil tindakan
+                  preventif sebelum kondisi memburuk.
+                </p>
+              </li>
+            </ol>
+          </div>
         </section>
 
-        <section className="science" id="dasar">
-          <div className="science__inner" data-reveal>
-            <div className="section-heading section-heading--invert">
-              <span className="section-eyebrow">Dasar Pemantauan</span>
-              <h2>Ambang yang Dipakai Glykos</h2>
-              <p>
+        {/* Insole 3D menempel di kiri sementara ketiga kartu ambang bergulir
+            di kanannya. Angka pada kartu dan warna pada titik sensor bicara
+            tentang hal yang sama — dan di sinilah keduanya bisa dilihat
+            bersamaan, bukan bergantian. */}
+        <section className="section science" id="dasar" data-reveal>
+          <div className="science__layout">
+            <div className="science__stage">
+              <SensorInsoleViewer />
+              <p className="science__stage-note">
+                Contoh pembacaan: 150 / 225 / 300 kPa
+              </p>
+            </div>
+
+            <div>
+              <SectionHead index="02" label="Dasar Pemantauan" title="Ambang yang Dipakai Glykos">
                 Setiap status &ldquo;aman&rdquo;, &ldquo;perhatian&rdquo;, dan
                 &ldquo;risiko&rdquo; pada dashboard dihitung dari ambang berikut — bukan
                 penilaian samar, sehingga bisa Anda periksa dan diskusikan dengan dokter.
-              </p>
-            </div>
+              </SectionHead>
 
-            <div className="science__grid">
-              {THRESHOLDS.map((item) => (
-                <article key={item.title} className="science__card">
-                  <span className="science__icon" aria-hidden="true">
-                    <item.icon size={22} />
-                  </span>
-                  <p className="science__value">
-                    {item.value}
-                    <span>{item.unit}</span>
-                  </p>
-                  <h3>{item.title}</h3>
-                  <p className="science__desc">{item.desc}</p>
-                </article>
-              ))}
+              <div className="science__cards">
+                {THRESHOLDS.map((item) => (
+                  <article key={item.title} className="science__card">
+                    <span className="science__icon" aria-hidden="true">
+                      <item.icon size={22} />
+                    </span>
+                    <p className="science__value">
+                      {item.value}
+                      <span>{item.unit}</span>
+                    </p>
+                    <h3>{item.title}</h3>
+                    <p className="science__desc">{item.desc}</p>
+                  </article>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Keluarga layout: bento. Enam kartu berukuran identik membaca sebagai
-            daftar; enam kartu berukuran berbeda membaca sebagai komposisi.
-            FEATURE_SPAN memberi ritme 4-2 / 2-4 / 3-3 pada grid 6 kolom —
-            enam sel untuk enam kartu, tanpa sel kosong menggantung. */}
-        <section className="features" id="fitur" data-reveal>
-          <div className="section-heading">
-            <h2>Semua yang Dibutuhkan untuk Memantau Kaki</h2>
-            <p>Empat jenis sensor, satu dashboard, dipantau kapan saja.</p>
-          </div>
+        {/* Bento: enam kartu berukuran identik membaca sebagai daftar; enam
+            kartu berukuran berbeda membaca sebagai komposisi. Sel pertama
+            bukan kartu melainkan perangkatnya sendiri — mata bertemu bendanya
+            sebelum membaca daftar kemampuannya. */}
+        <section className="section features" id="fitur" data-reveal>
+          <SectionHead
+            index="03"
+            label="Fitur"
+            title="Semua yang Dibutuhkan untuk Memantau Kaki"
+          >
+            Empat jenis sensor, satu dashboard, dipantau kapan saja.
+          </SectionHead>
 
           <div className="features__grid">
+            <div className="features__device">
+              <ModuleShowcaseViewer />
+              <p className="features__device-label">
+                Unit sensor
+                <b>Bluetooth Low Energy</b>
+              </p>
+            </div>
+
             {FEATURES.map((feature, index) => (
               <article
                 key={feature.title}
@@ -503,23 +593,25 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="how-it-works" id="cara-kerja" data-reveal>
-          <div className="section-heading">
-            <h2>Tiga Langkah Menuju Kaki yang Terpantau</h2>
-            <p>Dari memakai sepatunya sampai membaca hasilnya di dashboard.</p>
-          </div>
+        <section className="section how-it-works" id="cara-kerja" data-reveal>
+          <SectionHead
+            index="04"
+            label="Cara Kerja"
+            title="Tiga Langkah Menuju Kaki yang Terpantau"
+          >
+            Dari memakai sepatunya sampai membaca hasilnya di dashboard.
+          </SectionHead>
 
-          {/* Tampilan urai menggantikan ilustrasi insole yang sebelumnya di
-              sini. Yang perlu dijelaskan section ini adalah hubungan RUANG
-              antara tiga bagian satu produk — badan sepatu, insole bersensor di
-              dalamnya, dan modul sensor di sisi luar —
-              dan itu justru yang paling mahal dijelaskan dengan gambar diam
-              maupun kalimat.
+          {/* Yang perlu dijelaskan section ini adalah hubungan RUANG antara
+              tiga bagian satu produk — badan sepatu, insole bersensor di
+              dalamnya, dan modul sensor di sisi luar — dan itu justru yang
+              paling mahal dijelaskan dengan gambar diam maupun kalimat.
 
               Ilustrasi insole tidak dibuang: ia jadi penggantinya saat WebGL
               tidak tersedia, jadi penjelasan yang dibawanya (tiga titik sensor
               beserta angkanya) tetap sampai. Scene ini memakai chunk three.js
-              yang sama dengan hero, jadi tidak ada pustaka kedua yang diunduh. */}
+              yang sama dengan hero, jadi tidak ada pustaka kedua yang
+              diunduh. */}
           <div className="exploded-showcase" data-reveal>
             <DeviceExplodedViewer
               fallback={<InsoleIllustration pressurePoints={DEMO_PRESSURE_POINTS} />}
@@ -543,11 +635,10 @@ export default function LandingPage() {
           </ol>
         </section>
 
-        <section className="team" id="tim" data-reveal>
-          <div className="section-heading">
-            <h2>Tim di Balik Glykos</h2>
-            <p>Tim inti yang membangun Glykos dari riset hingga produk.</p>
-          </div>
+        <section className="section team" id="tim" data-reveal>
+          <SectionHead index="05" label="Tim" title="Tim di Balik Glykos">
+            Tim inti yang membangun Glykos dari riset hingga produk.
+          </SectionHead>
 
           <div className="team__grid">
             {TEAM.map((member) => (
@@ -587,10 +678,11 @@ export default function LandingPage() {
           <div className="cta-banner__inner">
             {/* Modul sensor melayang di belakang teks. Murni hiasan — tidak
                 memuat model apa pun, hanya kotak prosedural yang sudah dipakai
-                dua scene lain, jadi tambahannya nyaris tanpa biaya. Diletakkan
+                scene lain, jadi tambahannya nyaris tanpa biaya. Diletakkan
                 sebagai lapisan absolut supaya tidak bisa menggeser tata letak
-                banner sedikit pun kalau nanti ukurannya diubah. */}
+                panel sedikit pun kalau nanti ukurannya diubah. */}
             <FloatingModuleViewer />
+            <p className="cta-banner__eyebrow">Mulai hari ini</p>
             <h2>Mulai Pantau Kesehatan Kaki Anda Hari Ini</h2>
             <p>
               Gratis untuk mendaftar — hubungkan perangkat Glykos Anda dalam hitungan menit.
@@ -616,7 +708,7 @@ export default function LandingPage() {
           </div>
 
           <nav className="landing-footer__nav" aria-label="Navigasi footer">
-            <div>
+            <div className="landing-footer__col">
               <h3>Produk</h3>
               {NAV_LINKS.map((link) => (
                 <a key={link.href} href={link.href}>
@@ -624,7 +716,7 @@ export default function LandingPage() {
                 </a>
               ))}
             </div>
-            <div>
+            <div className="landing-footer__col">
               <h3>Akun</h3>
               <a href="/login">Masuk</a>
               <a href="/register">Daftar Gratis</a>

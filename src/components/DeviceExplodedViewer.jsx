@@ -12,6 +12,7 @@ import {
 } from '../three/sceneKit'
 import { createSensorModule, pulseLed } from '../three/sensorModule'
 import { createGlowSprite, createGlowTexture } from '../three/holo'
+import { createInsoleGeometry, INSOLE_COLOR, INSOLE_DEPTH } from '../three/insoleShape'
 import { applyEnvironment, applyToneMapping, createContactShadow } from '../three/renderQuality'
 import {
   createHotspot,
@@ -41,39 +42,6 @@ import {
 // Scene ini memakai chunk three.js yang SAMA dengan hero (lihat loadThree.js),
 // jadi biaya tambahannya hanya geometry di bawah, bukan ~180 kB pustakanya
 // lagi. Modelnya pun salinan dari cache yang sama — tidak ada unduhan kedua.
-
-// Insole dibangun secara prosedural, bukan dimuat sebagai model. Alasannya
-// sederhana: berkasnya tidak ada. Menambah satu .glb lagi berarti aset baru
-// yang harus diunduh, sementara bentuk yang dibutuhkan di sini cuma pelat
-// telapak — cukup diperoleh dari satu kurva bezier yang diekstrusi.
-//
-// Koordinat "ruang bentuk": x memanjang kaki (+1 tumit, -1 ujung jari),
-// y melintang, z ketebalan. Seluruh grupnya nanti diputar -90° pada sumbu X
-// supaya z menjadi arah atas — dengan begitu sensor di dalamnya bisa ditaruh
-// memakai koordinat yang sama seperti kurvanya, tanpa konversi di tiap titik.
-function buildInsoleShape(THREE) {
-  const shape = new THREE.Shape()
-  shape.moveTo(-0.98, 0.02)
-  // Tepi lateral — melebar di forefoot, tempat metatarsal menanggung beban.
-  shape.bezierCurveTo(-1.02, 0.24, -0.88, 0.36, -0.62, 0.37)
-  shape.bezierCurveTo(-0.34, 0.38, -0.06, 0.34, 0.2, 0.3)
-  shape.bezierCurveTo(0.48, 0.26, 0.74, 0.3, 0.88, 0.2)
-  // Tumit membulat.
-  shape.bezierCurveTo(1.02, 0.08, 1.02, -0.08, 0.88, -0.2)
-  // Tepi medial — lengkung kaki menjorok ke dalam. Tanpa cekungan ini
-  // bentuknya terbaca sebagai sol oval, bukan telapak.
-  shape.bezierCurveTo(0.74, -0.3, 0.52, -0.24, 0.26, -0.16)
-  shape.bezierCurveTo(0.0, -0.08, -0.28, -0.22, -0.6, -0.3)
-  shape.bezierCurveTo(-0.84, -0.36, -1.02, -0.2, -0.98, 0.02)
-  return shape
-}
-
-const INSOLE_DEPTH = 0.07
-
-// Warna insole: sage merek, sengaja berbeda dari badan sepatu. Ketiganya satu
-// produk, tapi kalau warnanya seragam susunan uraiannya terbaca sebagai satu
-// cetakan yang terbelah, bukan tiga bagian yang memang terpisah.
-const INSOLE_COLOR = 0x86a788
 
 // Seberapa jauh tiap lapisan bergerak saat terurai penuh, dalam kelipatan
 // tinggi sepatu. Sepatu naik lebih jauh daripada modul turun supaya ruang
@@ -240,16 +208,7 @@ export default function DeviceExplodedViewer({ className = '', fallback = null }
         insoleLayer.scale.setScalar((shoeLength * 0.86) / 2)
         insoleLayer.position.y = box.min.y + size.y * 0.12
 
-        const insoleGeo = disposer.track(
-          new THREE.ExtrudeGeometry(buildInsoleShape(THREE), {
-            depth: INSOLE_DEPTH,
-            bevelEnabled: true,
-            bevelThickness: 0.02,
-            bevelSize: 0.025,
-            bevelSegments: 3,
-            curveSegments: 18,
-          }),
-        )
+        const insoleGeo = createInsoleGeometry(THREE, disposer)
         const insoleMat = disposer.track(
           new THREE.MeshStandardMaterial({ color: INSOLE_COLOR, roughness: 0.72, metalness: 0.04 }),
         )

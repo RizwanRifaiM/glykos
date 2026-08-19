@@ -1,18 +1,68 @@
-/* Landing page — palet dikunci ke 9 warna brand (lihat index.css :root).
-   Skala tipografi fluid memakai clamp() supaya tidak perlu breakpoint
-   terpisah untuk tiap ukuran judul. */
+/* ==========================================================================
+   LANDING GLYKOS — sistem tampilan
+   ==========================================================================
+   Arahnya: instrumen medis yang modern, bukan brosur produk. Tiga hal yang
+   memikulnya, dan ketiganya dipilih supaya kesan "futuristik" tidak
+   bergantung pada latar gelap — palet merek harus tetap utuh:
+
+   1. GRID SWISS. Satu lebar kerja, satu skala jarak, kolom yang benar-benar
+      dipakai. Tata letak yang disiplin terbaca sebagai profesional jauh
+      sebelum ada efek apa pun yang dinyalakan.
+   2. LABEL TEKNIS. Nomor section, satuan, dan status ditulis dengan Geist
+      Mono berspasi lebar. Itu bahasa alat ukur — dan halaman ini memang
+      menjual alat ukur.
+   3. KACA & GARIS RAMBUT. Panel tembus bertepi 1px, bukan kartu tebal
+      berbayang. Di atas krem, tepi setipis itu yang membuat permukaan
+      terbaca sebagai lapisan, bukan sebagai kotak.
+
+   Warna, radius, dan bayangan seluruhnya dari token di index.css — tidak ada
+   hex baru di berkas ini kecuali untuk lapisan transparan. Kalau paletnya
+   berubah di sana, halaman ini ikut berubah. */
 
 .landing {
-  --section-gap: clamp(64px, 9vw, 104px);
-  --shell: 1200px;
+  /* Lebih lebar dari 1200 sebelumnya: skala tipografinya naik jauh, dan pada
+     lebar lama judul hero pecah tiga baris di laptop. */
+  --shell: 1240px;
+  --gutter: clamp(20px, 4vw, 44px);
+  --section-gap: clamp(80px, 11vw, 148px);
+  --rule-color: rgba(68, 106, 69, 0.14);
 
+  position: relative;
   color: var(--navy);
   overflow-x: clip;
   background:
-    radial-gradient(880px circle at 92% -10%, rgba(228, 174, 197, 0.34), transparent 58%),
-    radial-gradient(720px circle at -10% 18%, rgba(134, 167, 136, 0.28), transparent 58%),
-    radial-gradient(680px circle at 12% 86%, rgba(254, 196, 221, 0.26), transparent 58%),
+    radial-gradient(900px circle at 88% -12%, rgba(228, 174, 197, 0.3), transparent 58%),
+    radial-gradient(760px circle at -12% 16%, rgba(134, 167, 136, 0.26), transparent 58%),
+    radial-gradient(700px circle at 14% 88%, rgba(254, 196, 221, 0.22), transparent 58%),
     var(--bg);
+}
+
+/* Grid teknis: dua set garis rambut bersilangan, dipudarkan ke bawah supaya
+   ia hadir di area hero — tempat mata mendarat pertama kali — lalu hilang
+   sebelum mengganggu blok teks panjang.
+
+   `position: fixed` dengan sengaja: grid yang ikut bergulir terbaca sebagai
+   tekstur latar, sementara grid yang diam terbaca sebagai bidang tempat
+   halaman ini digambar. Yang kedua yang dimaksud. */
+.landing::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(68, 106, 69, 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(68, 106, 69, 0.055) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.55) 38%, transparent 72%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.55) 38%, transparent 72%);
+}
+
+/* Seluruh isi halaman berada DI ATAS grid. Tanpa ini nav kaca dan panel
+   tembus mengambil grid sebagai bagian dari latarnya sendiri. */
+.landing > * {
+  position: relative;
+  z-index: 1;
 }
 
 .landing a {
@@ -36,22 +86,24 @@
   left: 0;
 }
 
-/* Navbar */
+/* ==========================================================================
+   NAVIGASI
+   ========================================================================== */
 
 .landing-nav {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  border-bottom: 1px solid var(--border);
+  background: rgba(246, 243, 230, 0.72);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  border-bottom: 1px solid var(--rule-color);
 }
 
 .landing-nav__inner {
   max-width: var(--shell);
   margin: 0 auto;
-  padding: 14px 24px;
+  padding: 13px var(--gutter);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -62,112 +114,126 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 600;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.02em;
   color: var(--navy);
-  flex-shrink: 0;
 }
 
 .landing-nav__links {
   display: flex;
-  gap: 26px;
+  align-items: center;
+  gap: 4px;
 }
 
+/* Tautan nav memakai mono berspasi lebar, bukan sans biasa. Di deretan
+   sependek ini mono terbaca sebagai penanda posisi — seperti label pada panel
+   alat — dan itu yang membedakannya dari menu situs kebanyakan. */
 .landing-nav__links a {
   position: relative;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--navy);
-  opacity: 0.7;
-  padding-bottom: 4px;
-  transition: opacity 0.15s ease;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  transition: color 200ms var(--ease), background-color 200ms var(--ease);
 }
 
-.landing-nav__links a::after {
+.landing-nav__links a:hover {
+  color: var(--navy);
+  background: rgba(134, 167, 136, 0.14);
+}
+
+.landing-nav__links a.is-active {
+  color: var(--navy);
+}
+
+/* Penanda bagian aktif: titik kecil di bawah tautan, bukan garis bawah penuh.
+   Garis bawah pada teks mono berspasi lebar terbaca sebagai coretan. */
+.landing-nav__links a.is-active::after {
   content: '';
   position: absolute;
-  left: 0;
-  right: 100%;
-  bottom: 0;
-  height: 2px;
-  border-radius: 999px;
-  background: var(--red);
-  transition: right 0.22s var(--ease, ease);
-}
-
-.landing-nav__links a:hover,
-.landing-nav__links a.is-active {
-  opacity: 1;
-}
-
-.landing-nav__links a:hover::after,
-.landing-nav__links a.is-active::after {
-  right: 0;
+  left: 50%;
+  bottom: 2px;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: var(--navy);
 }
 
 .landing-nav__actions {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-shrink: 0;
 }
 
-.landing-nav__menu-btn {
+.landing-nav__menu-btn,
+.landing-nav__mobile-close {
   display: none;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--glass-bg-strong);
   color: var(--navy);
-  background: transparent;
-  border: none;
-  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* Bilah progres baca. Satu-satunya elemen yang memberi tahu pembaca posisinya
+   secara terus-menerus, dan pada halaman sepanjang ini itu bukan hiasan.
+   Nilainya ditulis dari JS lewat --progress. */
+.landing-nav__progress {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  height: 2px;
+  width: 100%;
+  transform: scaleX(var(--progress, 0));
+  transform-origin: left center;
+  background: linear-gradient(to right, var(--navy), var(--light-blue));
+  pointer-events: none;
 }
 
 .landing-nav__mobile {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 40;
   display: flex;
   flex-direction: column;
-  padding: 16px 24px 32px;
-  background: var(--glass-bg-strong, rgba(255, 255, 255, 0.94));
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  padding: 16px var(--gutter) 32px;
+  background: var(--bg);
 }
 
 .landing-nav__mobile-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--rule-color);
 }
 
 .landing-nav__mobile-close {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  color: var(--navy);
-  background: transparent;
-  border: none;
 }
 
 .landing-nav__mobile-links {
   display: flex;
   flex-direction: column;
+  gap: 4px;
+  padding: 24px 0;
 }
 
 .landing-nav__mobile-links a {
-  padding: 16px 4px;
-  font-size: 19px;
-  font-weight: 700;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--rule-color);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
   color: var(--navy);
-  border-bottom: 1px solid var(--border);
 }
 
 .landing-nav__mobile-actions {
@@ -175,160 +241,215 @@
   flex-direction: column;
   gap: 12px;
   margin-top: auto;
-  padding-top: 28px;
 }
 
-/* Hero */
+/* ==========================================================================
+   KERANGKA SECTION & JUDUL
+   ========================================================================== */
+
+.section {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: var(--section-gap) var(--gutter);
+  scroll-margin-top: 78px;
+}
+
+/* Judul section: nomor mono, label, garis rambut, lalu judul besar.
+   Penomorannya bukan gaya-gayaan — halaman ini punya lima bagian panjang, dan
+   nomor memberi pembaca rasa "berapa lagi" yang tidak bisa diberikan judul
+   mana pun. */
+.section-head {
+  display: grid;
+  gap: 18px;
+  margin-bottom: clamp(36px, 5vw, 64px);
+}
+
+.section-head__meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.section-head__meta::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--rule-color);
+}
+
+.section-head__index {
+  color: var(--navy);
+  font-weight: 600;
+}
+
+.section-head h2 {
+  max-width: 20ch;
+  font-size: clamp(28px, 3.9vw, 46px);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  color: var(--navy);
+}
+
+.section-head p {
+  max-width: 62ch;
+  font-size: clamp(15.5px, 1.4vw, 17.5px);
+  line-height: 1.75;
+  color: var(--text-muted);
+}
+
+.section-head--tight h2 {
+  max-width: 16ch;
+}
+
+/* ==========================================================================
+   HERO
+   ========================================================================== */
 
 .hero {
   max-width: var(--shell);
   margin: 0 auto;
-  padding: clamp(40px, 6vw, 76px) 24px clamp(32px, 5vw, 56px);
+  padding: clamp(36px, 6vw, 72px) var(--gutter) clamp(28px, 4vw, 44px);
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: clamp(32px, 5vw, 56px);
+  /* Kolom teks sengaja lebih lebar daripada kolom visual: judul display
+     sebesar ini butuh lebar untuk tidak pecah jadi potongan pendek, sementara
+     panggung 3D-nya tetap terbaca pada lebar berapa pun. */
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+  gap: clamp(28px, 5vw, 64px);
   align-items: center;
-  scroll-margin-top: 76px;
+  scroll-margin-top: 78px;
 }
 
 .hero__badge {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 14px 7px 11px;
+  border: 1px solid rgba(129, 162, 131, 0.34);
+  border-radius: 999px;
+  background: rgba(134, 167, 136, 0.16);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--navy);
-  background: rgba(134, 167, 136, 0.22);
-  border: 1px solid rgba(129, 162, 131, 0.32);
-  padding: 6px 14px;
-  border-radius: 999px;
-  margin-bottom: 22px;
+  margin-bottom: 26px;
 }
 
-/* Turun dari maks 54px ke 44px dan kolomnya dilebarkan dari 1.05fr ke
-   1.15fr. Pada 54px judul ini pecah jadi TIGA baris, sementara batasnya
-   dua — dan judul tiga baris mendorong tombol ke bawah lipatan pada
-   laptop 1366x768. Ukurannya diperiksa dengan render sungguhan, bukan
-   dikira-kira. */
+/* Titik hidup pada lencana. Satu-satunya gerak di kolom teks hero — dan ia
+   menandakan hal yang benar: perangkatnya memang mengirim data terus-menerus. */
+.hero__badge-dot {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--status-safe);
+}
+
+.hero__badge-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--status-safe);
+  animation: glykos-ping 2.4s var(--ease) infinite;
+}
+
+@keyframes glykos-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  70%,
+  100% {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+
+/* Naik jauh dari maks 44px. Judul display sebesar ini yang membuat halaman
+   terbaca sebagai halaman produk — asalkan panjang barisnya dijaga, dan itu
+   tugas max-width di bawah.
+   Ukuran dan lebarnya diperiksa dengan render sungguhan, bukan dikira-kira:
+   pada 62px/15ch headline ini pecah EMPAT baris dengan potongan di tempat
+   yang salah — "Pendeteksi Dini" dan "Risiko Ulkus Diabetik" adalah dua frasa
+   yang tidak boleh dipisah di tengah. `text-wrap: balance` justru memperburuk
+   itu: ia meratakan panjang baris, bukan menghormati arti. */
 .hero__title {
-  font-size: clamp(32px, 3.6vw, 44px);
+  max-width: 22ch;
+  font-size: clamp(32px, 4.4vw, 54px);
   font-weight: 600;
-  line-height: 1.12;
-  letter-spacing: -0.025em;
-  text-wrap: balance;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
   color: var(--navy);
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
+/* Blok tersendiri, bukan span mengalir: dengan begitu pergantian barisnya
+   jatuh di antara dua frasa yang memang terpisah artinya, apa pun lebar
+   layarnya. */
 .hero__title-accent {
+  display: block;
+  position: relative;
   color: var(--red);
 }
 
+/* Garis bawah pada frasa kunci — setipis garis alat ukur, bukan setebal
+   stabilo. */
+.hero__title-accent::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.02em;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(to right, rgba(110, 25, 54, 0.45), rgba(110, 25, 54, 0));
+}
+
 .hero__subtitle {
-  font-size: clamp(15.5px, 1.5vw, 17.5px);
-  line-height: 1.7;
-  color: var(--blue);
-  max-width: 56ch;
-  margin-bottom: 30px;
+  max-width: 52ch;
+  font-size: clamp(15.5px, 1.45vw, 17.5px);
+  line-height: 1.75;
+  color: var(--text-muted);
+  margin-bottom: 32px;
 }
 
 .hero__actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 14px;
-  margin-bottom: 36px;
 }
 
 .hero__cta {
-  padding: 14px 28px;
+  padding: 15px 30px;
   font-size: 15px;
 }
 
-/* ---------- Pita spesifikasi ----------
-   Dulu .hero__stats dan berada di dalam hero. Sekarang pita tersendiri
-   selebar halaman: perannya sama, tapi tidak lagi jadi elemen teks kelima
-   yang berebut perhatian dengan judul. */
-
-.spec-strip {
-  max-width: var(--shell);
-  margin: 0 auto;
-  padding: 0 24px clamp(28px, 4vw, 44px);
-}
-
-.spec-strip__list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px 40px;
-  margin: 0;
-  padding-top: 24px;
-  border-top: 1px solid var(--border);
-}
-
-.spec-strip__item {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-}
-
-.spec-strip__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: rgba(134, 167, 136, 0.2);
-  color: var(--navy);
-}
-
-.spec-strip__item dt {
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--navy);
-  line-height: 1.2;
-}
-
-.spec-strip__item dd {
-  margin: 0;
-  font-size: 12.5px;
-  color: var(--blue);
-}
-
-/* ---------- Panggung hero ----------
-   Sepatu 3D duduk di sini. Lapisan cahaya dan cincin tetap CSS murni dan
-   tergambar seketika, jadi hero tidak pernah berupa kotak kosong selama
-   three.js beserta modelnya masih diunduh.
-
-   Kemiringan mengikuti pointer sudah dihapus dari panggung ini: modelnya
-   sendiri berputar dan bisa diseret, dan memiringkan kanvas WebGL lewat
-   transform CSS hanya akan menjungkirkan gambar yang sudah dirender —
-   bukan menambah kedalaman, justru merusak perspektif yang sudah benar. */
-
-/* Kolom visual jadi kolom: panggung di atas, petunjuk gestur di bawahnya.
-   Petunjuk ini tidak dihitung sebagai elemen teks hero — ia milik visual,
-   bukan bagian dari tumpukan lencana/judul/subjudul/tombol. */
+/* ---------- Panggung 3D hero ----------
+   Kanvasnya TRANSPARAN (lihat three/sceneKit.js), jadi yang jadi latar sepatu
+   adalah pendar di bawah ini dan krem halaman itu sendiri. Tidak ada panel
+   yang membingkainya: begitu ada tepi, ia jadi kotak yang ditempel di
+   halaman — dan itu persis masalah versi sebelumnya. */
 .hero__visual {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 10px;
-}
-
-/* Lihat catatan kontras pada .exploded-showcase__hint. */
-.hero__visual-hint {
-  font-size: 12.5px;
-  color: var(--text-muted);
-  text-align: center;
 }
 
 .hero__stage {
   position: relative;
   width: 100%;
-  max-width: 500px;
+  max-width: 560px;
   aspect-ratio: 850 / 640;
 }
 
@@ -340,32 +461,38 @@
   justify-content: center;
 }
 
-/* Panggung gelap — "ruang pindai".
-
-   Warna & lapisannya diatur di blok "PANEL INSTRUMEN" di AKHIR berkas ini —
-   di sana kanvas 3D yang buram, cincin HUD, dan garis pemindaian dirancang
-   sebagai satu kesatuan, dan memisahkannya ke dua tempat pernah membuat
-   setengahnya jadi aturan mati yang tertimpa diam-diam. */
 .hero__layer--glow {
+  z-index: 0;
+  transform: scale(1.24);
   border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 46%, rgba(134, 167, 136, 0.34), transparent 62%),
+    radial-gradient(circle at 68% 78%, rgba(254, 206, 206, 0.55), transparent 60%);
+  filter: blur(30px);
+  opacity: 0.95;
 }
 
+/* Dua cincin sage di belakang sepatu — bidik alat ukur, bukan hiasan: ia
+   memberi sepatu pusat, dan pusat itulah yang membuat benda melayang terbaca
+   sebagai benda yang sedang diperiksa. */
 .hero__layer--ring {
+  z-index: 0;
   transform: scale(0.96);
-  border: 1px solid rgba(182, 227, 196, 0.4);
+  border: 1px solid rgba(134, 167, 136, 0.34);
   border-radius: 50%;
+  box-shadow: inset 0 0 60px rgba(134, 167, 136, 0.07);
 }
 
 .hero__layer--ring::after {
   content: '';
   position: absolute;
   inset: 12%;
-  border: 1px dashed rgba(182, 227, 196, 0.35);
+  border: 1px dashed rgba(134, 167, 136, 0.28);
   border-radius: 50%;
-  /* Cincin dalam berputar sendiri — gerakan yang tidak bergantung pada WebGL
-     sama sekali, jadi panggungnya sudah hidup bahkan sebelum three.js selesai
-     diunduh, dan tetap hidup di perangkat tanpa WebGL. */
-  animation: holo-ring-spin 24s linear infinite;
+  /* Gerak yang tidak bergantung pada WebGL sama sekali, jadi panggungnya
+     sudah hidup sebelum three.js selesai diunduh, dan tetap hidup di
+     perangkat tanpa WebGL. */
+  animation: holo-ring-spin 26s linear infinite;
 }
 
 @keyframes holo-ring-spin {
@@ -374,16 +501,988 @@
   }
 }
 
-/* .hero-illustration dibatasi 480px karena dipakai bersama SensorFootMap
-   di dashboard. Di dalam panggung, lebarnya diambil alih oleh panggung. */
-.hero__layer--art .hero-illustration {
-  max-width: 100%;
+.hero__layer--art {
+  z-index: 1;
 }
 
+.hero__visual-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  /* --text-muted, bukan --blue: pada ukuran ini --blue hanya ~2,4:1 di atas
+     krem — di bawah ambang WCAG AA. */
+  color: var(--text-muted);
+  text-align: center;
+}
 
-/* .hero-illustration & .hero-pulse juga dipakai oleh SensorFootMap.jsx di
-   dashboard (bundel CSS Vite digabung jadi satu, jadi kelas ini global).
-   Jangan dihapus/di-rename tanpa mengecek komponen tersebut. */
+/* ---------- Pita spesifikasi ----------
+   Tiga angka yang paling sering ditanyakan, ditulis sebagai baris data.
+   Perannya sama seperti sebelumnya; yang berubah, ia sekarang terbaca sebagai
+   keluaran alat, bukan sebagai tiga kartu statistik. */
+.spec-rail {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 0 var(--gutter) var(--section-gap);
+}
+
+.spec-rail__list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  border-top: 1px solid var(--rule-color);
+  border-bottom: 1px solid var(--rule-color);
+}
+
+.spec-rail__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 26px;
+}
+
+.spec-rail__item + .spec-rail__item {
+  border-left: 1px solid var(--rule-color);
+}
+
+.spec-rail__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--navy);
+}
+
+.spec-rail__item dt {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--navy);
+  line-height: 1.15;
+}
+
+.spec-rail__item dd {
+  margin: 3px 0 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   01 — MASALAH
+   ========================================================================== */
+
+/* Judul menempel sementara ketiga kartunya bergulir melewatinya, jadi pembaca
+   selalu tahu poin ini menjawab pertanyaan apa. */
+.problem__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+  gap: clamp(32px, 5vw, 72px);
+  align-items: start;
+}
+
+.problem__aside {
+  position: sticky;
+  top: 108px;
+}
+
+.problem__list {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: problem;
+}
+
+.problem__card {
+  position: relative;
+  padding: 28px 30px 28px 78px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  counter-increment: problem;
+  transition: transform 300ms var(--ease), box-shadow 300ms var(--ease);
+}
+
+.problem__card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Nomor urut sebagai angka mono di kolom kiri kartu. Ketiganya adalah RANTAI
+   sebab-akibat — tidak disadari, jadi luka kronis, karena itu perlu dipantau
+   — dan nomor membuat urutan itu terbaca sebagai urutan. */
+.problem__card::before {
+  content: '0' counter(problem);
+  position: absolute;
+  left: 30px;
+  top: 30px;
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* Pita status tipis di tepi kiri, memakai token status yang sama dengan
+   dashboard. */
+.problem__card::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 22px;
+  bottom: 22px;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+}
+
+.problem__card--rose::after {
+  background: var(--status-warning);
+}
+
+.problem__card--danger::after {
+  background: var(--status-danger);
+}
+
+.problem__card--green::after {
+  background: var(--status-safe);
+}
+
+.problem__card h3 {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--navy);
+  margin-bottom: 10px;
+}
+
+.problem__card p {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   02 — DASAR PEMANTAUAN (ambang + insole 3D)
+   ========================================================================== */
+
+.science__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: clamp(32px, 5vw, 64px);
+  align-items: start;
+}
+
+/* Panggung insole menempel saat ketiga kartu ambang bergulir melewatinya:
+   tiap kartu menjelaskan satu status, dan statusnya ada di depan mata pada
+   saat yang sama. Itu alasan scene ini ada sama sekali. */
+.science__stage {
+  position: sticky;
+  top: 100px;
+  display: grid;
+  gap: 14px;
+}
+
+.insole-viewer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-strong);
+  background:
+    radial-gradient(120% 90% at 50% 4%, rgba(255, 255, 255, 0.9), transparent 66%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(238, 242, 234, 0.7));
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.insole-viewer canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 420ms var(--ease);
+}
+
+.insole-viewer--ready canvas {
+  opacity: 1;
+}
+
+.science__stage-note {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.science__cards {
+  display: grid;
+  gap: 14px;
+}
+
+.science__card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 20px;
+  padding: 26px 28px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+}
+
+.science__icon {
+  grid-row: span 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: rgba(134, 167, 136, 0.16);
+  color: var(--navy);
+}
+
+/* Angka ambang ditulis mono dan besar — ini bilangan yang bisa diperiksa, dan
+   dengan huruf proporsional ia terbaca sebagai klaim pemasaran. */
+.science__value {
+  font-family: var(--mono);
+  font-size: clamp(28px, 3vw, 36px);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--navy);
+}
+
+.science__value span {
+  margin-left: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.science__card h3 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--navy);
+  margin-top: 8px;
+}
+
+.science__desc {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* ==========================================================================
+   03 — FITUR (bento + modul 3D)
+   ========================================================================== */
+
+.features__grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* Sel modul 3D: dua kolom setinggi dua baris kartu, jadi perangkatnya punya
+   ruang untuk terlihat sebagai benda. Ditaruh di awal grid supaya mata
+   bertemu perangkatnya SEBELUM membaca daftar kemampuannya. */
+.features__device {
+  grid-column: span 2;
+  grid-row: span 2;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+  padding: 22px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(110% 80% at 50% 0%, rgba(255, 255, 255, 0.92), transparent 68%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(238, 242, 234, 0.72));
+  overflow: hidden;
+}
+
+.module-viewer {
+  flex: 1;
+  min-height: 0;
+}
+
+.module-viewer canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 420ms var(--ease);
+}
+
+.module-viewer--ready canvas {
+  opacity: 1;
+}
+
+.features__device-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.features__device-label b {
+  display: block;
+  margin-top: 5px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--navy);
+}
+
+.feature-card {
+  grid-column: span var(--span, 2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 26px 28px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  transition: transform 300ms var(--ease), box-shadow 300ms var(--ease);
+}
+
+.feature-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.feature-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--navy);
+}
+
+.feature-card__icon--green {
+  background: rgba(134, 167, 136, 0.18);
+}
+
+.feature-card__icon--rose {
+  background: rgba(254, 196, 221, 0.32);
+}
+
+.feature-card h3 {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--navy);
+}
+
+.feature-card p {
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   04 — CARA KERJA (tampilan urai + langkah)
+   ========================================================================== */
+
+.exploded-showcase {
+  max-width: 640px;
+  margin: 0 auto clamp(40px, 6vw, 64px);
+  text-align: center;
+}
+
+.exploded-viewer {
+  position: relative;
+  width: 100%;
+  /* Lebih tinggi daripada lebarnya karena susunannya memisah ke ATAS dan
+     BAWAH. Bingkai selebar-lebarnya hanya menyisakan ruang kosong di
+     kiri-kanan sementara lapisan teratas dan terbawah terpotong. */
+  aspect-ratio: 5 / 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-strong);
+  background:
+    radial-gradient(120% 88% at 50% 6%, rgba(255, 255, 255, 0.92), transparent 66%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(238, 242, 234, 0.72));
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  /* Tidak ada touch-action khusus: scene ini TIDAK bisa diseret. Gerakannya
+     sepenuhnya milik gulir halaman, jadi jari yang mendarat di sini harus
+     tetap menggulir seperti di bagian halaman lainnya. */
+}
+
+.exploded-viewer canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 420ms var(--ease);
+}
+
+.exploded-viewer--ready canvas {
+  opacity: 1;
+}
+
+.exploded-viewer__note {
+  max-width: 420px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+.exploded-showcase__hint {
+  max-width: 64ch;
+  margin: 14px auto 0;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.7;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+/* Tiga langkah sebagai rel mendatar dengan garis penghubung — urutan waktu,
+   jadi bentuknya harus terbaca sebagai urutan. */
+.steps {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps::before {
+  content: '';
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 22px;
+  height: 1px;
+  background: repeating-linear-gradient(to right, var(--rule-color) 0 6px, transparent 6px 12px);
+}
+
+.step {
+  position: relative;
+  text-align: center;
+}
+
+.step__marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--bg);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.step h3 {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+
+.step p {
+  max-width: 34ch;
+  margin: 0 auto;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   05 — TIM
+   ========================================================================== */
+
+.team__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px;
+}
+
+.team-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 30px 22px 26px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  text-align: center;
+  transition: transform 300ms var(--ease), box-shadow 300ms var(--ease);
+}
+
+.team-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.team-card__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  overflow: hidden;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+
+.team-card__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.team-card__avatar--green {
+  background: linear-gradient(145deg, var(--navy), var(--light-blue));
+}
+
+.team-card__avatar--rose {
+  background: linear-gradient(145deg, var(--red), var(--warning));
+}
+
+.team-card__avatar--mixed {
+  background: linear-gradient(145deg, var(--navy), var(--red));
+}
+
+.team-card h3 {
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--navy);
+  line-height: 1.35;
+}
+
+.team-card p {
+  margin-top: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   CTA
+   ========================================================================== */
+
+.cta-banner {
+  max-width: var(--shell);
+  margin: 0 auto clamp(56px, 7vw, 88px);
+  padding: 0 var(--gutter);
+}
+
+.cta-banner__inner {
+  position: relative;
+  /* Modul yang melayang keluar tepi dipotong oleh radius panel, bukan
+     menggantung di atas latar halaman. */
+  overflow: hidden;
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  padding: clamp(48px, 7vw, 84px) var(--gutter);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(90% 140% at 50% 0%, rgba(254, 227, 226, 0.9), transparent 70%),
+    linear-gradient(160deg, var(--pink-3), rgba(255, 255, 255, 0.72));
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+/* Lapisan hiasan 3D di belakang teks CTA. `position: absolute` bukan
+   kebetulan: dengan begitu ia tidak punya andil apa pun pada tinggi panel,
+   jadi mengubah ukurannya nanti tidak akan menggeser tombol atau judul di
+   depannya. */
+.floating-modules {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  /* Hiasan tidak boleh mencegat klik — tombol CTA ada tepat di depannya. */
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 700ms var(--ease);
+}
+
+.floating-modules--ready {
+  opacity: 0.3;
+}
+
+.floating-modules canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Teks & tombol harus berada DI ATAS lapisan hiasan. Tanpa ini keduanya
+   berbagi konteks tumpukan yang sama dan urutan DOM yang menentukan —
+   kebetulan benar sekarang, tapi pecah begitu ada yang menyisipkan elemen
+   baru di antaranya. */
+.cta-banner__inner > :not(.floating-modules) {
+  position: relative;
+  z-index: 1;
+}
+
+.cta-banner__eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.cta-banner h2 {
+  max-width: 18ch;
+  font-size: clamp(26px, 3.4vw, 40px);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  color: var(--navy);
+}
+
+.cta-banner p {
+  max-width: 52ch;
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+.cta-banner__btn {
+  margin-top: 10px;
+  padding: 15px 34px;
+  font-size: 15px;
+}
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
+
+.landing-footer {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: clamp(40px, 5vw, 60px) var(--gutter) 40px;
+  border-top: 1px solid var(--rule-color);
+}
+
+.landing-footer__top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 40px;
+}
+
+.landing-footer__brand p {
+  max-width: 44ch;
+  margin-top: 14px;
+  font-size: 14.5px;
+  line-height: 1.75;
+  color: var(--text-muted);
+}
+
+.landing-footer__nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+}
+
+.landing-footer__col h3 {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--navy);
+  margin-bottom: 14px;
+}
+
+.landing-footer__col a {
+  display: block;
+  padding: 5px 0;
+  font-size: 14.5px;
+  color: var(--text-muted);
+  transition: color 200ms var(--ease);
+}
+
+.landing-footer__col a:hover {
+  color: var(--navy);
+}
+
+/* Disclaimer medis. Diberi tepi maroon karena inilah satu-satunya blok di
+   halaman yang membatasi klaim produk — ia harus terbaca, bukan terlewat. */
+.landing-footer__disclaimer {
+  margin-top: clamp(32px, 4vw, 48px);
+  padding: 18px 22px;
+  border: 1px solid rgba(110, 25, 54, 0.18);
+  border-left: 2px solid var(--red);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 227, 226, 0.4);
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+.landing-footer__disclaimer strong {
+  color: var(--red);
+}
+
+.landing-footer__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule-color);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.landing-footer__tech {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   SCENE 3D — permukaan & label
+   ==========================================================================
+   Keempat kanvas di halaman ini transparan (lihat catatan di
+   three/sceneKit.js). Yang diatur di sini hanya bingkai tempat mereka duduk
+   dan label HTML yang melayang di atasnya. */
+
+.shoe-viewer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  /* Kunci arah cuma-cuma di layar sentuh: gerak awal yang lebih vertikal
+     diambil alih peramban untuk menggulir; yang lebih mendatar sampai ke
+     scene dan memutar sepatunya. Jangan diubah ke `none`. */
+  touch-action: pan-y;
+}
+
+.shoe-viewer:active {
+  cursor: grabbing;
+}
+
+.shoe-viewer canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 500ms var(--ease);
+}
+
+.shoe-viewer--ready canvas {
+  opacity: 1;
+}
+
+.shoe-viewer__note {
+  max-width: 30ch;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ---------- Label melayang di atas kanvas ----------
+   Posisinya ditulis oleh loop render lewat `transform` (lihat createLabelLayer
+   di three/sceneKit.js), jadi CSS di sini hanya mengurus tampilannya — jangan
+   menambahkan `transition: transform`, karena nilainya sudah berubah tiap
+   frame dan transisi di atasnya membuat label tertinggal di belakang titik
+   yang ditandainya. */
+
+.shoe-viewer__labels,
+.exploded-viewer__labels,
+.insole-viewer__labels {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* Label tidak boleh mencegat pointer: di bawahnya ada model yang bisa
+     diseret, dan di sekelilingnya ada halaman yang bisa digulir. */
+  pointer-events: none;
+}
+
+.shoe-viewer__label,
+.exploded-viewer__label,
+.insole-viewer__label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  white-space: nowrap;
+  padding: 6px 11px;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--shadow-sm);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 1.3;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-align: center;
+  /* Hanya dua properti ini yang berubah tiap frame — keduanya bisa
+     dianimasikan browser tanpa menghitung ulang layout halaman. */
+  will-change: transform, opacity;
+}
+
+.shoe-viewer__label b,
+.exploded-viewer__label b,
+.insole-viewer__label b {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--navy);
+}
+
+.shoe-viewer__label i,
+.exploded-viewer__label i,
+.insole-viewer__label i {
+  display: block;
+  font-style: normal;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+/* Label hero digeser ke ATAS titiknya lalu disambungkan lagi lewat garis
+   penunjuk. Label yang menindih titik sensornya sendiri menutupi hal yang
+   ditunjuknya. */
+.shoe-viewer__label {
+  margin-top: -42px;
+}
+
+.shoe-viewer__label::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 1px;
+  height: 28px;
+  background: linear-gradient(to bottom, rgba(68, 106, 69, 0.5), rgba(68, 106, 69, 0));
+}
+
+.exploded-viewer__label {
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--navy);
+}
+
+.exploded-viewer__label--lead {
+  border-color: rgba(68, 106, 69, 0.35);
+  background: var(--navy);
+  color: #fff;
+}
+
+.exploded-viewer__label--lead i {
+  font-family: var(--mono);
+  opacity: 0.78;
+}
+
+/* Ketiga label tampilan urai menandai lapisan yang duduk pada SUMBU VERTIKAL
+   YANG SAMA, jadi tanpa geseran masing-masing, label insole dan label modul
+   saling menimpa persis pada jarak urai yang paling lama terlihat. */
+.exploded-viewer__label--shoe {
+  margin-top: -34px;
+}
+
+.exploded-viewer__label--insole {
+  margin-top: -30px;
+}
+
+.exploded-viewer__label--module {
+  margin-top: 32px;
+}
+
+/* Label insole ambang diwarnai menurut statusnya — inilah satu-satunya tempat
+   di halaman yang memperagakan ketiga status sekaligus, jadi warnanya harus
+   sama dengan yang dipakai dashboard. */
+.insole-viewer__label {
+  margin-top: -34px;
+}
+
+.insole-viewer__label--safe {
+  border-color: rgba(63, 122, 67, 0.4);
+}
+
+.insole-viewer__label--safe b {
+  color: var(--status-safe);
+}
+
+.insole-viewer__label--warning {
+  border-color: rgba(156, 101, 16, 0.4);
+}
+
+.insole-viewer__label--warning b {
+  color: var(--status-warning);
+}
+
+.insole-viewer__label--danger {
+  border-color: rgba(110, 25, 54, 0.4);
+}
+
+.insole-viewer__label--danger b {
+  color: var(--status-danger);
+}
+
+/* Ilustrasi pengganti saat WebGL tidak tersedia. .hero-illustration &
+   .hero-pulse juga dipakai SensorFootMap.jsx di dashboard (bundel CSS Vite
+   digabung jadi satu, jadi kelas ini global) — jangan dihapus atau di-rename
+   tanpa mengecek komponen tersebut. */
 .hero-illustration {
   width: 100%;
   max-width: 480px;
@@ -414,934 +1513,17 @@
   }
 }
 
-/* Shared section shell & heading */
-
-.problem,
-.features,
-.how-it-works,
-.team {
-  max-width: var(--shell);
-  margin: 0 auto;
-  padding: var(--section-gap) 24px;
-  scroll-margin-top: 76px;
-}
-
-.section-heading {
-  text-align: center;
-  max-width: 720px;
-  margin: 0 auto clamp(32px, 4vw, 48px);
-}
-
-.section-eyebrow {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--red);
-  margin-bottom: 14px;
-}
-
-.section-heading h2 {
-  font-size: clamp(25px, 3.2vw, 36px);
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.8px;
-  text-wrap: balance;
-  color: var(--navy);
-  margin-bottom: 14px;
-}
-
-.section-heading p {
-  font-size: clamp(14.5px, 1.4vw, 16px);
-  line-height: 1.75;
-  color: var(--blue);
-}
-
-.section-heading--invert .section-eyebrow {
-  color: var(--pink-1);
-}
-
-.section-heading--invert h2 {
-  color: var(--cream);
-}
-
-.section-heading--invert p {
-  color: rgba(254, 253, 235, 0.78);
-}
-
-/* ---------- Problem: split lengket ----------
-   Keluarga layout tersendiri. Judul menempel di kiri sementara ketiga poin
-   bergulir melewatinya, jadi pembaca tidak pernah kehilangan konteks
-   pertanyaan yang sedang dijawab. */
-
-@media (min-width: 1024px) {
-  .problem {
-    display: grid;
-    grid-template-columns: 0.85fr 1.15fr;
-    gap: 72px;
-    align-items: start;
-  }
-
-  .problem__heading {
-    position: sticky;
-    top: 104px;
-    text-align: left;
-    max-width: none;
-    margin: 0;
-  }
-}
-
-.problem__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 16px;
-}
-
-/* Sempat memakai nomor 01/02/03 lewat counter CSS, lalu dibatalkan:
-   section .steps di halaman yang SAMA sudah memakai penanda 01/02/03, dan
-   di sana angkanya punya arti (langkahnya memang berurutan). Ketiga poin
-   di sini tidak berurutan — memberinya angka membuat satu perangkat visual
-   berarti dua hal berbeda di satu halaman.
-
-   Penggantinya garis aksen pendek: menandai awal kartu tanpa mengklaim
-   urutan apa pun, dan warnanya ikut aksen tiap kartu. */
-.problem__card::before {
-  content: '';
-  display: block;
-  width: 28px;
-  height: 3px;
-  border-radius: 999px;
-  background: currentColor;
-  opacity: 0.55;
-  margin-bottom: 16px;
-}
-
-.problem__card--rose::before {
-  color: var(--warning);
-  opacity: 1;
-}
-
-.problem__card--danger::before {
-  color: var(--red);
-  opacity: 1;
-}
-
-.problem__card--green::before {
-  color: var(--light-blue);
-  opacity: 1;
-}
-
-.problem__card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-top: 4px solid transparent;
-  border-radius: var(--radius-lg);
-  padding: 30px 28px;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-}
-
-.problem__card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
-}
-
-.problem__card--rose {
-  background: rgba(228, 174, 197, 0.16);
-  border-top-color: var(--warning);
-}
-
-.problem__card--danger {
-  background: rgba(110, 25, 54, 0.07);
-  border-top-color: var(--red);
-}
-
-.problem__card--green {
-  background: rgba(134, 167, 136, 0.14);
-  border-top-color: var(--light-blue);
-}
-
-.problem__card h3 {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--navy);
-  margin-bottom: 10px;
-}
-
-.problem__card p {
-  font-size: 14.5px;
-  line-height: 1.65;
-  color: var(--blue);
-}
-
-/* Science band — full-bleed, memutus ritme grid kartu di sekitarnya */
-
-.science {
-  background: var(--navy);
-  padding: var(--section-gap) 24px;
-  scroll-margin-top: 76px;
-}
-
-.science__inner {
-  max-width: var(--shell);
-  margin: 0 auto;
-}
-
-.science__grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-
-.science__card {
-  background: rgba(254, 253, 235, 0.07);
-  border: 1px solid rgba(254, 253, 235, 0.16);
-  border-radius: var(--radius-lg);
-  padding: 30px 28px;
-}
-
-.science__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  margin-bottom: 18px;
-  border-radius: var(--radius-sm);
-  background: rgba(254, 196, 221, 0.2);
-  color: var(--pink-1);
-}
-
-.science__value {
-  font-size: clamp(38px, 4.6vw, 50px);
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: -2px;
-  color: var(--cream);
-  margin-bottom: 12px;
-}
-
-.science__value span {
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: -0.2px;
-  color: var(--pink-1);
-  margin-left: 6px;
-}
-
-.science__card h3 {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--cream);
-  margin-bottom: 8px;
-}
-
-.science__desc {
-  font-size: 14px;
-  line-height: 1.7;
-  color: rgba(254, 253, 235, 0.72);
-}
-
-/* Features */
-
-/* ---------- Features: bento ----------
-   Enam kartu berukuran sama membaca sebagai daftar; enam kartu berukuran
-   berbeda membaca sebagai komposisi. --span disuntikkan per kartu dari
-   FEATURE_SPAN di LandingPage.jsx dengan ritme 4-2 / 2-4 / 3-3 — jumlahnya
-   18, tepat tiga baris penuh pada grid 6 kolom, tanpa sel kosong. */
-
-.features__grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-}
-
-@media (min-width: 640px) {
-  .features__grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .features__grid {
-    grid-template-columns: repeat(6, 1fr);
-  }
-
-  .feature-card {
-    grid-column: span var(--span, 3);
-  }
-}
-
-/* Butir pre-flight "Bento Background Diversity": bento yang keenam selnya
-   sama-sama kartu teks berlatar rata membaca sebagai tabel, bukan
-   komposisi. Dua sel terlebar (span 4, yaitu kartu ke-1 dan ke-4) dapat
-   lapisan dekoratif nyata — kisi titik dan gradasi radial, keduanya murni
-   CSS sehingga tidak menambah satu byte pun permintaan jaringan.
-   Ditaruh di ::after dengan z-index negatif supaya tidak pernah menutupi
-   teks, dan pointer-events none supaya tidak mencuri hover dari tilt. */
-.feature-card {
-  position: relative;
-  isolation: isolate;
-}
-
-.feature-card:nth-child(1)::after,
-.feature-card:nth-child(4)::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-.feature-card:nth-child(1)::after {
-  background-image: radial-gradient(rgba(110, 25, 54, 0.16) 1px, transparent 1px);
-  background-size: 14px 14px;
-  -webkit-mask-image: linear-gradient(115deg, transparent 45%, #000 100%);
-  mask-image: linear-gradient(115deg, transparent 45%, #000 100%);
-}
-
-.feature-card:nth-child(4)::after {
-  background: radial-gradient(
-    120% 90% at 100% 100%,
-    rgba(129, 162, 131, 0.32),
-    transparent 62%
-  );
-}
-
-.feature-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-top: 4px solid transparent;
-  border-radius: var(--radius-lg);
-  padding: 30px 28px;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-}
-
-.feature-card--green {
-  background: rgba(134, 167, 136, 0.14);
-  border-top-color: var(--light-blue);
-}
-
-.feature-card--rose {
-  background: rgba(228, 174, 197, 0.2);
-  border-top-color: var(--warning);
-}
-
-/* translateY(-3px) dihapus. vanilla-tilt menulis transform INLINE pada
-   elemen yang sama; transform dari CSS hover akan langsung ditimpanya,
-   dan pada kartu yang tidak kebagian tilt (layar sentuh) hasilnya dua
-   perilaku hover yang berbeda di halaman yang sama. Umpan baliknya
-   dipindah ke bayangan dan garis tepi, yang tidak bertabrakan. */
-.feature-card:hover {
-  box-shadow: var(--shadow-md);
-  border-color: rgba(129, 162, 131, 0.45);
-}
-
-.feature-card__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  margin-bottom: 16px;
-  border-radius: var(--radius-sm);
-}
-
-.feature-card__icon--green {
-  background: rgba(134, 167, 136, 0.26);
-  color: var(--navy);
-}
-
-.feature-card__icon--rose {
-  background: rgba(228, 174, 197, 0.34);
-  color: var(--red);
-}
-
-.feature-card h3 {
-  font-size: 16.5px;
-  font-weight: 700;
-  color: var(--navy);
-  margin-bottom: 8px;
-}
-
-.feature-card p {
-  font-size: 14.5px;
-  line-height: 1.65;
-  color: var(--blue);
-}
-
-/* How it works — timeline, bukan kartu, supaya urutannya terbaca */
-
-.steps {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  position: relative;
-}
-
-/* Garis penghubung antar langkah — hanya dekorasi urutan, disembunyikan
-   dari pembaca layar lewat aria-hidden pada marker-nya. */
-.steps::before {
-  content: '';
-  position: absolute;
-  top: 27px;
-  left: 16%;
-  right: 16%;
-  height: 2px;
-  background: repeating-linear-gradient(
-    90deg,
-    rgba(129, 162, 131, 0.5) 0 8px,
-    transparent 8px 16px
-  );
-}
-
-.step {
-  position: relative;
-  padding-top: 78px;
-  text-align: center;
-}
-
-.step__marker {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--navy);
-  color: var(--cream);
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: -0.3px;
-}
-
-.step:nth-child(2) .step__marker {
-  background: var(--red);
-}
-
-.step:nth-child(3) .step__marker {
-  background: var(--light-blue);
-  color: var(--navy);
-}
-
-.step h3 {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--navy);
-  margin-bottom: 10px;
-}
-
-.step p {
-  font-size: 14.5px;
-  line-height: 1.65;
-  color: var(--blue);
-  max-width: 34ch;
-  margin: 0 auto;
-}
-
-/* Team */
-
-.team__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 24px;
-}
-
-.team-card {
-  display: flex;
-  flex-direction: column;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-top: 4px solid transparent;
-  border-radius: var(--radius-lg);
-  padding: 28px 20px 24px;
-  text-align: center;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-}
-
-.team-card--green {
-  background: rgba(134, 167, 136, 0.12);
-  border-top-color: var(--light-blue);
-}
-
-.team-card--rose {
-  background: rgba(228, 174, 197, 0.16);
-  border-top-color: var(--warning);
-}
-
-.team-card--mixed {
-  background: rgba(110, 25, 54, 0.07);
-  border-top-color: var(--red);
-}
-
-/* Sama seperti .feature-card: kartu ini target tilt, jadi transform-nya
-   diserahkan sepenuhnya ke vanilla-tilt. */
-.team-card:hover {
-  box-shadow: var(--shadow-md);
-}
-
-.team-card__avatar {
-  width: 82px;
-  height: 82px;
-  margin: 0 auto 16px;
-  border-radius: 50%;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--cream);
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  flex-shrink: 0;
-}
-
-.team-card__avatar--green {
-  background: linear-gradient(135deg, var(--navy) 0%, var(--light-blue) 100%);
-}
-
-.team-card__avatar--rose {
-  background: linear-gradient(135deg, var(--red) 0%, var(--warning) 100%);
-}
-
-.team-card__avatar--mixed {
-  background: linear-gradient(135deg, var(--red) 0%, var(--navy) 100%);
-}
-
-.team-card__avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.team-card h3 {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--navy);
-  margin-bottom: 10px;
-  line-height: 1.4;
-  text-wrap: balance;
-}
-
-/* Role didorong ke dasar kartu supaya nama panjang (yang membungkus jadi
-   beberapa baris) tidak membuat label jabatan melompat-lompat antar kartu. */
-.team-card p {
-  margin-top: auto;
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--blue);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-/* CTA banner */
-
-.cta-banner {
-  max-width: var(--shell);
-  margin: 0 auto clamp(48px, 6vw, 72px);
-  padding: 0 24px;
-}
-
-.cta-banner__inner {
-  position: relative;
-  /* Modul yang melayang keluar tepi dipotong oleh radius banner, bukan
-     menggantung di atas latar halaman. */
-  overflow: hidden;
-  text-align: center;
-  background: var(--pink-2);
-  border-radius: var(--radius-xl);
-  padding: clamp(40px, 6vw, 64px) 24px;
-  color: var(--navy);
-  box-shadow: var(--shadow-lg);
-}
-
-/* Lapisan hiasan 3D di belakang teks CTA.
-   `position: absolute` bukan kebetulan: dengan begitu ia tidak punya andil
-   apa pun pada tinggi banner, jadi mengubah ukurannya nanti tidak akan
-   menggeser tombol atau judul di depannya. */
-.floating-modules {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  /* Hiasan tidak boleh mencegat klik — tombol CTA ada tepat di depannya. */
-  pointer-events: none;
-  /* Dipudarkan supaya teks di depannya tetap punya kontras yang cukup.
-     Modul ungu penuh di belakang teks navy akan membuat judulnya harus
-     dibaca dua kali. */
-  opacity: 0;
-  transition: opacity 700ms var(--ease);
-}
-
-/* Turun dari 0,42. Modulnya ungu — warna perangkat sungguhan — dan di atas
-   pelat merah muda banner, sepekat itu membuat judul CTA harus dibaca dua
-   kali. Penempatannya sendiri sudah dijauhkan dari teks di
-   FloatingModuleViewer.jsx; kepekatan ini jaring pengaman keduanya. */
-.floating-modules--ready {
-  opacity: 0.3;
-}
-
-.floating-modules canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-/* Teks & tombol harus berada DI ATAS lapisan hiasan. Tanpa ini keduanya
-   berbagi konteks tumpukan yang sama dan urutan DOM yang menentukan —
-   kebetulan benar sekarang, tapi pecah begitu ada yang menyisipkan elemen
-   baru di antaranya. */
-.cta-banner__inner > :not(.floating-modules) {
-  position: relative;
-  z-index: 1;
-}
-
-.cta-banner h2 {
-  font-size: clamp(24px, 3vw, 32px);
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.7px;
-  text-wrap: balance;
-  margin-bottom: 12px;
-}
-
-.cta-banner p {
-  font-size: 15px;
-  line-height: 1.7;
-  opacity: 0.85;
-  margin-bottom: 28px;
-}
-
-.cta-banner__btn {
-  padding: 14px 32px;
-  font-size: 15px;
-}
-
-/* Footer */
-
-.landing-footer {
-  max-width: var(--shell);
-  margin: 0 auto;
-  padding: clamp(40px, 5vw, 56px) 24px 40px;
-  border-top: 1px solid var(--border);
-}
-
-.landing-footer__top {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 40px;
-  margin-bottom: 36px;
-}
-
-.landing-footer__brand p {
-  margin-top: 14px;
-  font-size: 14px;
-  line-height: 1.7;
-  color: var(--blue);
-  max-width: 46ch;
-}
-
-.landing-footer__nav {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-}
-
-.landing-footer__nav > div {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.landing-footer__nav h3 {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--navy);
-  margin-bottom: 2px;
-}
-
-.landing-footer__nav a {
-  font-size: 14px;
-  color: var(--blue);
-  transition: color 0.15s ease;
-}
-
-.landing-footer__nav a:hover {
-  color: var(--red);
-}
-
-.landing-footer__disclaimer {
-  font-size: 13px;
-  line-height: 1.7;
-  color: var(--blue);
-  background: rgba(110, 25, 54, 0.06);
-  border: 1px solid rgba(110, 25, 54, 0.16);
-  border-radius: var(--radius-md);
-  padding: 16px 20px;
-  margin-bottom: 28px;
-}
-
-.landing-footer__disclaimer strong {
-  color: var(--red);
-}
-
-.landing-footer__bottom {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 10px 24px;
-  padding-top: 22px;
-  border-top: 1px solid var(--border);
-  font-size: 12.5px;
-  color: var(--blue);
-}
-
-.landing-footer__tech {
-  font-family: var(--mono);
-  font-size: 11.5px;
-  opacity: 0.75;
-}
-
-/* ---------- Panggung tampilan urai perangkat ----------
-   Sebelumnya .insole-showcase berisi ilustrasi SVG. Isinya sekarang scene 3D
-   kedua halaman ini; ilustrasi itu tetap dipakai sebagai penggantinya saat
-   WebGL tidak tersedia, jadi aturan .hero-illustration di bawah masih perlu. */
-
-.exploded-showcase {
-  max-width: 720px;
-  margin: 0 auto clamp(32px, 4vw, 48px);
-  text-align: center;
-}
-
-.exploded-viewer {
-  position: relative;
-  width: 100%;
-  /* Lebih tinggi daripada lebarnya karena susunannya memisah ke ATAS dan
-     BAWAH. Bingkai selebar-lebarnya hanya akan menyisakan ruang kosong di
-     kiri-kanan sementara lapisan teratas dan terbawah terpotong. */
-  aspect-ratio: 5 / 4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* Tidak ada touch-action khusus di sini: scene ini TIDAK bisa diseret.
-     Gerakannya sepenuhnya milik gulir halaman, jadi jari yang mendarat di
-     sini harus tetap menggulir seperti di bagian halaman lainnya. */
-}
-
-.exploded-viewer canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  transition: opacity 420ms var(--ease);
-}
-
-.exploded-viewer--ready canvas {
-  opacity: 1;
-}
-
-.exploded-viewer__note {
-  max-width: 420px;
-  font-size: 13.5px;
-  line-height: 1.7;
-  color: var(--text-muted);
-}
-
-/* --text-muted, bukan --blue: teks sekecil ini dengan #81a283 hanya ~2,4:1
-   di atas krem — di bawah ambang WCAG AA, dan kalimat inilah yang memberi
-   tahu orang bahwa gambarnya bereaksi terhadap gulir. */
-.exploded-showcase__hint {
-  margin-top: 12px;
-  max-width: 46ch;
-  margin-inline: auto;
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--text-muted);
-}
-
-/* ---------- Label melayang di atas kanvas 3D ----------
-   Dipakai kedua scene. Posisinya ditulis oleh loop render lewat `transform`
-   (lihat createLabelLayer di src/three/sceneKit.js), jadi CSS di sini hanya
-   mengurus tampilannya — jangan menambahkan `transition: transform`, karena
-   nilainya sudah berubah tiap frame dan transisi di atasnya justru membuat
-   label tertinggal di belakang titik yang ditandainya. */
-
-.shoe-viewer__labels,
-.exploded-viewer__labels {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  /* Label tidak boleh mencegat pointer: tepat di bawahnya ada model yang
-     bisa diseret, dan di sekelilingnya ada halaman yang bisa digulir. */
-  pointer-events: none;
-}
-
-.shoe-viewer__label,
-.exploded-viewer__label {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: block;
-  white-space: nowrap;
-  padding: 5px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border-strong);
-  background: var(--glass-bg-strong);
-  backdrop-filter: var(--glass-blur);
-  box-shadow: var(--shadow-sm);
-  font-size: 11px;
-  line-height: 1.25;
-  color: var(--blue);
-  text-align: center;
-  /* Hanya dua properti ini yang berubah tiap frame — keduanya bisa
-     dianimasikan browser tanpa menghitung ulang layout halaman. */
-  will-change: transform, opacity;
-}
-
-.shoe-viewer__label b,
-.exploded-viewer__label b {
-  font-family: var(--mono);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--navy);
-}
-
-.shoe-viewer__label i,
-.exploded-viewer__label i {
-  display: block;
-  font-style: normal;
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  opacity: 0.8;
-}
-
-.exploded-viewer__label {
-  font-size: 11.5px;
-  font-weight: 500;
-  color: var(--navy);
-}
-
-/* Label hero memakai gaya kaca terang yang SAMA dengan label tampilan urai
-   (aturan dasarnya di atas). Sempat dibuat gelap karena panggungnya dulu
-   panel hitam; sejak panggungnya kembali terang, satu-satunya bedanya
-   tinggal geseran ke atas dan garis penunjuknya. */
-.shoe-viewer__label {
-  /* Digeser ke atas titiknya, lalu disambungkan lagi lewat garis penunjuk di
-     bawah. Label yang menindih titik sensornya sendiri menutupi hal yang
-     ditunjuknya. */
-  margin-top: -42px;
-  border-radius: 8px;
-}
-
-/* Garis penunjuk dari label ke titik sensornya — bahasa anotasi alat ukur.
-   Memudar ke bawah supaya ujungnya menyatu ke titik, bukan berhenti tegas
-   di udara. */
-.shoe-viewer__label::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 100%;
-  width: 1px;
-  height: 28px;
-  background: linear-gradient(to bottom, rgba(68, 106, 69, 0.5), rgba(68, 106, 69, 0));
-}
-
-.exploded-viewer__label--lead {
-  border-color: rgba(68, 106, 69, 0.35);
-  background: var(--navy);
-  color: #fff;
-}
-
-.exploded-viewer__label--lead i {
-  opacity: 0.75;
-}
-
-/* Tanpa panel: tidak ada latar, garis tepi, atau radius. Viewer ini duduk
-   di dalam .hero__layer--art, dan yang jadi latarnya adalah lapisan cahaya
-   serta cincin di belakangnya. Memberi latar sendiri di sini akan menutupi
-   keduanya dan mengembalikan sepatu ke atas kotak putih. */
-.shoe-viewer {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  cursor: grab;
-  /* pan-y, BUKAN none. `touch-action: none` memang membuat seretan horizontal
-     mulus, tapi sekaligus menelan gulir vertikal — di ponsel, jari yang
-     kebetulan mendarat di sini tidak bisa lagi menggulir halaman, dan blok
-     ini jadi perangkap di tengah bacaan. pan-y menyerahkan gulir vertikal
-     ke halaman dan menyisakan gerakan horizontal untuk memutar model. */
-  touch-action: pan-y;
-}
-
-.shoe-viewer:active {
-  cursor: grabbing;
-}
-
-.shoe-viewer canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-  /* Kanvas ditambahkan ke DOM sebelum frame pertama selesai digambar. Tanpa
-     ini, yang sempat terlihat adalah satu kedipan kanvas kosong tepat sebelum
-     sepatunya muncul. Skala & putaran masuknya dianimasikan DI DALAM scene
-     (lihat INTRO_SEC di ShoeViewer.jsx) — menskalakan kanvas lewat CSS hanya
-     membesarkan gambar yang sudah dirender berikut pikselnya. */
-  opacity: 0;
-  transition: opacity 420ms var(--ease);
-}
-
-.shoe-viewer--ready canvas {
-  opacity: 1;
-}
-
-/* Panggung hero sekarang gelap, sementara ilustrasi insole penggantinya
-   digambar dengan navy di atas latar terang — di atas panggung gelap ia
-   nyaris tak terlihat. Jadi begitu viewer jatuh ke keadaan pengganti, ia
-   membawa alas terangnya sendiri.
-
-   Dilakukan lewat kelas keadaan pada viewer-nya, bukan `:has()` pada
-   panggung: peramban yang tidak mendukung WebGL2 sebagian besar juga
-   peramban lama, dan itu justru golongan yang paling mungkin belum
-   mendukung `:has()` — pengaman yang gagal tepat pada kasus yang harus
-   diamankannya bukan pengaman. */
-.shoe-viewer--unsupported,
-.shoe-viewer--failed {
-  background: radial-gradient(circle at 50% 48%, var(--cream) 0%, var(--cream) 62%, transparent 78%);
-  border-radius: 50%;
-}
-
-.shoe-viewer__note {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  color: var(--blue);
-}
-
-/* Scroll reveal — kelas penyembunyi hanya aktif setelah observer terpasang
-   (.reveal-ready di <html>), jadi tanpa JS konten tetap tampil. */
+/* ==========================================================================
+   REVEAL SAAT GULIR
+   ==========================================================================
+   Kelas penyembunyi baru berlaku setelah observer siap (.reveal-ready di
+   <html>), jadi kalau JS gagal atau pengguna memilih reduced-motion, konten
+   tetap tampil penuh — bukan blank. */
 
 .reveal-ready [data-reveal] {
   opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.6s var(--ease, ease), transform 0.6s var(--ease, ease);
+  transform: translateY(20px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
 }
 
 .reveal-ready [data-reveal].is-revealed {
@@ -1349,139 +1531,122 @@
   transform: none;
 }
 
-/* ---------- Reveal bertahap ----------
-   Sebelumnya satu section muncul sebagai satu blok utuh. Menahan anaknya
-   sedikit lebih lama satu per satu membuat mata menelusuri grid mengikuti
-   urutan bacaan, alih-alih disodori enam kartu sekaligus.
-
-   Jedanya dipasang di ANAK, bukan di kontainer, dan hanya sesudah
+/* Reveal bertahap: menahan anak-anaknya sedikit lebih lama satu per satu
+   membuat mata menelusuri grid mengikuti urutan bacaan, alih-alih disodori
+   enam kartu sekaligus. Jedanya dipasang di ANAK dan hanya sesudah
    kontainernya ditandai .is-revealed — jadi hitungannya mulai saat section
    benar-benar masuk layar, bukan saat halaman dimuat.
 
    Jeda maksimum 300ms: di atas itu kartu terakhir baru muncul setelah mata
    sudah pindah ke sana, dan animasinya berubah dari penuntun jadi penghambat. */
-.reveal-ready [data-reveal] .features__grid > *,
-.reveal-ready [data-reveal] .problem__list > *,
-.reveal-ready [data-reveal] .team__grid > *,
-.reveal-ready [data-reveal] .steps > * {
+.reveal-ready
+  [data-reveal]
+  :is(.features__grid, .problem__list, .team__grid, .steps, .science__cards)
+  > * {
   opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.5s var(--ease, ease), transform 0.5s var(--ease, ease);
+  transform: translateY(14px);
+  transition: opacity 0.55s var(--ease), transform 0.55s var(--ease);
 }
 
-.reveal-ready [data-reveal].is-revealed .features__grid > *,
-.reveal-ready [data-reveal].is-revealed .problem__list > *,
-.reveal-ready [data-reveal].is-revealed .team__grid > *,
-.reveal-ready [data-reveal].is-revealed .steps > * {
+.reveal-ready
+  [data-reveal].is-revealed
+  :is(.features__grid, .problem__list, .team__grid, .steps, .science__cards)
+  > * {
   opacity: 1;
   transform: none;
 }
 
-.reveal-ready [data-reveal].is-revealed :is(.features__grid, .problem__list, .team__grid, .steps)
+.reveal-ready
+  [data-reveal].is-revealed
+  :is(.features__grid, .problem__list, .team__grid, .steps, .science__cards)
   > *:nth-child(1) {
   transition-delay: 0ms;
 }
-.reveal-ready [data-reveal].is-revealed :is(.features__grid, .problem__list, .team__grid, .steps)
+
+.reveal-ready
+  [data-reveal].is-revealed
+  :is(.features__grid, .problem__list, .team__grid, .steps, .science__cards)
   > *:nth-child(2) {
   transition-delay: 60ms;
 }
-.reveal-ready [data-reveal].is-revealed :is(.features__grid, .problem__list, .team__grid, .steps)
+
+.reveal-ready
+  [data-reveal].is-revealed
+  :is(.features__grid, .problem__list, .team__grid, .steps, .science__cards)
   > *:nth-child(3) {
   transition-delay: 120ms;
 }
-.reveal-ready [data-reveal].is-revealed :is(.features__grid, .problem__list, .team__grid, .steps)
+
+.reveal-ready
+  [data-reveal].is-revealed
+  :is(.features__grid, .problem__list, .team__grid, .steps, .science__cards)
   > *:nth-child(4) {
   transition-delay: 180ms;
 }
-.reveal-ready [data-reveal].is-revealed :is(.features__grid, .problem__list, .team__grid, .steps)
+
+.reveal-ready
+  [data-reveal].is-revealed
+  :is(.features__grid, .problem__list, .team__grid, .steps, .science__cards)
   > *:nth-child(5) {
   transition-delay: 240ms;
 }
-.reveal-ready [data-reveal].is-revealed :is(.features__grid, .problem__list, .team__grid, .steps)
+
+.reveal-ready
+  [data-reveal].is-revealed
+  :is(.features__grid, .problem__list, .team__grid, .steps, .science__cards)
   > *:nth-child(n + 6) {
   transition-delay: 300ms;
 }
 
-/* ---------- Dukungan tilt ----------
-   preserve-3d diperlukan supaya isi kartu ikut miring bersama kartunya,
-   bukan tetap datar di atas permukaan yang miring. `will-change` sengaja
-   TIDAK dipasang: kartunya banyak, dan mempromosikan semuanya ke layer
-   compositor sendiri justru menghabiskan memori GPU di ponsel kelas bawah
-   demi efek yang di ponsel bahkan tidak pernah menyala. */
+/* Dukungan tilt. preserve-3d diperlukan supaya isi kartu ikut miring bersama
+   kartunya, bukan tetap datar di atas permukaan yang miring. `will-change`
+   sengaja TIDAK dipasang: kartunya banyak, dan mempromosikan semuanya ke
+   layer sendiri lebih mahal daripada yang dihemat. */
 [data-tilt-card] {
   transform-style: preserve-3d;
 }
 
-/* Elemen kilau disuntikkan vanilla-tilt ke dalam kartu sebagai anak
-   pertama. Tanpa dipotong mengikuti radius kartu, kilaunya keluar sebagai
-   persegi di atas sudut yang membulat. */
-[data-tilt-card] .js-tilt-glare {
-  border-radius: inherit;
-  overflow: hidden;
-}
+/* ==========================================================================
+   RESPONSIF
+   ========================================================================== */
 
-@media (prefers-reduced-motion: reduce) {
-  .hero-pulse {
-    animation: none;
-  }
-
-  .problem__card:hover,
-  .feature-card:hover,
-  .team-card:hover {
-    transform: none;
-  }
-
-  .reveal-ready [data-reveal] {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
-
-  /* Reveal bertahap ikut dimatikan. Tanpa baris ini, anak-anaknya tetap
-     tersembunyi selamanya: aturan yang memunculkannya kembali bergantung
-     pada .is-revealed, sementara observer-nya memang tidak dipasang saat
-     reduced-motion — jadi kelas itu tidak akan pernah datang. */
-  .reveal-ready [data-reveal] :is(.features__grid, .problem__list, .team__grid, .steps) > * {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
-}
-
-/* Responsive */
-
-@media (max-width: 960px) {
+@media (max-width: 1024px) {
   .hero {
     grid-template-columns: 1fr;
-    padding-top: 36px;
+    padding-top: 32px;
   }
 
   .hero__visual {
     order: -1;
   }
 
-  .hero-illustration {
-    max-width: 340px;
+  .hero__title,
+  .hero__subtitle {
+    max-width: none;
   }
 
-  .problem__grid,
-  .features__grid,
-  .science__grid {
+  .problem__layout,
+  .science__layout {
     grid-template-columns: 1fr;
   }
 
-  .steps {
-    grid-template-columns: 1fr;
-    gap: 32px;
+  .problem__aside,
+  .science__stage {
+    position: static;
   }
 
-  .steps::before {
-    display: none;
+  .insole-viewer {
+    max-width: 460px;
+    margin: 0 auto;
   }
 
-  .landing-footer__top {
-    grid-template-columns: 1fr;
-    gap: 32px;
+  .features__device {
+    grid-column: span 3;
+    grid-row: auto;
+  }
+
+  .feature-card {
+    grid-column: span 3;
   }
 
   .landing-nav__links,
@@ -1494,9 +1659,41 @@
   }
 }
 
+@media (max-width: 760px) {
+  .spec-rail__list {
+    grid-template-columns: 1fr;
+  }
+
+  .spec-rail__item + .spec-rail__item {
+    border-left: none;
+    border-top: 1px solid var(--rule-color);
+  }
+
+  .features__device,
+  .feature-card {
+    grid-column: span 6;
+  }
+
+  .steps {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .steps::before {
+    display: none;
+  }
+
+  .landing-footer__top,
+  .landing-footer__nav {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+}
+
 @media (max-width: 560px) {
   .hero__actions {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .hero__cta {
@@ -1504,16 +1701,17 @@
     text-align: center;
   }
 
-  .hero__stats {
-    flex-direction: column;
-    gap: 14px;
+  .problem__card {
+    padding: 24px 22px;
   }
-}
 
-/* ---------- Scene 3D pada layar sempit & reduced-motion ---------- */
+  .problem__card::before {
+    position: static;
+    display: block;
+    margin-bottom: 10px;
+  }
 
-@media (max-width: 560px) {
-  /* Panggung hero menyusut sampai ~330 px di sini. Tiga label lengkap di
+  /* Panggung hero menyusut sampai ~330 px di sini. Tiga label lengkap pada
      lebar itu saling menimpa sampai tidak ada yang terbaca — yang tersisa
      hanyalah angkanya, dan angka itulah bagian yang penting. Nama areanya
      sudah disebut ulang di section "Cara Kerja". */
@@ -1522,7 +1720,7 @@
   }
 
   .shoe-viewer__label {
-    padding: 3px 7px;
+    padding: 4px 8px;
   }
 
   .shoe-viewer__label b {
@@ -1540,115 +1738,7 @@
     font-size: 10.5px;
     padding: 4px 8px;
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  /* Gerak scene-nya sudah dimatikan di JavaScript (putaran otomatis, denyut,
-     kamera yang mengikuti gulir). Yang tersisa di sini hanyalah transisi CSS
-     kemunculan kanvasnya. */
-  .shoe-viewer canvas,
-  .exploded-viewer canvas {
-    transition: none;
-  }
-
-  /* Cincin HUD berhenti berputar. Gerakan scene-nya sendiri sudah dimatikan
-     di JavaScript, jadi ini satu-satunya gerak yang tersisa di panggung. */
-  .hero__layer--ring::after {
-    animation: none;
-  }
-}
-
-/* ==========================================================================
-   PANGGUNG TERANG — tempat kedua scene 3D berdiri
-   ==========================================================================
-   Sampai versi sebelumnya kedua kanvas 3D-nya adalah PELAT GELAP. Itu bukan
-   pilihan gaya melainkan akibat: rantai bloom mengharuskan kanvas buram, dan
-   kanvas buram di halaman krem harus diberi warna sendiri — jadi warnanya
-   dijadikan panel hitam sekalian, "seperti layar alat ukur".
-
-   Di layar hasilnya justru dua persegi hitam yang menabrak seluruh palet
-   halaman: yang pertama dilihat orang di hero bukan sepatunya, melainkan
-   kotaknya. Bloom sudah dibuang (three/renderQuality.js), kanvasnya kembali
-   transparan, dan sepatunya kini berdiri langsung di atas krem halaman —
-   persis seperti ilustrasi SVG yang dulu menempati tempat yang sama.
-
-   Yang tersisa di sini hanyalah panggungnya: pendar hangat di belakang
-   sepatu hero, dan bingkai selembut kartu untuk tampilan urai. */
-
-.hero__layer--art {
-  z-index: 1;
-}
-
-/* Pendar hangat sebagai pengganti panel. Tugasnya memberi sepatu tempat
-   berdiri TANPA menggambar tepi — begitu ada tepi, ia jadi kotak lagi. */
-.hero__layer--glow {
-  z-index: 0;
-  transform: scale(1.24);
-  background:
-    radial-gradient(circle at 50% 46%, rgba(134, 167, 136, 0.34), transparent 62%),
-    radial-gradient(circle at 68% 78%, rgba(254, 206, 206, 0.55), transparent 60%);
-  filter: blur(30px);
-  opacity: 0.95;
-}
-
-/* Cincin kembali ke sage merek dan turun ke BELAKANG sepatu. Di depan kanvas
-   ia dulu perlu — panel gelapnya menelan apa pun yang berada di belakangnya —
-   tapi di atas panggung terang, cincin yang melintas di depan sepatu cuma
-   membelah gambarnya. */
-.hero__layer--ring {
-  z-index: 0;
-  border-color: rgba(134, 167, 136, 0.34);
-  box-shadow: inset 0 0 60px rgba(134, 167, 136, 0.07);
-}
-
-.hero__layer--ring::after {
-  border-color: rgba(134, 167, 136, 0.28);
-}
-
-/* ---------- Bingkai tampilan urai ----------
-   Berbeda dari hero, scene ini TIDAK dibiarkan mengambang bebas: isinya tiga
-   lapisan yang bergerak berjauhan plus tiga label, dan tanpa bidang yang
-   menampungnya susunan itu terbaca berserakan di tengah halaman. Bingkainya
-   memakai bahasa kartu yang sudah dipakai section lain — permukaan terang,
-   garis tepi tipis, bayangan rendah — jadi ia bergabung sebagai satu kartu
-   lagi, bukan sebagai benda asing. */
-.exploded-viewer {
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  background:
-    radial-gradient(120% 88% at 50% 6%, rgba(255, 255, 255, 0.92), transparent 66%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(238, 242, 234, 0.72));
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-md);
-}
-
-/* Dipersempit dari 760 px. Bingkai setinggi itu (5:4 dari 760 = 608 px)
-   menghabiskan hampir satu layar penuh untuk satu gambar, dan section ini
-   masih punya tiga langkah yang harus terbaca sesudahnya. */
-.exploded-showcase {
-  max-width: 640px;
-}
-
-/* Ketiga label menandai lapisan yang duduk pada SUMBU VERTIKAL YANG SAMA,
-   jadi tanpa geseran ini label insole dan label modul saling menimpa persis
-   pada jarak urai yang paling lama terlihat. Kelasnya dipasang di
-   DeviceExplodedViewer.jsx. */
-.exploded-viewer__label--shoe {
-  margin-top: -34px;
-}
-
-/* Label utama duduk tepat di bidang insole, dan di bidang itu ada tiga titik
-   sensor — yang tengah persis di belakangnya. Naik sedikit sudah cukup untuk
-   melepaskannya tanpa membuat label ini terbaca sebagai milik sepatu. */
-.exploded-viewer__label--insole {
-  margin-top: -30px;
-}
-
-.exploded-viewer__label--module {
-  margin-top: 32px;
-}
-
-@media (max-width: 560px) {
   /* Bingkainya jauh lebih sempit di sini, jadi geserannya ikut mengecil —
      label yang terdorong 34 px pada bingkai setinggi 400 px keluar dari
      lapisan yang ditandainya. */
@@ -1658,5 +1748,52 @@
 
   .exploded-viewer__label--module {
     margin-top: 24px;
+  }
+
+  .science__card {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 24px 22px;
+  }
+
+  .science__icon {
+    grid-row: auto;
+  }
+}
+
+/* ==========================================================================
+   REDUCED MOTION
+   ==========================================================================
+   Gerak scene 3D-nya sudah dimatikan di JavaScript (putaran otomatis, denyut,
+   kamera yang mengikuti gulir). Yang tersisa di sini gerak CSS-nya. */
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__layer--ring::after,
+  .hero__badge-dot::after,
+  .hero-pulse {
+    animation: none;
+  }
+
+  .shoe-viewer canvas,
+  .exploded-viewer canvas,
+  .insole-viewer canvas,
+  .module-viewer canvas {
+    transition: none;
+  }
+
+  .problem__card:hover,
+  .feature-card:hover,
+  .team-card:hover {
+    transform: none;
+  }
+
+  .reveal-ready [data-reveal],
+  .reveal-ready
+    [data-reveal]
+    :is(.features__grid, .problem__list, .team__grid, .steps, .science__cards)
+    > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
