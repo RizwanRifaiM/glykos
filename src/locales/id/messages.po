@@ -566,6 +566,10 @@ msgstr "Selisih Suhu"
 msgid "Kelembapan"
 msgstr "Kelembapan"
 
+#: src/constants/historyMetrics.js
+msgid "Titik Embun"
+msgstr "Titik Embun"
+
 #: src/constants/thresholds.js
 msgid "Risiko Ulkus"
 msgstr "Risiko Ulkus"
@@ -918,6 +922,10 @@ msgstr "Titik naik"
 #: src/utils/exportData.js
 msgid "Kelembapan (%RH)"
 msgstr "Kelembapan (%RH)"
+
+#: src/pages/HistoryPage.jsx
+msgid "Titik Embun (°C)"
+msgstr "Titik Embun (°C)"
 
 #: src/pages/HistoryPage.jsx
 #: src/utils/exportData.js

@@ -28,6 +28,12 @@ export function emptyRollup(tanggal) {
     temperatureAreaCount: 0,
     humiditySum: 0,
     humidityCount: 0,
+    // Titik embun DIRATA-RATAKAN, bukan diambil maksimumnya — ia menggambarkan
+    // beban kelembapan sepanjang hari, bukan satu puncak sesaat. Ini juga satu-
+    // satunya ukuran kelembapan yang rata-ratanya bermakna: rata-rata RH
+    // sepanjang hari pada suhu yang berbeda-beda tidak menggambarkan apa pun.
+    dewPointSum: 0,
+    dewPointCount: 0,
     stepsBySession: {},
     wearMinutesBySession: {},
   }
@@ -48,6 +54,9 @@ const positive = (value) => {
 export function mergeDailyRollup(prev, sample) {
   const base = prev && prev.tanggal === sample.tanggal ? prev : emptyRollup(sample.tanggal)
   const humidity = positive(sample.humidity)
+  // Titik embun di dalam sepatu yang dipakai selalu di atas 0 °C, jadi nol
+  // aman diperlakukan sebagai "belum terhitung" — sama seperti kelembapan.
+  const dew = positive(sample.dewPoint)
 
   // 0 berarti "sensor belum mengirim", bukan pembacaan — sama seperti guard di
   // useAlerts.js. Nilai nol tidak boleh menarik rata-rata kelembapan ke bawah.
@@ -84,6 +93,8 @@ export function mergeDailyRollup(prev, sample) {
     temperatureDeltaMax: Math.max(base.temperatureDeltaMax, positive(sample.temperatureDelta)),
     humiditySum: base.humiditySum + humidity,
     humidityCount: base.humidityCount + (humidity > 0 ? 1 : 0),
+    dewPointSum: (Number(base.dewPointSum) || 0) + dew,
+    dewPointCount: (Number(base.dewPointCount) || 0) + (dew > 0 ? 1 : 0),
     temperatureRiseMax: Math.max(
       Number(base.temperatureRiseMax) || 0,
       positive(sample.temperatureRise),
@@ -118,6 +129,12 @@ export function averageHumidity(rollup) {
   return Math.round((Number(rollup.humiditySum) / count) * 10) / 10
 }
 
+export function averageDewPoint(rollup) {
+  const count = Number(rollup?.dewPointCount) || 0
+  if (count <= 0) return 0
+  return Math.round((Number(rollup.dewPointSum) / count) * 10) / 10
+}
+
 // Bentuk yang dipakai grafik & tabel Riwayat.
 export function rollupToPoint(rollup) {
   return {
@@ -128,6 +145,7 @@ export function rollupToPoint(rollup) {
     temperatureRisenAreas: Number(rollup?.temperatureRisenAreas) || 0,
     temperatureAreaCount: Number(rollup?.temperatureAreaCount) || 0,
     humidity: averageHumidity(rollup),
+    dewPoint: averageDewPoint(rollup),
     steps: totalSteps(rollup),
     wearMinutes: totalWearMinutes(rollup),
   }

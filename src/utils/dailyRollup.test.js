@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  averageDewPoint,
   averageHumidity,
   emptyRollup,
   mergeDailyRollup,
@@ -158,5 +159,48 @@ describe('kenaikan suhu terpusat', () => {
 
     expect(rollup.temperatureRiseFocal).toBe(2.9)
     expect(rollup.temperatureRisenAreas).toBe(1)
+  })
+})
+
+describe('titik embun harian', () => {
+  const sample = (over) => ({ tanggal: '2026-08-21', sessionId: 'a', ...over })
+
+  it('merata-ratakan sepanjang hari', () => {
+    let rollup = emptyRollup('2026-08-21')
+    rollup = mergeDailyRollup(rollup, sample({ dewPoint: 20 }))
+    rollup = mergeDailyRollup(rollup, sample({ dewPoint: 24 }))
+    expect(averageDewPoint(rollup)).toBe(22)
+  })
+
+  it('mengabaikan pembacaan yang belum terhitung', () => {
+    // Titik embun di dalam sepatu yang dipakai selalu di atas 0 °C, jadi nol
+    // berarti belum ada suhu udara untuk menghitungnya — bukan 0 °C sungguhan.
+    let rollup = emptyRollup('2026-08-21')
+    rollup = mergeDailyRollup(rollup, sample({ dewPoint: 22 }))
+    rollup = mergeDailyRollup(rollup, sample({ dewPoint: 0 }))
+    expect(averageDewPoint(rollup)).toBe(22)
+  })
+
+  it('nol saat belum ada satu pun pembacaan', () => {
+    expect(averageDewPoint(emptyRollup('2026-08-21'))).toBe(0)
+    expect(averageDewPoint(null)).toBe(0)
+  })
+
+  // INI alasan titik embun ditren, bukan RH. Dua pembacaan dengan RH yang sama
+  // pada suhu berbeda membawa jumlah air yang jauh berbeda; rata-rata RH-nya
+  // tidak menggambarkan satu pun di antaranya. Titik embun tidak punya masalah
+  // itu — angkanya sudah tidak bergantung suhu sejak awal.
+  it('rata-ratanya bermakna dengan cara yang tidak dimiliki RH', () => {
+    let rollup = emptyRollup('2026-08-21')
+    // Pagi sejuk & siang hangat, RH sama-sama 60 % — tapi kandungan airnya
+    // berbeda jauh, dan titik embunnya menunjukkan itu.
+    rollup = mergeDailyRollup(rollup, sample({ humidity: 60, dewPoint: 17.9 }))
+    rollup = mergeDailyRollup(rollup, sample({ humidity: 60, dewPoint: 23.5 }))
+
+    // Rata-rata RH: 60 % — angka yang tidak menggambarkan pagi maupun siang.
+    expect(averageHumidity(rollup)).toBe(60)
+    // Rata-rata titik embun: beban kelembapan hari itu, dan berbeda dari
+    // keduanya secara bermakna.
+    expect(averageDewPoint(rollup)).toBeCloseTo(20.7, 1)
   })
 })

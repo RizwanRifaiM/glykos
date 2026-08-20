@@ -15,6 +15,7 @@ const EMPTY_POINT = {
   temperatureRisenAreas: 0,
   temperatureAreaCount: 0,
   humidity: 0,
+  dewPoint: 0,
   steps: 0,
   wearMinutes: 0,
 }

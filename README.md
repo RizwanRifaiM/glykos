@@ -385,9 +385,22 @@ jadi bisa dibandingkan antar hari dengan cara yang tidak bisa dilakukan RH.
   pada mode kontinu bisa mencapai ~0,4 °C. Dampaknya nyata: pergeseran 2 °C
   saja menggeser RH sekitar 8 poin — lebih besar daripada spesifikasi akurasi
   sensornya sendiri (±2 %).
-- **Tren titik embun di halaman Riwayat.** Merata-ratakan RH sepanjang hari
-  pada suhu yang berbeda-beda tidak bermakna; merata-ratakan titik embun
-  bermakna. Rangkuman harian masih menyimpan RH.
+### Titik embun ditren, bukan RH
+
+Halaman Riwayat punya grafik & kolom **Titik Embun (°C)** berdampingan dengan
+kelembapan — bukan menggantikannya. RH adalah yang benar-benar dibaca sensor;
+titik embun adalah yang bisa dibandingkan antar hari.
+
+Bedanya bukan gaya penyajian. RH 60 % pada pagi 26 °C dan RH 60 % pada siang
+32 °C membawa jumlah air yang jauh berbeda — rata-rata hariannya, 60 %, tidak
+menggambarkan satu pun di antaranya. Titik embun tidak punya masalah itu:
+angkanya sudah tidak bergantung suhu sejak awal, jadi merata-ratakannya
+bermakna.
+
+Titik embun dihitung **saat pembacaan diambil**, bukan dari rata-rata harian.
+Ia butuh RH dan suhu udara dari pembacaan yang sama; merata-ratakan keduanya
+dulu lalu menghitung titik embunnya belakangan akan menghasilkan angka yang
+tidak pernah terjadi pada satu pembacaan pun.
 
 ## Keamanan data
 

@@ -566,6 +566,10 @@ msgstr "Temp. Spread"
 msgid "Kelembapan"
 msgstr "Humidity"
 
+#: src/constants/historyMetrics.js
+msgid "Titik Embun"
+msgstr "Dew Point"
+
 #: src/constants/thresholds.js
 msgid "Risiko Ulkus"
 msgstr "Ulcer Risk"
@@ -918,6 +922,10 @@ msgstr "Points risen"
 #: src/utils/exportData.js
 msgid "Kelembapan (%RH)"
 msgstr "Humidity (%RH)"
+
+#: src/pages/HistoryPage.jsx
+msgid "Titik Embun (°C)"
+msgstr "Dew Point (°C)"
 
 #: src/pages/HistoryPage.jsx
 #: src/utils/exportData.js

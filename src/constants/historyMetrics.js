@@ -21,4 +21,15 @@ export const HISTORY_METRICS_CONFIG = {
   temperature: { label: msg`Suhu Kulit`, unit: '°C', color: '#446A45', max: 38 },
   temperatureDelta: { label: msg`Selisih Suhu`, unit: '°C', color: '#9C6510', max: 6 },
   humidity: { label: msg`Kelembapan`, unit: '%', color: '#ff7373', max: 100 },
+  // Titik embun sengaja memakai keluarga warna yang sama dengan kelembapan,
+  // hanya lebih pekat: keduanya mengukur besaran fisik yang sama (uap air),
+  // dan memberinya warna yang tidak berhubungan justru menyiratkan keduanya
+  // hal yang berbeda. Tiap metrik dirender sebagai kartu grafik TERPISAH
+  // (lihat HistoryChart.jsx), bukan ditumpuk dalam satu sumbu, jadi kemiripan
+  // warna tidak pernah membuat dua garis tertukar.
+  //
+  // Batas sumbu 35 °C: titik embun di dalam sepatu yang dipakai berkisar
+  // belasan sampai tiga puluhan, dan sumbu 100 seperti kelembapan akan
+  // memampatkan seluruh variasinya jadi garis datar di dasar grafik.
+  dewPoint: { label: msg`Titik Embun`, unit: '°C', color: '#c94f4f', max: 35 },
 }

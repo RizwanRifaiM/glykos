@@ -4,6 +4,7 @@ import { addDoc, runTransaction, serverTimestamp, setDoc } from 'firebase/firest
 import { db } from '../services/firestore'
 import { dailyDoc, historyCollection, liveDoc } from '../services/paths'
 import { emptyRollup, mergeDailyRollup } from '../utils/dailyRollup'
+import { analyseHumidity } from '../utils/humidity'
 
 // Cukup untuk membentuk tren harian di halaman Riwayat, sekaligus menghindari
 // kuota write Firestore membengkak (firmware kirim BLE tiap ~300ms — jelas
@@ -16,6 +17,14 @@ const areaTemp = (points, key) => (Number.isFinite(points?.[key]) ? points[key] 
 
 function pickSnapshot(reading, steps, wearMinutes) {
   const rise = reading?.temperatureRise
+  // Titik embun dihitung di sini, bukan disimpan mentah lalu dihitung saat
+  // dibaca: ia butuh RH DAN suhu udara dari pembacaan yang SAMA. Merata-ratakan
+  // keduanya dulu sepanjang hari lalu menghitung titik embunnya belakangan akan
+  // menghasilkan angka yang tidak pernah terjadi pada satu pembacaan pun.
+  const humidity = analyseHumidity({
+    rh: reading?.humidity,
+    airTemp: reading?.airTemperature,
+  })
   if (!reading) return null
   const tempPoints = reading.temperatureObj?.points
   return {
@@ -42,6 +51,14 @@ function pickSnapshot(reading, steps, wearMinutes) {
     temperatureRisenAreas: Number.isFinite(rise?.risenCount) ? rise.risenCount : 0,
     temperatureAreaCount: Number.isFinite(rise?.areaCount) ? rise.areaCount : 0,
     temperatureSystemic: Boolean(rise?.systemic),
+    // Titik embun: jumlah air yang sebenarnya ada, tidak bergantung suhu.
+    //
+    // RH tetap disimpan berdampingan — itu pembacaan aslinya — tapi RH-lah yang
+    // tidak bisa dirata-ratakan sepanjang hari secara bermakna. 60 % pada pagi
+    // 26 °C dan 60 % pada siang 32 °C membawa jumlah air yang jauh berbeda;
+    // rata-ratanya, 60 %, tidak menggambarkan satu pun di antaranya. Titik
+    // embun tidak punya masalah itu.
+    dewPoint: Number.isFinite(humidity.dewPoint) ? Math.round(humidity.dewPoint * 10) / 10 : 0,
     pressure1: reading.pressure1,
     pressure2: reading.pressure2,
     pressure3: reading.pressure3,
@@ -80,6 +97,7 @@ async function updateDailyRollup(uid, deviceId, snapshot, sessionId) {
     temperatureAreaCount: snapshot.temperatureAreaCount,
     temperatureSystemic: snapshot.temperatureSystemic,
     humidity: snapshot.humidity,
+    dewPoint: snapshot.dewPoint,
     steps: snapshot.steps,
     wearMinutes: snapshot.wearMinutes,
     sessionId,

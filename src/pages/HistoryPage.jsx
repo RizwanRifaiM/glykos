@@ -245,6 +245,14 @@ export default function HistoryPage() {
                 <th className="data-table__num">
                   <Trans>Kelembapan (%RH)</Trans>
                 </th>
+                {/* Titik embun berdampingan dengan kelembapan, bukan
+                    menggantikannya: RH adalah yang benar-benar dibaca sensor,
+                    titik embun adalah yang bisa dibandingkan antar hari.
+                    Rata-rata RH sepanjang hari pada suhu yang berbeda-beda
+                    tidak menggambarkan apa pun — lihat utils/humidity.js. */}
+                <th className="data-table__num">
+                  <Trans>Titik Embun (°C)</Trans>
+                </th>
                 <th className="data-table__num">
                   <Trans>Langkah</Trans>
                 </th>
@@ -263,7 +271,7 @@ export default function HistoryPage() {
                   ini pengguna melihat tabel penuh berisi "—" yang terbaca
                   seperti "tidak ada data" padahal datanya masih dalam
                   perjalanan. */}
-              {historyLoading && <SkeletonTableRows rows={sortedHistory.length || 7} columns={9} />}
+              {historyLoading && <SkeletonTableRows rows={sortedHistory.length || 7} columns={10} />}
               {!historyLoading &&
                 sortedHistory.map((row) => {
                   const hasEntry = row.pressure > 0 || row.temperature > 0 || row.humidity > 0
@@ -300,6 +308,9 @@ export default function HistoryPage() {
                         {hasEntry ? formatDecimal(row.humidity) : '—'}
                       </td>
                       <td className="data-table__num">
+                        {hasEntry && row.dewPoint > 0 ? formatDecimal(row.dewPoint) : '—'}
+                      </td>
+                      <td className="data-table__num">
                         {row.steps > 0 ? formatNumber(row.steps) : '—'}
                       </td>
                       <td>
@@ -329,7 +340,7 @@ export default function HistoryPage() {
                 })}
               {!historyLoading && sortedHistory.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="data-table__empty">
+                  <td colSpan={10} className="data-table__empty">
                     <IconHistory size={22} />
                     <Trans>Belum ada data histori.</Trans>
                   </td>

@@ -186,6 +186,8 @@ export default {
   'Suhu udara sekitar: {airText}°C': 'Ambient air temperature: {airText}°C',
 
   // ---------------------------------------------------------------- kelembapan
+  'Titik Embun': 'Dew Point',
+  'Titik Embun (°C)': 'Dew Point (°C)',
   // "Dew point" dan "skin surface" istilah bakunya; sengaja tidak diperhalus
   // jadi kata sehari-hari karena keduanya besaran teknis yang tepat.
   'Setara {skinRhText}% di permukaan kulit — itulah yang dinilai statusnya':
