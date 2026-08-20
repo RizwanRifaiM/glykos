@@ -318,6 +318,14 @@ msgid "Selisih suhu antar area"
 msgstr "Selisih suhu antar area"
 
 #: src/components/MetricCards.jsx
+msgid "Naik {riseText}°C merata di semua titik — pola menyeluruh, bukan peradangan setempat"
+msgstr "Naik {riseText}°C merata di semua titik — pola menyeluruh, bukan peradangan setempat"
+
+#: src/components/MetricCards.jsx
+msgid "Naik {riseText}°C hanya di {risenText} dari {areaText} titik — pola peradangan setempat"
+msgstr "Naik {riseText}°C hanya di {risenText} dari {areaText} titik — pola peradangan setempat"
+
+#: src/components/MetricCards.jsx
 msgid "Selisih suhu >{thresholdText}°C — prediktor kuat pre-ulkus"
 msgstr "Selisih suhu >{thresholdText}°C — prediktor kuat pre-ulkus"
 
@@ -796,6 +804,14 @@ msgid "Lihat Selengkapnya"
 msgstr "Lihat Selengkapnya"
 
 #: src/pages/HistoryPage.jsx
+msgid "seragam"
+msgstr "seragam"
+
+#: src/pages/HistoryPage.jsx
+msgid "{risenText} dari {areaText} titik"
+msgstr "{risenText} dari {areaText} titik"
+
+#: src/pages/HistoryPage.jsx
 msgid "{rangeDays, plural, one {# hari} other {# hari}}"
 msgstr "{rangeDays, plural, one {# hari} other {# hari}}"
 
@@ -881,6 +897,10 @@ msgstr "Suhu (°C)"
 #: src/pages/HistoryPage.jsx
 msgid "Selisih (°C)"
 msgstr "Selisih (°C)"
+
+#: src/pages/HistoryPage.jsx
+msgid "Titik naik"
+msgstr "Titik naik"
 
 #: src/pages/HistoryPage.jsx
 #: src/utils/exportData.js
@@ -1475,6 +1495,14 @@ msgstr "Tekanan puncak {peakText} kPa ({statusText})"
 #: src/utils/alertMessages.js
 msgid "{highestText} °C"
 msgstr "{highestText} °C"
+
+#: src/utils/alertMessages.js
+msgid "Suhu naik {riseText} °C merata di semua titik — pola menyeluruh, bukan peradangan setempat"
+msgstr "Suhu naik {riseText} °C merata di semua titik — pola menyeluruh, bukan peradangan setempat"
+
+#: src/utils/alertMessages.js
+msgid "Suhu naik {riseText} °C hanya di {risenText} dari {areaText} titik — pola peradangan setempat"
+msgstr "Suhu naik {riseText} °C hanya di {risenText} dari {areaText} titik — pola peradangan setempat"
 
 #: src/utils/alertMessages.js
 msgid "Selisih suhu {deltaText} °C antar area — prediktor pre-ulkus"

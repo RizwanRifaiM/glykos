@@ -92,3 +92,71 @@ describe('lama pemakaian per sesi', () => {
     expect(rollup.wearMinutesBySession).toEqual({})
   })
 })
+
+describe('kenaikan suhu terpusat', () => {
+  const sample = (over) => ({ tanggal: '2026-08-21', sessionId: 'a', ...over })
+
+  // Yang menentukan warna hari itu adalah kenaikan terbesar yang TIDAK merata.
+  // Kenaikan merata sering justru lebih besar angkanya — ruangan panas bisa
+  // menaikkan ketiga titik 3 °C sekaligus — tapi bukan itu yang perlu
+  // diperhatikan.
+  it('mengabaikan kenaikan merata saat menentukan kenaikan terpusat', () => {
+    let rollup = emptyRollup('2026-08-21')
+    rollup = mergeDailyRollup(
+      rollup,
+      sample({ temperatureRise: 3.1, temperatureSystemic: true, temperatureRisenAreas: 3, temperatureAreaCount: 3 }),
+    )
+
+    expect(rollup.temperatureRiseMax).toBe(3.1)
+    expect(rollup.temperatureRiseFocal).toBe(0)
+    expect(rollup.temperatureRisenAreas).toBe(0)
+  })
+
+  it('mencatat kenaikan terpusat beserta polanya', () => {
+    let rollup = emptyRollup('2026-08-21')
+    rollup = mergeDailyRollup(
+      rollup,
+      sample({ temperatureRise: 2.4, temperatureSystemic: false, temperatureRisenAreas: 1, temperatureAreaCount: 3 }),
+    )
+
+    expect(rollup.temperatureRiseFocal).toBe(2.4)
+    expect(rollup.temperatureRisenAreas).toBe(1)
+    expect(rollup.temperatureAreaCount).toBe(3)
+  })
+
+  // Ketiga angka harus bergerak BERSAMA. Kalau masing-masing diambil
+  // maksimumnya sendiri-sendiri, baris riwayat bisa memasangkan kenaikan dari
+  // satu pembacaan dengan jumlah titik dari pembacaan lain — kombinasi yang
+  // tidak pernah benar-benar terjadi.
+  it('memasangkan besar kenaikan dengan pola pada saat yang sama', () => {
+    let rollup = emptyRollup('2026-08-21')
+    rollup = mergeDailyRollup(
+      rollup,
+      sample({ temperatureRise: 2.8, temperatureRisenAreas: 2, temperatureAreaCount: 3 }),
+    )
+    // Kenaikan lebih KECIL tapi lebih terpusat: tidak boleh menggeser pasangan
+    // yang tercatat, karena kenaikan terbesarnya masih yang sebelumnya.
+    rollup = mergeDailyRollup(
+      rollup,
+      sample({ temperatureRise: 1.5, temperatureRisenAreas: 1, temperatureAreaCount: 3 }),
+    )
+
+    expect(rollup.temperatureRiseFocal).toBe(2.8)
+    expect(rollup.temperatureRisenAreas).toBe(2)
+  })
+
+  it('memperbarui pasangannya saat ada kenaikan terpusat yang lebih besar', () => {
+    let rollup = emptyRollup('2026-08-21')
+    rollup = mergeDailyRollup(
+      rollup,
+      sample({ temperatureRise: 1.5, temperatureRisenAreas: 2, temperatureAreaCount: 3 }),
+    )
+    rollup = mergeDailyRollup(
+      rollup,
+      sample({ temperatureRise: 2.9, temperatureRisenAreas: 1, temperatureAreaCount: 3 }),
+    )
+
+    expect(rollup.temperatureRiseFocal).toBe(2.9)
+    expect(rollup.temperatureRisenAreas).toBe(1)
+  })
+})

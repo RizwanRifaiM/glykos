@@ -15,6 +15,7 @@ const SYNC_INTERVAL_MS = 60000
 const areaTemp = (points, key) => (Number.isFinite(points?.[key]) ? points[key] : null)
 
 function pickSnapshot(reading, steps, wearMinutes) {
+  const rise = reading?.temperatureRise
   if (!reading) return null
   const tempPoints = reading.temperatureObj?.points
   return {
@@ -30,6 +31,17 @@ function pickSnapshot(reading, steps, wearMinutes) {
     temperatureDelta: Number.isFinite(reading.temperatureObj?.delta)
       ? reading.temperatureObj.delta
       : 0,
+    // KENAIKAN dari awal sesi — tiga angka yang bersama-sama menjelaskan
+    // polanya, bukan hanya besarnya.
+    //
+    // `risenCount` dari `areaCount` inilah yang membedakan panas menyeluruh
+    // (semua titik naik, sistemik) dari peradangan setempat (satu titik naik).
+    // Menyimpan besar kenaikannya saja akan membuat halaman Riwayat tidak bisa
+    // membedakan keduanya sama sekali. Lihat utils/temperatureRise.js.
+    temperatureRise: Number.isFinite(rise?.maxRise) ? rise.maxRise : 0,
+    temperatureRisenAreas: Number.isFinite(rise?.risenCount) ? rise.risenCount : 0,
+    temperatureAreaCount: Number.isFinite(rise?.areaCount) ? rise.areaCount : 0,
+    temperatureSystemic: Boolean(rise?.systemic),
     pressure1: reading.pressure1,
     pressure2: reading.pressure2,
     pressure3: reading.pressure3,
@@ -63,6 +75,10 @@ async function updateDailyRollup(uid, deviceId, snapshot, sessionId) {
     ),
     temperature: snapshot.temperature,
     temperatureDelta: snapshot.temperatureDelta,
+    temperatureRise: snapshot.temperatureRise,
+    temperatureRisenAreas: snapshot.temperatureRisenAreas,
+    temperatureAreaCount: snapshot.temperatureAreaCount,
+    temperatureSystemic: snapshot.temperatureSystemic,
     humidity: snapshot.humidity,
     steps: snapshot.steps,
     wearMinutes: snapshot.wearMinutes,

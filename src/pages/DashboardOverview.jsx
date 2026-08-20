@@ -82,6 +82,7 @@ export default function DashboardOverview() {
           temperature={data.temperatureObj}
           history={history}
           hasReading={hasReading}
+          temperatureRise={data.temperatureRise}
           lead
         />
         <PressureCard pressure={data.pressure} history={history} hasReading={hasReading} />

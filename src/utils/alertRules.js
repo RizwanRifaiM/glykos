@@ -44,12 +44,31 @@ export function evaluateMetrics(data) {
   const highest = data.temperatureObj?.highest ?? 0
   const delta = data.temperatureObj?.delta ?? 0
   const hasTemperature = highest > 0
+
+  // KENAIKAN dari awal sesi lebih tajam daripada suhu mutlak maupun selisih
+  // antar area, jadi dipakai lebih dulu bila tersedia.
+  //
+  // Yang membedakannya: kenaikan MERATA di semua titik hampir selalu sistemik
+  // (ruangan panas, baru berjalan, demam) dan bukan pertanda peradangan,
+  // sementara kenaikan yang TERPUSAT di satu titik adalah pola yang mendahului
+  // ulkus. Aturannya di utils/temperatureRise.js.
+  //
+  // `temperatureRise` hanya ada selama sesi BLE berjalan — ia butuh acuan awal
+  // sesi. Setelah halaman dimuat ulang, atau saat data datang dari Firestore
+  // saja, penilaian jatuh ke aturan lama: selisih antar area pada satu
+  // pembacaan. Itu bukan penurunan mutu diam-diam, melainkan memang satu-
+  // satunya yang bisa dinilai tanpa acuan.
+  const rise = data.temperatureRise
+  const useRise = Boolean(rise?.hasBaseline) && hasTemperature
+
   const deltaExceeded = hasTemperature && delta >= TEMP_DELTA_WARNING
   const temperatureStatus = !hasTemperature
     ? 'safe'
-    : deltaExceeded
-      ? 'warning'
-      : getTemperatureStatus(highest)
+    : useRise
+      ? rise.level
+      : deltaExceeded
+        ? 'warning'
+        : getTemperatureStatus(highest)
 
   const humidity = data.humidity ?? 0
   const humidityStatus = humidity > 0 ? getHumidityStatus(humidity) : 'safe'
@@ -65,11 +84,25 @@ export function evaluateMetrics(data) {
       metric: 'temperature',
       status: temperatureStatus,
       location: data.temperatureObj?.location ?? null,
-      // `deltaExceeded` disimpan sebagai nilai, bukan dihitung ulang saat
-      // dibaca. Catatan medis harus tetap mengatakan hal yang sama seperti saat
-      // dibuat: kalau ambang TEMP_DELTA_WARNING diubah nanti, peringatan lama
-      // tidak boleh berubah bunyinya secara retroaktif.
-      values: { highest, delta, deltaExceeded },
+      // Nilai disimpan apa adanya, bukan dihitung ulang saat dibaca. Catatan
+      // medis harus tetap mengatakan hal yang sama seperti saat dibuat: kalau
+      // ambangnya diubah nanti, peringatan lama tidak boleh berubah bunyinya
+      // secara retroaktif.
+      //
+      // Field kenaikan hanya ikut bila penilaiannya memang memakai kenaikan —
+      // catatan yang menyebut "1 dari 3 titik" padahal dinilai dari selisih
+      // antar area akan menyesatkan pembacanya.
+      values: useRise
+        ? {
+            highest,
+            delta,
+            deltaExceeded,
+            maxRise: rise.maxRise,
+            risenCount: rise.risenCount,
+            areaCount: rise.areaCount,
+            systemic: rise.systemic,
+          }
+        : { highest, delta, deltaExceeded },
     },
     {
       metric: 'humidity',

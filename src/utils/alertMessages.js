@@ -86,10 +86,30 @@ function describeTemperature(i18n, item) {
   const deltaText = formatDecimal(Number(item.values?.delta) || 0, 1, i18n.locale)
   const value = t(i18n)`${highestText} °C`
 
-  // Dua kalimat berbeda, bukan satu kalimat dengan sisipan: yang memicu status
-  // ini bisa suhu tertingginya, atau SELISIH antar area — dan selisih yang
-  // bertahan adalah prediktor pre-ulkus, informasi yang sama sekali berbeda
-  // artinya bagi pembacanya.
+  // Kalimat yang berbeda untuk sebab yang berbeda, bukan satu kalimat dengan
+  // sisipan. Apa yang memicu status ini menentukan apa yang perlu dilakukan
+  // pembacanya, dan itu informasi yang sama sekali berbeda artinya.
+
+  // 1. Penilaian berbasis KENAIKAN dari awal sesi — yang paling tajam.
+  if (Number.isFinite(item.values?.maxRise)) {
+    const riseText = formatDecimal(item.values.maxRise, 1, i18n.locale)
+    const risenText = formatNumber(item.values.risenCount ?? 0, { locale: i18n.locale })
+    const areaText = formatNumber(item.values.areaCount ?? 0, { locale: i18n.locale })
+
+    if (item.values.systemic) {
+      return {
+        value,
+        message: t(i18n)`Suhu naik ${riseText} °C merata di semua titik — pola menyeluruh, bukan peradangan setempat`,
+      }
+    }
+
+    return {
+      value,
+      message: t(i18n)`Suhu naik ${riseText} °C hanya di ${risenText} dari ${areaText} titik — pola peradangan setempat`,
+    }
+  }
+
+  // 2. Tanpa acuan awal sesi: selisih antar area pada satu pembacaan.
   if (item.values?.deltaExceeded) {
     return {
       value,

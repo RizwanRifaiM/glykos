@@ -174,7 +174,13 @@ export function PressureCard({ pressure, history, hasReading = true }) {
   )
 }
 
-export function TemperatureCard({ temperature, history, lead = false, hasReading = true }) {
+export function TemperatureCard({
+  temperature,
+  history,
+  lead = false,
+  hasReading = true,
+  temperatureRise = null,
+}) {
   const { i18n } = useLingui()
 
   const tObj =
@@ -189,7 +195,17 @@ export function TemperatureCard({ temperature, history, lead = false, hasReading
 
   const highest = tObj.highest ?? 0
   const delta = tObj.delta ?? 0
-  const status = delta >= TEMP_DELTA_WARNING ? 'warning' : getTemperatureStatus(highest)
+
+  // Kenaikan dari awal sesi lebih tajam daripada suhu mutlak maupun selisih
+  // antar area, jadi dipakai lebih dulu bila tersedia — aturan yang sama persis
+  // dengan yang menentukan peringatan (utils/alertRules.js), supaya kartu dan
+  // catatan tidak pernah menyebut status yang berbeda untuk kondisi yang sama.
+  const rise = temperatureRise?.hasBaseline ? temperatureRise : null
+  const status = rise
+    ? rise.level
+    : delta >= TEMP_DELTA_WARNING
+      ? 'warning'
+      : getTemperatureStatus(highest)
   const location = locationLabel(i18n, tObj.location) ?? locationLabel(i18n, 'metatarsal')
   const points = tObj.points || {}
   const trendValuesArr = trendValues(history, 'temperature')
@@ -199,6 +215,9 @@ export function TemperatureCard({ temperature, history, lead = false, hasReading
 
   const deltaText = formatDecimal(delta)
   const thresholdText = formatDecimal(TEMP_DELTA_WARNING)
+  const riseText = formatDecimal(rise?.maxRise ?? 0)
+  const risenText = formatNumber(rise?.risenCount ?? 0)
+  const areaText = formatNumber(rise?.areaCount ?? 0)
   // Nama tiga area disebut di dalam kalimat petunjuk, jadi harus memakai label
   // yang sama dengan point-grid — bukan ditulis ulang sebagai teks bebas.
   const areaList = [
@@ -251,7 +270,26 @@ export function TemperatureCard({ temperature, history, lead = false, hasReading
           )}
         </>
       )}
-      {!isEmpty && delta >= TEMP_DELTA_WARNING && (
+      {/* Penjelasan POLA-nya, bukan hanya angkanya.
+          "Naik 2,4 °C" tidak memberi tahu apa pun yang bisa ditindaklanjuti;
+          "naik 2,4 °C hanya di 1 dari 3 titik" adalah tanda peradangan setempat,
+          sementara "naik merata di semua titik" justru menenangkan. */}
+      {!isEmpty && rise && rise.risenCount > 0 && (
+        <p className={rise.systemic ? 'metric-card__note' : 'metric-card__alert'}>
+          {rise.systemic ? (
+            <Trans>
+              Naik {riseText}°C merata di semua titik — pola menyeluruh, bukan peradangan setempat
+            </Trans>
+          ) : (
+            <Trans>
+              Naik {riseText}°C hanya di {risenText} dari {areaText} titik — pola peradangan
+              setempat
+            </Trans>
+          )}
+        </p>
+      )}
+
+      {!isEmpty && !rise && delta >= TEMP_DELTA_WARNING && (
         <p className="metric-card__alert">
           <Trans>Selisih suhu &gt;{thresholdText}°C — prediktor kuat pre-ulkus</Trans>
         </p>

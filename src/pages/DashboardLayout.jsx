@@ -27,6 +27,7 @@ import { useFirestoreSync } from '../hooks/useFirestoreSync'
 import { useTemperatureTrendAlert } from '../hooks/useTemperatureTrendAlert'
 import { useWakeLock } from '../hooks/useWakeLock'
 import { useWearTime } from '../hooks/useWearTime'
+import { useTemperatureRise } from '../hooks/useTemperatureRise'
 import { useDayKey } from '../hooks/useDayKey'
 import { evaluateTemperatureTrend } from '../utils/temperatureTrend'
 import { resolveReadingSource, todayActivity } from '../utils/dailyReading'
@@ -218,6 +219,13 @@ export default function DashboardLayout() {
   // berjalan.
   const sessionWearMinutes = useWearTime(bleActive)
 
+  // Kenaikan suhu tiap area terhadap awal sesi pemakaian.
+  //
+  // Acuannya dibentuk saat perangkat baru tersambung, jadi hanya ada selama
+  // sesi BLE berjalan. Tanpa itu penilaian suhu jatuh ke aturan selisih antar
+  // area — lihat catatan di utils/alertRules.js.
+  const temperatureRise = useTemperatureRise(bleActive, rawData?.temperatureObj?.points)
+
   // Layar ditahan menyala HANYA selama BLE benar-benar tersambung — layar mati
   // membekukan halaman, dan halaman inilah satu-satunya jalur data perangkat.
   // Lihat useWakeLock.js.
@@ -271,8 +279,17 @@ export default function DashboardLayout() {
   // data contoh. Inilah wujud reset pukul 00:00 di layar.
   const liveData = useMemo(() => {
     if (!hasReadingToday) return emptyReading(deviceId)
-    return activityToday ? { ...rawData, activity: activityToday } : rawData
-  }, [hasReadingToday, deviceId, rawData, activityToday])
+
+    const withActivity = activityToday ? { ...rawData, activity: activityToday } : rawData
+
+    // Hasil penilaian kenaikan ditempelkan ke pembacaan, bukan dioper terpisah
+    // ke setiap pemakainya. evaluateMetrics, kartu suhu, penulisan Firestore,
+    // dan konteks chatbot semuanya sudah menerima `data` — menambah satu
+    // parameter di empat tempat hanya akan membuat salah satunya terlewat.
+    return temperatureRise?.hasBaseline
+      ? { ...withActivity, temperatureRise }
+      : withActivity
+  }, [hasReadingToday, deviceId, rawData, activityToday, temperatureRise])
 
   const liveFatigue = useFatigueMonitor(deviceId, liveData, isLive, stepCounter.steps)
 

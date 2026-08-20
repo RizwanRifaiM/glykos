@@ -66,6 +66,54 @@ Bagian itu harus cocok persis dengan firmware.
 | `public/sw.js` | Service worker: jalur notifikasi + cache offline |
 | `firestore.rules` | Aturan akses — berpasangan dengan `paths.js` |
 
+## Kenaikan suhu: menyeluruh vs setempat
+
+Pertanyaan yang dijawab pemantauan suhu di sini bukan "seberapa panas kakinya",
+melainkan **"apakah panasnya terpusat di satu tempat"**. Bedanya menentukan
+segalanya:
+
+- Kaki yang menghangat **merata** di semua titik hampir selalu sistemik —
+  ruangan panas, baru berjalan, demam, sepatu tertutup. Menandainya merah hanya
+  melatih pengguna mengabaikan peringatan.
+- Kaki yang menghangat di **satu titik** sementara yang lain tetap adalah pola
+  peradangan setempat, dan itulah yang mendahului ulkus.
+
+Karena itu ambang saja tidak cukup: kenaikan 3 °C di ketiga titik sekaligus
+lebih tidak mengkhawatirkan daripada kenaikan 2,3 °C di satu titik saja.
+
+| Kenaikan tertinggi | Status |
+|---|---|
+| < 1,0 °C | Aman |
+| 1,0 – 2,1 °C | Perlu Perhatian |
+| ≥ 2,2 °C | Waspada |
+
+**Diturunkan ke Aman** bila seluruh titik yang terukur naik DAN naiknya sama
+rata (selisih antar kenaikan < 1,0 °C). Kedua syarat diperlukan: tiga titik yang
+naik 3,0 / 1,2 / 1,1 memang semuanya naik, tapi yang pertama jauh lebih tinggi —
+dan justru selisih itulah tandanya.
+
+Dengan hanya satu sensor terukur, penilaian **tidak** diturunkan: tidak ada yang
+bisa dibandingkan, dan dalam keraguan salah menganggap aman lebih mahal daripada
+salah menganggap perlu diperiksa.
+
+### Acuannya awal sesi pemakaian
+
+Kenaikan diukur terhadap suhu tiap area saat perangkat baru tersambung hari itu
+(`hooks/useTemperatureRise.js`), dirata-ratakan dari beberapa sampel pertama
+supaya derau NTC tidak menentukan acuan seluruh sesi.
+
+Keterbatasannya perlu diingat: kaki yang **sudah** meradang sebelum sepatu
+dipakai tidak terdeteksi, karena kondisi itu ikut jadi acuannya. Aturan ini
+menangkap peradangan yang **berkembang** selama pemakaian. Untuk yang sudah ada
+sebelumnya, selisih antar area (di bawah) tetap jadi jaring keduanya — dan
+itulah yang dipakai saat tidak ada sesi BLE berjalan, misalnya setelah halaman
+dimuat ulang.
+
+Halaman Riwayat menampilkan kenaikan **terpusat** terbesar tiap hari beserta
+polanya ("1 dari 3 titik" / "seragam"). Yang dicatat bukan kenaikan terbesar
+begitu saja — kenaikan merata sering lebih besar angkanya tapi bukan itu yang
+perlu diperhatikan.
+
 ## Selisih suhu antar area
 
 Selisih suhu antar titik pada kaki yang sama adalah prediktor pre-ulkus paling

@@ -12,6 +12,7 @@ import { SkeletonTableRows } from '../components/Skeleton'
 import { IconDownload, IconFileText, IconHistory } from '../components/icons'
 import { exportToCsv, exportToPdf } from '../utils/exportData'
 import { getPressureLabelMsg, getPressureStatus, TEMP_DELTA_WARNING } from '../constants/thresholds'
+import { riseLevel } from '../utils/temperatureRise'
 import { HISTORY_METRICS_CONFIG } from '../constants/historyMetrics'
 import { toDateKey } from '../utils/formatTime'
 import { formatDecimal, formatNumber } from '../utils/locale'
@@ -45,6 +46,38 @@ function buildAlertsByDate(alerts) {
   })
   return byDate
 }
+
+// Isi kolom "Titik naik".
+//
+// Rangkuman harian mencatat kenaikan TERPUSAT terbesar hari itu beserta pola
+// pada saat itu (lihat utils/dailyRollup.js). Kalau tidak ada kenaikan terpusat
+// sama sekali, kolomnya menyatakan "seragam" — bukan dikosongkan, karena
+// "naik merata" adalah temuan yang berarti, bukan ketiadaan data.
+function RiseCell({ row, hasEntry }) {
+  const { i18n } = useLingui()
+
+  if (!hasEntry) return '—'
+
+  const rise = Number(row.temperatureRise) || 0
+  const risen = Number(row.temperatureRisenAreas) || 0
+  const areas = Number(row.temperatureAreaCount) || 0
+
+  if (rise <= 0 || risen <= 0 || areas <= 0) {
+    return <span className="data-table__no-entry">{t(i18n)`seragam`}</span>
+  }
+
+  const level = riseLevel(rise)
+  const risenText = formatNumber(risen)
+  const areaText = formatNumber(areas)
+
+  return (
+    <span className={`status-pill status-pill--${level}`}>
+      {t(i18n)`${risenText} dari ${areaText} titik`}
+    </span>
+  )
+}
+
+const riseCell = (row, hasEntry) => <RiseCell row={row} hasEntry={hasEntry} />
 
 export default function HistoryPage() {
   const { data, history, historyLoading, historyRange, setHistoryRange, alerts, temperatureTrend } =
@@ -201,6 +234,14 @@ export default function HistoryPage() {
                 <th className="data-table__num">
                   <Trans>Selisih (°C)</Trans>
                 </th>
+                {/* Berapa titik yang naik menentukan ARTI kenaikannya: naik di
+                    semua titik itu pola menyeluruh (ruangan panas, aktivitas),
+                    naik di satu titik itu pola peradangan setempat. Angka
+                    kenaikan tanpa keterangan ini tidak bisa dibedakan
+                    keduanya — lihat utils/temperatureRise.js. */}
+                <th>
+                  <Trans>Titik naik</Trans>
+                </th>
                 <th className="data-table__num">
                   <Trans>Kelembapan (%RH)</Trans>
                 </th>
@@ -222,7 +263,7 @@ export default function HistoryPage() {
                   ini pengguna melihat tabel penuh berisi "—" yang terbaca
                   seperti "tidak ada data" padahal datanya masih dalam
                   perjalanan. */}
-              {historyLoading && <SkeletonTableRows rows={sortedHistory.length || 7} columns={8} />}
+              {historyLoading && <SkeletonTableRows rows={sortedHistory.length || 7} columns={9} />}
               {!historyLoading &&
                 sortedHistory.map((row) => {
                   const hasEntry = row.pressure > 0 || row.temperature > 0 || row.humidity > 0
@@ -251,6 +292,9 @@ export default function HistoryPage() {
                         ) : (
                           '—'
                         )}
+                      </td>
+                      <td>
+                        {riseCell(row, hasEntry)}
                       </td>
                       <td className="data-table__num">
                         {hasEntry ? formatDecimal(row.humidity) : '—'}
@@ -285,7 +329,7 @@ export default function HistoryPage() {
                 })}
               {!historyLoading && sortedHistory.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="data-table__empty">
+                  <td colSpan={9} className="data-table__empty">
                     <IconHistory size={22} />
                     <Trans>Belum ada data histori.</Trans>
                   </td>

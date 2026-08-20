@@ -315,6 +315,22 @@ export default {
   'Selisih suhu antar area bertahan di atas {thresholdText} °C selama {daysText} hari berturut-turut (tertinggi {maxDeltaText} °C).':
     'The temperature spread between areas has stayed above {thresholdText} °C for {daysText} consecutive days (peak {maxDeltaText} °C).',
 
+  // ---------------------------------------------------------------- kenaikan suhu
+  // "Pola menyeluruh" (systemic) vs "peradangan setempat" (focal) adalah
+  // pembedaan klinis inti aturan ini — istilah Inggrisnya dipilih supaya
+  // perbedaan itu tetap tegas: whole-foot vs localised.
+  'Naik {riseText}°C merata di semua titik — pola menyeluruh, bukan peradangan setempat':
+    'Up {riseText}°C evenly across all points — a whole-foot pattern, not localised inflammation',
+  'Naik {riseText}°C hanya di {risenText} dari {areaText} titik — pola peradangan setempat':
+    'Up {riseText}°C at only {risenText} of {areaText} points — a localised inflammation pattern',
+  'Suhu naik {riseText} °C merata di semua titik — pola menyeluruh, bukan peradangan setempat':
+    'Temperature up {riseText} °C evenly across all points — a whole-foot pattern, not localised inflammation',
+  'Suhu naik {riseText} °C hanya di {risenText} dari {areaText} titik — pola peradangan setempat':
+    'Temperature up {riseText} °C at only {risenText} of {areaText} points — a localised inflammation pattern',
+  'Titik naik': 'Points risen',
+  '{risenText} dari {areaText} titik': '{risenText} of {areaText} points',
+  seragam: 'even',
+
   // ---------------------------------------------------------------- temperature trend
   'Selisih Suhu Antar Area': 'Temperature Spread Between Areas',
   'Hari yang terpantau: <0>{period}</0>': 'Days monitored: <0>{period}</0>',
