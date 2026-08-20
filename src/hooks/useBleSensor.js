@@ -8,6 +8,7 @@ import { useLingui } from '@lingui/react'
 import { msg } from '@lingui/core/macro'
 import { BleSensor, isBleSupported } from '../services/ble'
 import { toDateKey, toTimeKey } from '../utils/formatTime'
+import { isValidHumidity } from '../utils/humidity'
 
 // Baru ada satu perangkat, dipasang di kaki KANAN.
 const DEVICE_META = { id: 'glykos-device', name: 'Glykos Device', foot: 'right' }
@@ -77,7 +78,12 @@ function normalizeBleReading(raw, receivedAt, isConnected) {
     tempPoints[area.key] = area.value
   })
 
-  const humidity = typeof raw.RH === 'number' ? round1(raw.RH) : 0
+  // RH divalidasi, bukan diterima apa adanya. Sensor yang rusak atau
+  // mengembun bisa melaporkan angka di luar 0–100, dan menampilkan "112 % RH"
+  // membuat pembacaan mustahil terlihat seperti data. Nol tetap berarti
+  // "belum ada pembacaan" — 0 % RH di dalam sepatu yang dipakai kaki hidup
+  // tidak mungkin terjadi.
+  const humidity = isValidHumidity(raw.RH) ? round1(raw.RH) : 0
   const now = receivedAt ? new Date(receivedAt) : new Date()
 
   return {

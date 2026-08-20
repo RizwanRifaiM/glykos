@@ -22,6 +22,7 @@ import {
   getHumidityStatus,
   TEMP_DELTA_WARNING,
 } from '../constants/thresholds'
+import { analyseHumidity, coolestSkinTemp } from './humidity'
 
 export const STATUS_RANK = { safe: 0, warning: 1, danger: 2 }
 
@@ -70,8 +71,27 @@ export function evaluateMetrics(data) {
         ? 'warning'
         : getTemperatureStatus(highest)
 
+  // KELEMBAPAN DINILAI PADA PERMUKAAN KULIT, bukan pada pembacaan mentah.
+  //
+  // RH adalah rasio terhadap suhu tempat ia diukur, jadi ambang tunggal pada
+  // angka mentah menandai kondisi yang berbeda-beda: 70 % pada udara 24 °C
+  // setara 41,5 % di kulit 33 °C, sementara 70 % pada udara 32 °C setara
+  // 66,2 % — rentang 25 poin dari pembacaan sensor yang sama persis.
+  // Perhitungannya di utils/humidity.js.
+  //
+  // Acuan suhunya titik kulit TERDINGIN: permukaan yang lebih dingin punya RH
+  // lebih tinggi, dan di situlah kulit paling sulit melepas keringat.
+  //
+  // Tanpa TA (firmware hanya mengirimnya bila sensornya terdeteksi) penilaian
+  // jatuh ke angka mentah — bukan ke suhu yang ditebak.
   const humidity = data.humidity ?? 0
-  const humidityStatus = humidity > 0 ? getHumidityStatus(humidity) : 'safe'
+  const humidityAnalysis = analyseHumidity({
+    rh: humidity,
+    airTemp: data.airTemperature,
+    skinTemp: coolestSkinTemp(data.temperatureObj?.points),
+  })
+  const humidityForStatus = humidityAnalysis.rhAtSkin ?? humidity
+  const humidityStatus = humidity > 0 ? getHumidityStatus(humidityForStatus) : 'safe'
 
   return [
     {
@@ -108,7 +128,15 @@ export function evaluateMetrics(data) {
       metric: 'humidity',
       status: humidityStatus,
       location: null,
-      values: { humidity },
+      // Angka mentah TETAP disimpan sebagai `humidity` — itu yang benar-benar
+      // dibaca sensor, dan catatan medis tidak boleh kehilangan pembacaan
+      // aslinya. Turunannya disimpan berdampingan, bukan menggantikannya.
+      values: {
+        humidity,
+        rhAtSkin: humidityAnalysis.rhAtSkin,
+        dewPoint: humidityAnalysis.dewPoint,
+        dewPointMargin: humidityAnalysis.dewPointMargin,
+      },
     },
   ]
 }

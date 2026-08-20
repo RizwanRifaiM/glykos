@@ -90,6 +90,7 @@ export default function DashboardOverview() {
           humidity={data.humidity}
           history={history}
           airTemperature={data.airTemperature}
+          temperaturePoints={data.temperatureObj?.points}
           hasReading={hasReading}
         />
       </section>

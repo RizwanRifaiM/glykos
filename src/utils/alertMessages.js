@@ -122,10 +122,20 @@ function describeTemperature(i18n, item) {
 
 function describeHumidity(i18n, item) {
   const humidityText = formatDecimal(Number(item.values?.humidity) || 0, 1, i18n.locale)
-  return {
-    value: t(i18n)`${humidityText} % RH`,
-    message: t(i18n)`Kelembapan sepatu ${humidityText} % RH`,
+  const value = t(i18n)`${humidityText} % RH`
+
+  // Kalau ada suhu untuk menormalkannya, kalimatnya menyebut angka DI KULIT —
+  // itulah yang menentukan statusnya, dan menyebut angka mentah saja akan
+  // membuat catatan tidak cocok dengan status yang menyertainya.
+  if (Number.isFinite(item.values?.rhAtSkin)) {
+    const skinText = formatDecimal(item.values.rhAtSkin, 1, i18n.locale)
+    return {
+      value,
+      message: t(i18n)`Kelembapan sepatu ${humidityText} % RH — setara ${skinText} % di permukaan kulit`,
+    }
   }
+
+  return { value, message: t(i18n)`Kelembapan sepatu ${humidityText} % RH` }
 }
 
 // Alasan indikasi kelelahan. Disimpan sebagai KODE + angka oleh

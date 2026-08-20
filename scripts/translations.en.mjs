@@ -185,6 +185,18 @@ export default {
     '>70% RH raises the risk of maceration, fungal growth, and infection',
   'Suhu udara sekitar: {airText}°C': 'Ambient air temperature: {airText}°C',
 
+  // ---------------------------------------------------------------- kelembapan
+  // "Dew point" dan "skin surface" istilah bakunya; sengaja tidak diperhalus
+  // jadi kata sehari-hari karena keduanya besaran teknis yang tepat.
+  'Setara {skinRhText}% di permukaan kulit — itulah yang dinilai statusnya':
+    'Equivalent to {skinRhText}% at the skin surface — that is what the status is based on',
+  'Titik embun {dewText}°C — kulit hanya {marginText}°C di atasnya, keringat nyaris tidak bisa menguap':
+    'Dew point {dewText}°C — the skin is only {marginText}°C above it, so sweat can barely evaporate',
+  'Titik embun {dewText}°C — kulit masih {marginText}°C di atasnya':
+    'Dew point {dewText}°C — the skin is still {marginText}°C above it',
+  'Kelembapan sepatu {humidityText} % RH — setara {skinText} % di permukaan kulit':
+    'In-shoe humidity {humidityText} % RH — equivalent to {skinText} % at the skin surface',
+
   // ---------------------------------------------------------------- activity & fatigue
   'Indikasi Kelelahan': 'Fatigue Indication',
   'Belum ada data sesi pemakaian.': 'No wear-session data yet.',

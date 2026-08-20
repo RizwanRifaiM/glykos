@@ -322,6 +322,73 @@ pertama saat menyambung selalu berisi nol langkah. `useFirestoreSync` karena
 itu menyimpan sekali lagi saat sesi berakhir dan saat halaman disembunyikan
 (pindah aplikasi / layar mati di ponsel).
 
+## Kelembapan: RH bukan besaran yang berdiri sendiri
+
+Kelembapan relatif adalah **rasio** — berapa persen uap air yang ada dibanding
+maksimum yang bisa ditampung udara *pada suhu itu*. Angka 70 % tanpa menyebut
+suhunya tidak menyatakan apa pun tentang berapa banyak air yang sebenarnya ada.
+
+Sebelumnya `RH` dipakai apa adanya dan dibandingkan langsung dengan ambang 70 %,
+sementara `TA` (suhu udara) diterima dari firmware, ditampilkan sebagai hiasan
+di kartu, lalu tidak pernah dipakai untuk apa pun. Akibatnya satu ambang tunggal
+menandai kondisi yang berbeda-beda:
+
+| RH sensor | Suhu udara | Titik embun | RH di kulit 33 °C |
+|---|---|---|---|
+| 70 % | 24 °C | 18,2 °C | **41,5 %** |
+| 70 % | 28 °C | 22,0 °C | **52,6 %** |
+| 70 % | 32 °C | 25,8 °C | **66,2 %** |
+
+Rentang 25 poin, dari pembacaan sensor yang sama persis.
+
+### Rumusnya
+
+Bentuk **Magnus** dengan koefisien **Alduchov–Eskridge (1996)** — akurasi ~0,4 %
+pada −40…60 °C. Ada rumus yang lebih teliti (Goff-Gratch, Wexler), tapi Magnus
+punya keunggulan yang menentukan di sini: suhunya muncul sebagai rasio sederhana
+di dalam eksponen, jadi bisa dibalik secara aljabar. Titik embun karena itu
+dihitung dengan dua konstanta yang **sama** seperti arah majunya.
+
+```
+es(T) = 610,94 · exp( 17,625·T / (243,04 + T) )       [Pa]
+e     = RH/100 · es(T)                                 tekanan uap aktual
+Td    = 243,04·α / (17,625 − α),  α = ln(RH/100) + 17,625·T/(243,04+T)
+AH    = 2,1668 · e / (273,15 + T)                      [g/m³]
+RH₂   = RH₁ · es(T₁) / es(T₂)                          RH yang sama, suhu lain
+```
+
+Baris terakhir yang jadi kuncinya: `e` praktis seragam di ruang tertutup sekecil
+sepatu, sementara `es(T)` naik curam terhadap suhu — jadi RH berubah drastis
+hanya karena berpindah tempat pengukuran, tanpa ada air yang bertambah.
+
+### Yang dipakai untuk menilai
+
+Status kelembapan kini dinilai pada **RH di permukaan kulit**, bukan pembacaan
+mentah. Acuan suhunya titik kulit **terdingin**: permukaan yang lebih dingin
+punya `es` lebih kecil dan karenanya RH lebih tinggi — di situlah kulit paling
+sulit melepas keringat.
+
+Angka besar di kartu tetap pembacaan mentah sensor (itu yang benar-benar
+terukur); yang ditambahkan adalah penjelasan artinya. Tanpa `TA`, penilaian
+jatuh ke angka mentah — bukan ke suhu yang ditebak.
+
+**Jarak titik embun** (`suhu kulit − Td`) ikut ditampilkan. Nol atau negatif
+berarti uap mengembun di permukaan kulit: keringat tidak punya jalan menguap,
+dan itulah mekanisme maserasi yang sebenarnya. Ukuran ini tidak bergantung suhu,
+jadi bisa dibandingkan antar hari dengan cara yang tidak bisa dilakukan RH.
+
+### Yang belum dikerjakan
+
+- **Kalibrasi dua titik garam jenuh** (NaCl 75,3 % RH, MgCl₂ 33 % RH pada
+  25 °C) — pekerjaan firmware/perangkat keras, bukan web app.
+- **Self-heating.** SHT31 kecil (<0,1 °C pada mode repeatability rendah), tapi
+  pada mode kontinu bisa mencapai ~0,4 °C. Dampaknya nyata: pergeseran 2 °C
+  saja menggeser RH sekitar 8 poin — lebih besar daripada spesifikasi akurasi
+  sensornya sendiri (±2 %).
+- **Tren titik embun di halaman Riwayat.** Merata-ratakan RH sepanjang hari
+  pada suhu yang berbeda-beda tidak bermakna; merata-ratakan titik embun
+  bermakna. Rangkuman harian masih menyimpan RH.
+
 ## Keamanan data
 
 Seluruh data sensor berada di bawah `users/{uid}`, dan `firestore.rules` hanya

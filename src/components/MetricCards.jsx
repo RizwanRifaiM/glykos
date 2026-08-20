@@ -12,6 +12,7 @@ import {
 } from '../constants/thresholds'
 import { HISTORY_METRICS_CONFIG } from '../constants/historyMetrics'
 import { locationLabel } from '../utils/alertMessages'
+import { analyseHumidity, coolestSkinTemp } from '../utils/humidity'
 import { formatDecimal, formatNumber } from '../utils/locale'
 import { IconGauge, IconThermometer, IconDroplet } from './icons'
 import Sparkline from './Sparkline'
@@ -298,7 +299,13 @@ export function TemperatureCard({
   )
 }
 
-export function HumidityCard({ humidity, history, airTemperature, hasReading = true }) {
+export function HumidityCard({
+  humidity,
+  history,
+  airTemperature,
+  temperaturePoints = null,
+  hasReading = true,
+}) {
   const { i18n } = useLingui()
 
   const rh = Number(humidity || 0)
@@ -314,6 +321,31 @@ export function HumidityCard({ humidity, history, airTemperature, hasReading = t
   const idealMin = formatNumber(HUMIDITY_RANGE.min)
   const idealMax = formatNumber(HUMIDITY_RANGE.max)
   const airText = typeof airTemperature === 'number' ? formatDecimal(airTemperature) : null
+
+  // Angka yang DITAMPILKAN besar tetap pembacaan mentah sensor — itu yang
+  // benar-benar terukur, dan menggantinya diam-diam dengan angka turunan akan
+  // membuat kartu ini tidak cocok dengan apa pun yang keluar dari perangkat.
+  //
+  // Yang ditambahkan adalah penjelasan artinya: RH 70 % di udara 24 °C setara
+  // 41,5 % di kulit, sementara RH 70 % di udara 32 °C setara 66,2 %. Tanpa
+  // baris ini, angka yang sama di layar berarti dua kondisi yang jauh berbeda
+  // tanpa ada yang memberi tahu. Perhitungannya di utils/humidity.js.
+  const analysis = analyseHumidity({
+    rh,
+    airTemp: airTemperature,
+    skinTemp: coolestSkinTemp(temperaturePoints),
+  })
+  const skinRhText = Number.isFinite(analysis.rhAtSkin)
+    ? formatDecimal(analysis.rhAtSkin)
+    : null
+  const dewText = Number.isFinite(analysis.dewPoint) ? formatDecimal(analysis.dewPoint) : null
+  const marginText = Number.isFinite(analysis.dewPointMargin)
+    ? formatDecimal(analysis.dewPointMargin)
+    : null
+  // Jarak titik embun yang menipis berarti kulit hampir tidak bisa lagi
+  // melepas keringat — mekanisme maserasi yang sebenarnya, dan ukuran yang
+  // TIDAK bergantung suhu sehingga bisa dibandingkan antar hari.
+  const dewPointTight = Number.isFinite(analysis.dewPointMargin) && analysis.dewPointMargin < 3
 
   return (
     <MetricCard
@@ -358,6 +390,27 @@ export function HumidityCard({ humidity, history, airTemperature, hasReading = t
           <p className="metric-card__note">
             <Trans>&gt;70% RH meningkatkan risiko maserasi, jamur &amp; infeksi</Trans>
           </p>
+
+          {skinRhText && (
+            <p className="metric-card__note">
+              <Trans>Setara {skinRhText}% di permukaan kulit — itulah yang dinilai statusnya</Trans>
+            </p>
+          )}
+
+          {marginText && (
+            <p className={dewPointTight ? 'metric-card__alert' : 'metric-card__note'}>
+              {dewPointTight ? (
+                <Trans>
+                  Titik embun {dewText}°C — kulit hanya {marginText}°C di atasnya, keringat nyaris
+                  tidak bisa menguap
+                </Trans>
+              ) : (
+                <Trans>
+                  Titik embun {dewText}°C — kulit masih {marginText}°C di atasnya
+                </Trans>
+              )}
+            </p>
+          )}
         </>
       )}
       {airText !== null && (

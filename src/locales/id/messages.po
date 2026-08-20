@@ -350,6 +350,18 @@ msgid ">70% RH meningkatkan risiko maserasi, jamur & infeksi"
 msgstr ">70% RH meningkatkan risiko maserasi, jamur & infeksi"
 
 #: src/components/MetricCards.jsx
+msgid "Setara {skinRhText}% di permukaan kulit — itulah yang dinilai statusnya"
+msgstr "Setara {skinRhText}% di permukaan kulit — itulah yang dinilai statusnya"
+
+#: src/components/MetricCards.jsx
+msgid "Titik embun {dewText}°C — kulit hanya {marginText}°C di atasnya, keringat nyaris tidak bisa menguap"
+msgstr "Titik embun {dewText}°C — kulit hanya {marginText}°C di atasnya, keringat nyaris tidak bisa menguap"
+
+#: src/components/MetricCards.jsx
+msgid "Titik embun {dewText}°C — kulit masih {marginText}°C di atasnya"
+msgstr "Titik embun {dewText}°C — kulit masih {marginText}°C di atasnya"
+
+#: src/components/MetricCards.jsx
 msgid "Suhu udara sekitar: {airText}°C"
 msgstr "Suhu udara sekitar: {airText}°C"
 
@@ -1515,6 +1527,10 @@ msgstr "Suhu tertinggi {highestText} °C"
 #: src/utils/alertMessages.js
 msgid "{humidityText} % RH"
 msgstr "{humidityText} % RH"
+
+#: src/utils/alertMessages.js
+msgid "Kelembapan sepatu {humidityText} % RH — setara {skinText} % di permukaan kulit"
+msgstr "Kelembapan sepatu {humidityText} % RH — setara {skinText} % di permukaan kulit"
 
 #: src/utils/alertMessages.js
 msgid "Kelembapan sepatu {humidityText} % RH"
