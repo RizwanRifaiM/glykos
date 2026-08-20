@@ -114,7 +114,13 @@ function MetricCard({
   )
 }
 
-export function PressureCard({ pressure, history }) {
+// `hasReading` = ada pembacaan untuk HARI INI (lihat utils/dailyReading.js).
+//
+// Dioper dari halaman, bukan disimpulkan dari "nilainya 0", karena keduanya
+// berbeda: tekanan 0 kPa adalah pembacaan yang sah — kaki yang sedang terangkat
+// memang tidak menekan apa pun. Yang tidak sah adalah menampilkan angka nol itu
+// saat memang belum ada yang diukur sama sekali.
+export function PressureCard({ pressure, history, hasReading = true }) {
   const { i18n } = useLingui()
 
   const pObj =
@@ -147,7 +153,8 @@ export function PressureCard({ pressure, history }) {
       value={formatDecimal(peak)}
       unit="kPa"
       status={status}
-      detail={t(i18n)`Titik tertinggi: ${location} · ${statusText}`}
+      empty={!hasReading}
+      detail={hasReading ? t(i18n)`Titik tertinggi: ${location} · ${statusText}` : undefined}
       trend={
         <Sparkline
           values={trendValuesArr}
@@ -156,7 +163,7 @@ export function PressureCard({ pressure, history }) {
         />
       }
     >
-      <PointGrid points={points} unit="kPa" />
+      {hasReading && <PointGrid points={points} unit="kPa" />}
       <p className="metric-card__note">
         <Trans>
           Ambang: &lt;{safeText} kPa aman · {safeText}–{warnText} perhatian · &gt;{warnText} risiko
@@ -167,7 +174,7 @@ export function PressureCard({ pressure, history }) {
   )
 }
 
-export function TemperatureCard({ temperature, history, lead = false }) {
+export function TemperatureCard({ temperature, history, lead = false, hasReading = true }) {
   const { i18n } = useLingui()
 
   const tObj =
@@ -188,7 +195,7 @@ export function TemperatureCard({ temperature, history, lead = false }) {
   const trendValuesArr = trendValues(history, 'temperature')
   // Tidak ada satu pun NTC yang mengirim. Suhu kulit 0 °C mustahil pada kaki
   // hidup, jadi diperlakukan sebagai "belum ada data", bukan pembacaan.
-  const isEmpty = Object.keys(points).length === 0 || highest <= 0
+  const isEmpty = !hasReading || Object.keys(points).length === 0 || highest <= 0
 
   const deltaText = formatDecimal(delta)
   const thresholdText = formatDecimal(TEMP_DELTA_WARNING)
@@ -253,7 +260,7 @@ export function TemperatureCard({ temperature, history, lead = false }) {
   )
 }
 
-export function HumidityCard({ humidity, history, airTemperature }) {
+export function HumidityCard({ humidity, history, airTemperature, hasReading = true }) {
   const { i18n } = useLingui()
 
   const rh = Number(humidity || 0)
@@ -264,7 +271,7 @@ export function HumidityCard({ humidity, history, airTemperature }) {
   // mengirim apa pun. 0% RH mustahil di dalam sepatu — perlakukan sebagai
   // belum ada data. (RH memang key opsional: firmware tidak mengirimnya kalau
   // sensor kelembapan tidak terdeteksi.)
-  const isEmpty = !(rh > 0)
+  const isEmpty = !hasReading || !(rh > 0)
 
   const idealMin = formatNumber(HUMIDITY_RANGE.min)
   const idealMax = formatNumber(HUMIDITY_RANGE.max)

@@ -2,13 +2,19 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import Button, { AnchorButton } from './Button'
 import { IconBluetooth, IconSparkles } from './icons'
 
-// Keadaan kosong yang sebenarnya: belum pernah ada data nyata DAN data contoh
-// dimatikan lewat ?demo=0. Secara default pengguna tanpa data melihat data
-// contoh, bukan layar ini — lihat utils/demoMode.js.
+// Keadaan kosong — kini jalur DEFAULT, bukan pengecualian.
 //
-// Layar ini tetap ada karena angka nol yang jujur kadang justru yang
-// dibutuhkan, dan supaya pengguna punya jalan keluar dari data contoh.
-export default function DeviceOnboardingBanner({ ble }) {
+// Sebelumnya pengguna tanpa data melihat data contoh tanpa penanda apa pun, dan
+// layar ini hanya muncul kalau demo dimatikan manual. Itu dibalik: angka
+// karangan yang tidak bisa dibedakan dari pembacaan sensor tidak punya tempat di
+// aplikasi pemantauan (lihat utils/demoMode.js).
+//
+// Dua keadaan yang dibedakan, karena artinya memang berbeda bagi pembacanya:
+//   - belum pernah punya data sama sekali -> perangkat belum pernah tersambung
+//   - punya data, tapi bukan hari ini     -> hari baru, belum dipakai
+// Menyebut keduanya "belum ada data dari perangkat" akan membuat pengguna yang
+// kemarin memakainya mengira datanya hilang.
+export default function DeviceOnboardingBanner({ ble, hadDataBefore = false }) {
   const { t } = useLingui()
   const connecting = ble.status === 'connecting'
   const bleError = ble.error
@@ -20,14 +26,26 @@ export default function DeviceOnboardingBanner({ ble }) {
       </span>
       <div className="onboarding-banner__body">
         <h2>
-          <Trans>Belum ada data dari perangkat</Trans>
+          {hadDataBefore ? (
+            <Trans>Belum ada pembacaan hari ini</Trans>
+          ) : (
+            <Trans>Belum ada data dari perangkat</Trans>
+          )}
         </h2>
         <p>
-          <Trans>
-            Sambungkan perangkat Glykos Anda lewat Bluetooth untuk mulai memantau tekanan, suhu,
-            dan kelembapan kaki secara real-time. Angka 0 di bawah ini bukan hasil pembacaan
-            sensor — hanya belum ada data yang tercatat.
-          </Trans>
+          {hadDataBefore ? (
+            <Trans>
+              Pembacaan Anda sebelumnya tetap tersimpan dan bisa dilihat di halaman Riwayat.
+              Sambungkan perangkat Glykos untuk mulai memantau hari ini — tanda &ldquo;—&rdquo; di
+              bawah berarti belum ada yang terukur hari ini, bukan nol.
+            </Trans>
+          ) : (
+            <Trans>
+              Sambungkan perangkat Glykos Anda lewat Bluetooth untuk mulai memantau tekanan, suhu,
+              dan kelembapan kaki secara real-time. Tanda &ldquo;—&rdquo; di bawah berarti belum
+              ada pembacaan, bukan hasil pengukuran.
+            </Trans>
+          )}
         </p>
         {!ble.supported && (
           <p className="onboarding-banner__hint">

@@ -15,8 +15,19 @@ import { IconDownload, IconFileText, IconRefreshCw } from '../components/icons'
 import { exportToCsv, exportToPdf } from '../utils/exportData'
 
 export default function DashboardOverview() {
-  const { data, isLive, isStale, updatedAtMs, refresh, history, fatigue, temperatureTrend, ble } =
-    useOutletContext()
+  const {
+    data,
+    isLive,
+    isStale,
+    updatedAtMs,
+    refresh,
+    history,
+    fatigue,
+    temperatureTrend,
+    ble,
+    hasReading,
+    hadDataBefore,
+  } = useOutletContext()
   const { t } = useLingui()
   // exportToCsv/exportToPdf menerima i18n: laporan yang keluar dari aplikasi
   // ikut bahasa antarmuka — lihat catatan di utils/exportData.js.
@@ -53,7 +64,7 @@ export default function DashboardOverview() {
       ) : isStale ? (
         <StaleDataBanner ble={ble} updatedAtMs={updatedAtMs} />
       ) : (
-        <DeviceOnboardingBanner ble={ble} />
+        <DeviceOnboardingBanner ble={ble} hadDataBefore={hadDataBefore} />
       )}
 
       {/* Ditaruh di atas kartu metrik: pola berhari-hari lebih penting
@@ -67,12 +78,18 @@ export default function DashboardOverview() {
           atas 2,2 °C — jadi kartu Suhu yang memegang kolom utama dan angka
           terbesar. Tekanan dan kelembapan jadi pendukung. */}
       <section className="metrics-grid">
-        <TemperatureCard temperature={data.temperatureObj} history={history} lead />
-        <PressureCard pressure={data.pressure} history={history} />
+        <TemperatureCard
+          temperature={data.temperatureObj}
+          history={history}
+          hasReading={hasReading}
+          lead
+        />
+        <PressureCard pressure={data.pressure} history={history} hasReading={hasReading} />
         <HumidityCard
           humidity={data.humidity}
           history={history}
           airTemperature={data.airTemperature}
+          hasReading={hasReading}
         />
       </section>
 

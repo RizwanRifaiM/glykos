@@ -257,7 +257,18 @@ firebase deploy --only hosting
 
 `?demo=1` mengisi dashboard dengan data contoh untuk meninjau tampilan tanpa
 perangkat. Sengaja hanya lewat query string — selalu terlihat di URL, tidak lengket
-antar sesi, selalu disertai banner, dan **tidak pernah menulis ke Firestore**.
+antar sesi, **selalu disertai spanduk**, dan **tidak pernah menulis ke Firestore**.
+
+Mode demo **tidak pernah menyala sendiri**. Sebelumnya ada mode otomatis yang
+menampilkan data contoh selama pengguna belum punya data, tanpa spanduk penanda
+apa pun — dan pada pemakaian nyata angkanya langsung disalahartikan sebagai
+pembacaan sungguhan. Di aplikasi yang seluruh gunanya membaca kondisi kaki, itu
+kegagalan yang serius.
+
+Penggantinya keadaan kosong yang jujur: kartu bertanda `—` beserta ajakan
+menyambungkan perangkat. Spanduknya membedakan dua keadaan yang artinya memang
+berbeda — "belum ada data dari perangkat" (belum pernah tersambung) dan "belum
+ada pembacaan hari ini" (hari baru, riwayat kemarin tetap utuh).
 
 ## Keterbatasan yang diketahui
 

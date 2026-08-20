@@ -1,47 +1,38 @@
 // Mode demo mengisi dashboard dengan data contoh (src/constants/demoData.js)
 // supaya tampilan grafik & kartu bisa ditinjau tanpa perangkat BLE.
 //
-// Ada TIGA keadaan, bukan dua:
+// HANYA MENYALA BILA DIMINTA EKSPLISIT lewat `?demo=1`.
 //
-//   'on'   — dipaksa menyala lewat ?demo=1
-//   'off'  — dipaksa mati lewat ?demo=0 (untuk melihat keadaan kosong yang
-//            sebenarnya: semua nol + ajakan menyambungkan perangkat)
-//   'auto' — tidak ada parameter: data contoh tampil HANYA selama belum ada
-//            data nyata sama sekali, dan mundur seketika begitu ada.
+// Sebelumnya ada mode 'auto': data contoh tampil sendiri selama pengguna belum
+// punya data, TANPA spanduk penanda. Niatnya baik — dashboard pengguna baru
+// tidak menyambut dengan layar berisi angka nol. Hasilnya justru berbahaya di
+// aplikasi seperti ini: angka karangan yang tidak bisa dibedakan dari pembacaan
+// sensor, pada layar yang seluruh gunanya adalah membaca kondisi kaki. Satu-
+// satunya petunjuk adalah status Bluetooth di topbar, dan itu terlalu halus
+// untuk menanggung beban sebesar itu.
 //
-// 'auto' adalah default supaya dashboard tidak menyambut pengguna baru dengan
-// layar berisi angka nol. Pengamannya ada di pemanggilnya
-// (DashboardLayout.jsx), bukan di sini:
-//   - data nyata SELALU menang; data contoh tidak pernah menimpa pembacaan
-//     sensor, termasuk pembacaan lama yang sudah basi;
-//   - tidak ada satu pun angka contoh yang ditulis ke Firestore.
+// Yang menggantikannya adalah keadaan kosong yang jujur: kartu bertanda "—"
+// beserta ajakan menyambungkan perangkat. Tidak menyenangkan dilihat, tapi
+// tidak pernah salah.
 //
-// Catatan: mode 'auto' TIDAK menampilkan DemoModeBanner (dihapus atas
-// permintaan). Jadi di keadaan default, satu-satunya petunjuk bahwa angkanya
-// contoh adalah status Bluetooth di topbar yang terputus. Spanduk hanya muncul
-// pada mode 'on'.
+// Dua keadaan yang tersisa:
+//   'on'  — diminta lewat ?demo=1, SELALU disertai DemoModeBanner
+//   'off' — segala keadaan lain, termasuk tanpa parameter sama sekali
+//
+// Sengaja hanya lewat query string: selalu terlihat di URL, tidak lengket antar
+// sesi, dan tidak pernah menulis apa pun ke Firestore.
 export function demoPreference() {
-  if (typeof window === 'undefined') return 'auto'
-  const value = new URLSearchParams(window.location.search).get('demo')
-  if (value === '1') return 'on'
-  if (value === '0') return 'off'
-  return 'auto'
+  if (typeof window === 'undefined') return 'off'
+  return new URLSearchParams(window.location.search).get('demo') === '1' ? 'on' : 'off'
 }
 
 // Menentukan apakah data contoh dipakai untuk render kali ini.
 //
-// `hasRealData` mencakup data yang sudah basi: pembacaan lama tetap pembacaan
-// sungguhan, dan menggantinya dengan angka contoh justru menyembunyikan
-// kenyataan bahwa perangkat berhenti mengirim.
-//
-// `isLoaded` mencegah kedipan berbahaya: sebelum snapshot pertama dari
-// Firestore tiba, kita belum tahu apakah pengguna punya data — jadi jangan
-// tampilkan angka contoh dulu, karena arah kedipan contoh → nyata jauh lebih
-// menyesatkan daripada kosong → contoh.
-export function shouldUseDemoData(preference, { hasRealData, isLoaded }) {
-  if (preference === 'on') return true
-  if (preference === 'off') return false
-  return Boolean(isLoaded) && !hasRealData
+// Tidak lagi bergantung pada ada tidaknya data pengguna: keputusan itu kini
+// murni milik pengguna lewat URL. Keadaan "belum ada data" ditangani dengan
+// menampilkan keadaan kosong, bukan dengan menyulapnya jadi angka contoh.
+export function shouldUseDemoData(preference) {
+  return preference === 'on'
 }
 
 // URL untuk mematikan/menyalakan mode demo tanpa kehilangan halaman aktif.

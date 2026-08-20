@@ -158,12 +158,24 @@ msgid "Sepatu Glykos terdiri dari tiga bagian: badan sepatunya, insole bersensor
 msgstr "Sepatu Glykos terdiri dari tiga bagian: badan sepatunya, insole bersensor berisi tiga titik tekanan, dan modul sensor Bluetooth di sisi luar."
 
 #: src/components/DeviceOnboardingBanner.jsx
+#~ msgid "Sambungkan perangkat Glykos Anda lewat Bluetooth untuk mulai memantau tekanan, suhu, dan kelembapan kaki secara real-time. Angka 0 di bawah ini bukan hasil pembacaan sensor — hanya belum ada data yang tercatat."
+#~ msgstr "Sambungkan perangkat Glykos Anda lewat Bluetooth untuk mulai memantau tekanan, suhu, dan kelembapan kaki secara real-time. Angka 0 di bawah ini bukan hasil pembacaan sensor — hanya belum ada data yang tercatat."
+
+#: src/components/DeviceOnboardingBanner.jsx
+msgid "Belum ada pembacaan hari ini"
+msgstr "Belum ada pembacaan hari ini"
+
+#: src/components/DeviceOnboardingBanner.jsx
 msgid "Belum ada data dari perangkat"
 msgstr "Belum ada data dari perangkat"
 
 #: src/components/DeviceOnboardingBanner.jsx
-msgid "Sambungkan perangkat Glykos Anda lewat Bluetooth untuk mulai memantau tekanan, suhu, dan kelembapan kaki secara real-time. Angka 0 di bawah ini bukan hasil pembacaan sensor — hanya belum ada data yang tercatat."
-msgstr "Sambungkan perangkat Glykos Anda lewat Bluetooth untuk mulai memantau tekanan, suhu, dan kelembapan kaki secara real-time. Angka 0 di bawah ini bukan hasil pembacaan sensor — hanya belum ada data yang tercatat."
+msgid "Pembacaan Anda sebelumnya tetap tersimpan dan bisa dilihat di halaman Riwayat. Sambungkan perangkat Glykos untuk mulai memantau hari ini — tanda “—” di bawah berarti belum ada yang terukur hari ini, bukan nol."
+msgstr "Pembacaan Anda sebelumnya tetap tersimpan dan bisa dilihat di halaman Riwayat. Sambungkan perangkat Glykos untuk mulai memantau hari ini — tanda “—” di bawah berarti belum ada yang terukur hari ini, bukan nol."
+
+#: src/components/DeviceOnboardingBanner.jsx
+msgid "Sambungkan perangkat Glykos Anda lewat Bluetooth untuk mulai memantau tekanan, suhu, dan kelembapan kaki secara real-time. Tanda “—” di bawah berarti belum ada pembacaan, bukan hasil pengukuran."
+msgstr "Sambungkan perangkat Glykos Anda lewat Bluetooth untuk mulai memantau tekanan, suhu, dan kelembapan kaki secara real-time. Tanda “—” di bawah berarti belum ada pembacaan, bukan hasil pengukuran."
 
 #: src/components/DeviceOnboardingBanner.jsx
 msgid "Browser ini tidak mendukung Web Bluetooth. Buka halaman ini lewat Chrome atau Edge (desktop/Android) untuk bisa menyambungkan perangkat."

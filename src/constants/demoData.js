@@ -2,18 +2,20 @@
 // ini menyala. Dipakai untuk meninjau tampilan grafik & kartu tanpa perangkat
 // BLE tersambung.
 //
-// PENTING — data ini dipakai sebagai tampilan awal selama pengguna belum punya
-// data sendiri, TANPA spanduk penanda (dihapus atas permintaan). Karena itu dua
-// batas berikut jadi satu-satunya yang tersisa dan tidak boleh dilonggarkan:
-//   1. Data nyata SELALU menang. shouldUseDemoData() mematikan mode demo begitu
-//      ada pembacaan BLE atau dokumen live di Firestore — termasuk pembacaan
-//      lama yang sudah basi, karena itu pun tetap data sungguhan.
-//   2. Tidak ada satu pun angka di sini yang ditulis ke Firestore:
-//      sinkronisasi hanya berjalan saat BLE aktif (useFirestoreSync), dan
-//      pencatatan peringatan dimatikan saat mode demo (DashboardLayout.jsx).
+// PENTING — angka di berkas ini hanya boleh tampil bila pengguna MEMINTANYA
+// lewat ?demo=1, dan selalu bersama DemoModeBanner.
 //
-// Melanggar salah satunya membuat aplikasi pemantauan medis menampilkan angka
-// karangan sebagai kondisi kaki pengguna, tanpa apa pun yang mengoreksinya.
+// Sebelumnya ia juga dipakai sebagai tampilan awal untuk pengguna yang belum
+// punya data, tanpa spanduk penanda. Itu dihapus: angka karangan yang tidak
+// bisa dibedakan dari pembacaan sensor tidak punya tempat di aplikasi
+// pemantauan, dan pada pemakaian nyata memang langsung disalahartikan sebagai
+// pembacaan sungguhan. Penggantinya keadaan kosong yang jujur — lihat
+// utils/demoMode.js.
+//
+// Satu batas yang tersisa dan tidak boleh dilonggarkan: tidak ada satu pun
+// angka di sini yang ditulis ke Firestore. Sinkronisasi hanya berjalan saat BLE
+// aktif (useFirestoreSync), dan pencatatan peringatan dimatikan saat mode demo
+// (DashboardLayout.jsx).
 
 import { toDateKey, toTimeKey } from '../utils/formatTime'
 import { formatShortDate } from '../utils/locale'

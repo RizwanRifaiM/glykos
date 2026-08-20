@@ -113,8 +113,11 @@ export default {
 
   // ---------------------------------------------------------------- device / onboarding
   'Belum ada data dari perangkat': 'No data from your device yet',
-  'Sambungkan perangkat Glykos Anda lewat Bluetooth untuk mulai memantau tekanan, suhu, dan kelembapan kaki secara real-time. Angka 0 di bawah ini bukan hasil pembacaan sensor — hanya belum ada data yang tercatat.':
-    'Connect your Glykos device over Bluetooth to start monitoring foot pressure, temperature, and humidity in real time. The zeros below are not sensor readings — there is simply no data recorded yet.',
+  'Belum ada pembacaan hari ini': 'No readings yet today',
+  'Sambungkan perangkat Glykos Anda lewat Bluetooth untuk mulai memantau tekanan, suhu, dan kelembapan kaki secara real-time. Tanda “—” di bawah berarti belum ada pembacaan, bukan hasil pengukuran.':
+    'Connect your Glykos device over Bluetooth to start monitoring foot pressure, temperature, and humidity in real time. The “—” below means there is no reading yet, not a measured value.',
+  'Pembacaan Anda sebelumnya tetap tersimpan dan bisa dilihat di halaman Riwayat. Sambungkan perangkat Glykos untuk mulai memantau hari ini — tanda “—” di bawah berarti belum ada yang terukur hari ini, bukan nol.':
+    'Your earlier readings are still saved and can be seen on the History page. Connect your Glykos device to start monitoring today — the “—” below means nothing has been measured today, not zero.',
   'Browser ini tidak mendukung Web Bluetooth. Buka halaman ini lewat Chrome atau Edge (desktop/Android) untuk bisa menyambungkan perangkat.':
     'This browser does not support Web Bluetooth. Open this page in Chrome or Edge (desktop or Android) to connect a device.',
   Kiri: 'Left',

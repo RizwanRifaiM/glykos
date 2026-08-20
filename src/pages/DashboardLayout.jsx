@@ -133,7 +133,6 @@ export default function DashboardLayout() {
     isStale: firestoreStale,
     updatedAtMs,
     hasData: firestoreHasData,
-    isLoaded: firestoreLoaded,
   } = useSensorData(uid, deviceId)
   const ble = useBleSensor()
   const { history: realHistory, isLoading: realHistoryLoading } = useHistoryData(
@@ -200,22 +199,11 @@ export default function DashboardLayout() {
   // dokumen berumur dua menit sudah menjadi milik hari kemarin.
   const isLive = bleActive ? true : firestoreLive && firestoreIsToday
 
-  // Data contoh dipakai selama pengguna belum punya data sendiri — supaya
-  // dashboard sesudah login tidak berisi angka nol semua. Begitu ada pembacaan
-  // nyata (BLE tersambung ATAU dokumen live sudah pernah ditulis), data contoh
-  // mundur seketika: yang nyata selalu menang. Lihat utils/demoMode.js.
-  //
-  // Sengaja memakai `firestoreHasData` (pernah punya data), BUKAN
-  // `hasReadingToday`. Kalau dipakai yang kedua, dashboard akan berbalik
-  // menampilkan data contoh setiap lewat tengah malam — pengguna yang kemarin
-  // melihat angkanya sendiri akan menemukan angka karangan pada 00.01, tanpa
-  // spanduk penanda apa pun (mode auto memang tanpa spanduk). Keadaan kosong
-  // yang jujur jauh lebih baik di sana.
-  const hasRealData = Boolean(bleActive || firestoreHasData)
-  const demoMode = shouldUseDemoData(demoPref, {
-    hasRealData,
-    isLoaded: firestoreLoaded,
-  })
+  // Data contoh HANYA saat diminta eksplisit lewat ?demo=1, dan selalu
+  // disertai spanduk penanda. Keadaan "belum ada pembacaan" ditangani dengan
+  // menampilkan kartu kosong, bukan dengan menyulapnya jadi angka contoh —
+  // lihat utils/demoMode.js.
+  const demoMode = shouldUseDemoData(demoPref)
 
   // Firmware BLE tidak menghitung langkah sendiri (hanya kirim AX/AY/AZ
   // mentah) — dihitung di web app lewat useStepCounter, lalu dipakai
@@ -403,11 +391,10 @@ export default function DashboardLayout() {
           </p>
         )}
 
-        {/* Hanya untuk mode demo yang diminta eksplisit lewat ?demo=1. Pada
-            mode otomatis (default, saat pengguna belum punya data) spanduknya
-            sengaja tidak ditampilkan atas permintaan — dashboard langsung
-            berisi data contoh tanpa penanda. */}
-        {demoMode && demoPref === 'on' && <DemoModeBanner />}
+        {/* Data contoh SELALU disertai spanduk. Tidak ada lagi mode otomatis
+            tanpa penanda: angka karangan yang tidak bisa dibedakan dari
+            pembacaan sensor tidak punya tempat di layar ini. */}
+        {demoMode && <DemoModeBanner />}
 
         <main className="app-main">
           {/* Batas Suspense sendiri untuk rute anak: saat berpindah halaman,
@@ -421,6 +408,14 @@ export default function DashboardLayout() {
                 data,
                 isLive: displayLive,
                 isStale: displayStale,
+                // Dipakai kartu metrik untuk memilih antara angka dan "—".
+                // Nol yang ditampilkan sebagai angka terbaca seperti hasil
+                // pengukuran, padahal artinya belum diukur.
+                hasReading: demoMode ? true : hasReadingToday,
+                // Membedakan "perangkat belum pernah tersambung" dari "hari
+                // baru, belum dipakai" — dua keadaan yang perlu kalimat
+                // berbeda. Lihat DeviceOnboardingBanner.jsx.
+                hadDataBefore: firestoreHasData,
                 updatedAtMs,
                 refresh,
                 history,
