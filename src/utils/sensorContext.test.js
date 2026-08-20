@@ -13,7 +13,7 @@ const reading = (overrides = {}) => ({
   pressure: { peak: 236.7, location: 'metatarsal', points: {} },
   temperatureObj: { highest: 32.8, delta: 2.7, location: 'metatarsal', points: {} },
   humidity: 72.5,
-  activity: { steps: 4218, activeMinutes: 96 },
+  activity: { steps: 4218, wearMinutes: 96 },
   ...overrides,
 })
 

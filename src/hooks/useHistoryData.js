@@ -13,7 +13,7 @@ const EMPTY_POINT = {
   temperatureDelta: 0,
   humidity: 0,
   steps: 0,
-  activeMinutes: 0,
+  wearMinutes: 0,
 }
 
 // Membaca rangkuman harian (satu dokumen per tanggal) yang ditulis

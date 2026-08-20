@@ -200,7 +200,9 @@ export default {
   'Total Langkah': 'Total Steps',
   '{hoursText}j {minsText}m': '{hoursText}h {minsText}m',
   '{minsText}m': '{minsText}m',
-  'Waktu Aktif': 'Active Time',
+  // "Wear time" adalah istilah baku pada alas kaki diabetik: ukuran seberapa
+  // patuh pasien memakainya, dan justru itu yang berguna dilihat dokter.
+  'Waktu Pemakaian': 'Wear Time',
   'Jumlah langkah adalah estimasi dari data gerak kaki, bisa terhitung lebih sedikit saat berjalan cepat atau berlari.':
     'The step count is estimated from foot motion data and may undercount when you walk fast or run.',
   'Beban tinggi berkelanjutan {minutesText} menit':
@@ -412,8 +414,8 @@ export default {
     '- Temperature spread between areas: {deltaText} °C (attention threshold {0} °C — a spread that persists for days is a pre-ulcer predictor)',
   '- Kelembapan dalam sepatu: {humidityText} % RH ({state}; ideal {0}–{1} %, risiko > {2} %)':
     '- In-shoe humidity: {humidityText} % RH ({state}; ideal {0}–{1} %, risk > {2} %)',
-  '- Aktivitas hari ini: {stepsText} langkah, {minutesText} menit aktif':
-    '- Today: {stepsText} steps, {minutesText} active minutes',
+  '- Aktivitas hari ini: {stepsText} langkah, {minutesText} menit pemakaian':
+    '- Today: {stepsText} steps, {minutesText} minutes of wear',
   '- Indikasi kelelahan kaki: {levelText}': '- Foot fatigue indication: {levelText}',
   'RANGKUMAN {rangeText} HARI TERAKHIR ({recordedText} hari tercatat):':
     'SUMMARY OF THE LAST {rangeText} DAYS ({recordedText} days recorded):',
@@ -611,7 +613,7 @@ export default {
   'Lokasi Tekanan': 'Pressure Location',
   'Suhu Tertinggi (°C)': 'Highest Temperature (°C)',
   'Lokasi Suhu': 'Temperature Location',
-  'Waktu Aktif (menit)': 'Active Time (minutes)',
+  'Waktu Pemakaian (menit)': 'Wear Time (minutes)',
   Histori: 'History',
   'Selisih Suhu (°C)': 'Temperature Spread (°C)',
   'Glykos — Laporan Monitoring': 'Glykos — Monitoring Report',

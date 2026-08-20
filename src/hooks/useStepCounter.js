@@ -7,23 +7,7 @@ const FALL_THRESHOLD_G = -0.12
 const MIN_STEP_INTERVAL_MS = 350 // jeda minimum antar langkah (refractory period)
 const BASELINE_ALPHA = 0.05 // laju adaptasi baseline gravitasi (EMA, per sampel)
 
-// Berapa lama setelah sebuah langkah waktu masih dihitung sebagai "aktif".
-//
-// KENAPA ADA AMBANG INI
-// `activeMinutes` sebelumnya adalah (sekarang − mulai sesi), yaitu LAMA
-// PERANGKAT TERSAMBUNG — bukan lama bergerak. Seseorang yang memakai sepatunya
-// delapan jam sambil duduk di meja melihat "Waktu Aktif 480 menit", pada kartu
-// yang seluruh gunanya menggambarkan beban yang diterima kaki. Angka itu bukan
-// sekadar kurang tepat; ia menjawab pertanyaan yang berbeda dari yang
-// ditanyakan labelnya.
-//
-// Sekarang waktu hanya menumpuk selama langkah masih terdeteksi. 12 detik
-// dipilih supaya jeda wajar saat berjalan — berhenti di lampu merah, menunggu
-// pintu — tidak langsung memotong hitungan, sementara duduk lama jelas
-// melewatinya.
-const ACTIVE_GAP_MS = 12000
-
-const EMPTY_RESULT = { steps: 0, activeMinutes: 0, sessionActive: false }
+const EMPTY_RESULT = { steps: 0, wearMinutes: 0, sessionActive: false }
 
 // State impuratif satu "sesi pemakaian" disimpan DI LUAR React (pola sama
 // seperti BleSensor di services/ble.js & FatigueSession di
@@ -43,8 +27,6 @@ export class StepCounterSession {
     this.steps = 0
     this.lastStepAt = null
     this.sessionStartedAt = null
-    this.activeMs = 0
-    this.lastSampleAt = null
     this.wasLive = false
     this.snapshot = EMPTY_RESULT
   }
@@ -85,20 +67,6 @@ export class StepCounterSession {
     const now = Date.now()
     if (!this.sessionStartedAt) this.sessionStartedAt = now
 
-    // Waktu aktif menumpuk hanya selama masih ada langkah yang baru terdeteksi.
-    //
-    // Selisih antar sampel dijepit ke ACTIVE_GAP_MS: halaman yang sempat
-    // dibekukan (layar mati, pindah aplikasi) akan menghasilkan satu selisih
-    // raksasa saat hidup lagi, dan tanpa jepitan itu satu sampel bisa menambah
-    // berjam-jam "aktivitas" yang tidak pernah terjadi.
-    if (this.lastSampleAt !== null && this.lastStepAt !== null) {
-      const sinceStep = now - this.lastStepAt
-      if (sinceStep <= ACTIVE_GAP_MS) {
-        this.activeMs += Math.min(now - this.lastSampleAt, ACTIVE_GAP_MS)
-      }
-    }
-    this.lastSampleAt = now
-
     const magnitude = Math.sqrt(accel.x * accel.x + accel.y * accel.y + accel.z * accel.z)
 
     // Baseline gravitasi adaptif (EMA lambat) — supaya deteksi langkah tetap
@@ -124,7 +92,19 @@ export class StepCounterSession {
 
     this.snapshot = {
       steps: this.steps,
-      activeMinutes: this.activeMs / 60000,
+      // LAMA PERANGKAT TERHUBUNG pada sesi ini, dalam menit.
+      //
+      // Dinamai `wearMinutes`, bukan `activeMinutes`, karena itulah yang
+      // benar-benar diukurnya: jam berjalan sejak sesi dimulai, tanpa
+      // memandang apakah kakinya bergerak. Nama lamanya menjanjikan "waktu
+      // aktif" dan sempat membuat kartu menampilkan 480 menit untuk seseorang
+      // yang duduk seharian dengan sepatu terpasang.
+      //
+      // Nama yang menyiratkan arti berbeda dari isinya adalah jebakan yang
+      // sudah sekali menimbulkan bug di proyek ini (lihat catatan prop `id` di
+      // components/SensorFootMap.jsx), jadi kali ini namanya ikut diperbaiki
+      // bersama artinya — bukan hanya komentarnya.
+      wearMinutes: (now - this.sessionStartedAt) / 60000,
       sessionActive: true,
     }
     this._notify()

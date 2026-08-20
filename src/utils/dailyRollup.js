@@ -18,7 +18,7 @@ export function emptyRollup(tanggal) {
     humiditySum: 0,
     humidityCount: 0,
     stepsBySession: {},
-    activeMinutesBySession: {},
+    wearMinutesBySession: {},
   }
 }
 
@@ -48,17 +48,14 @@ export function mergeDailyRollup(prev, sample) {
     stepsBySession[sessionKey] = Math.max(stepsBySession[sessionKey] ?? 0, steps)
   }
 
-  // Menit aktif mengikuti pola yang persis sama dengan langkah, dan karena
+  // Lama pemakaian mengikuti pola yang persis sama dengan langkah, dan karena
   // alasan yang sama: tiap sampel membawa durasi KUMULATIF sejak sesinya
   // dimulai, jadi menjumlahkan tiap sampel akan melipatgandakannya. Yang benar
   // nilai terbesar tiap sesi, lalu dijumlahkan antar sesi.
-  const activeMinutesBySession = { ...base.activeMinutesBySession }
-  const activeMinutes = positive(sample.activeMinutes)
-  if (activeMinutes > 0) {
-    activeMinutesBySession[sessionKey] = Math.max(
-      activeMinutesBySession[sessionKey] ?? 0,
-      activeMinutes,
-    )
+  const wearMinutesBySession = { ...base.wearMinutesBySession }
+  const wearMinutes = positive(sample.wearMinutes)
+  if (wearMinutes > 0) {
+    wearMinutesBySession[sessionKey] = Math.max(wearMinutesBySession[sessionKey] ?? 0, wearMinutes)
   }
 
   return {
@@ -69,7 +66,7 @@ export function mergeDailyRollup(prev, sample) {
     humiditySum: base.humiditySum + humidity,
     humidityCount: base.humidityCount + (humidity > 0 ? 1 : 0),
     stepsBySession,
-    activeMinutesBySession,
+    wearMinutesBySession,
   }
 }
 
@@ -81,8 +78,8 @@ export function totalSteps(rollup) {
   return sumBySession(rollup?.stepsBySession)
 }
 
-export function totalActiveMinutes(rollup) {
-  return Math.round(sumBySession(rollup?.activeMinutesBySession))
+export function totalWearMinutes(rollup) {
+  return Math.round(sumBySession(rollup?.wearMinutesBySession))
 }
 
 export function averageHumidity(rollup) {
@@ -99,6 +96,6 @@ export function rollupToPoint(rollup) {
     temperatureDelta: Number(rollup?.temperatureDeltaMax) || 0,
     humidity: averageHumidity(rollup),
     steps: totalSteps(rollup),
-    activeMinutes: totalActiveMinutes(rollup),
+    wearMinutes: totalWearMinutes(rollup),
   }
 }

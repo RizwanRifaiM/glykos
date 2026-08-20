@@ -138,7 +138,7 @@ export function buildDemoReading() {
       delta,
     },
 
-    activity: { steps: 4218, activeMinutes: 96 },
+    activity: { steps: 4218, wearMinutes: 96 },
     airTemperature: 28.6,
     accel: { x: 0.02, y: -0.04, z: 0.99 },
   }

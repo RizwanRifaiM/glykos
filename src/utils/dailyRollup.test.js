@@ -3,7 +3,7 @@ import {
   averageHumidity,
   emptyRollup,
   mergeDailyRollup,
-  totalActiveMinutes,
+  totalWearMinutes,
   totalSteps,
 } from './dailyRollup'
 
@@ -66,15 +66,15 @@ describe('mergeDailyRollup', () => {
   })
 })
 
-describe('menit aktif per sesi', () => {
+describe('lama pemakaian per sesi', () => {
   // Pola yang sama dengan langkah, dan karena alasan yang sama: tiap sampel
   // membawa durasi KUMULATIF sejak sesinya dimulai. Menjumlahkan tiap sampel
   // akan melipatgandakannya.
   it('mengambil nilai terbesar tiap sesi, lalu menjumlahkan antar sesi', () => {
     let rollup = emptyRollup('2026-08-21')
-    const sample = (sessionId, activeMinutes) => ({
+    const sample = (sessionId, wearMinutes) => ({
       tanggal: '2026-08-21',
-      activeMinutes,
+      wearMinutes,
       sessionId,
     })
 
@@ -82,13 +82,13 @@ describe('menit aktif per sesi', () => {
     rollup = mergeDailyRollup(rollup, sample('pagi', 34))
     rollup = mergeDailyRollup(rollup, sample('sore', 21))
 
-    expect(totalActiveMinutes(rollup)).toBe(55)
+    expect(totalWearMinutes(rollup)).toBe(55)
   })
 
   it('mengabaikan nol — belum terukur, bukan nol menit', () => {
     let rollup = emptyRollup('2026-08-21')
-    rollup = mergeDailyRollup(rollup, { tanggal: '2026-08-21', activeMinutes: 0, sessionId: 'a' })
-    expect(totalActiveMinutes(rollup)).toBe(0)
-    expect(rollup.activeMinutesBySession).toEqual({})
+    rollup = mergeDailyRollup(rollup, { tanggal: '2026-08-21', wearMinutes: 0, sessionId: 'a' })
+    expect(totalWearMinutes(rollup)).toBe(0)
+    expect(rollup.wearMinutesBySession).toEqual({})
   })
 })

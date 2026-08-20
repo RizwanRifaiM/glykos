@@ -62,17 +62,17 @@ export function resolveReadingSource({
 // untuk itu.
 export function todayActivity({
   rollupSteps = 0,
-  rollupActiveMinutes = 0,
+  rollupWearMinutes = 0,
   sessionSteps = 0,
-  sessionActiveMinutes = 0,
+  sessionWearMinutes = 0,
   syncedSteps = 0,
-  syncedActiveMinutes = 0,
+  syncedWearMinutes = 0,
 } = {}) {
-  // Langkah dan menit aktif memakai perhitungan yang PERSIS sama: angka
+  // Langkah dan lama pemakaian memakai perhitungan yang PERSIS sama: angka
   // rangkuman ditambah bagian sesi berjalan yang belum tertulis. Sebelumnya
-  // menit aktif memakai Math.max antara keduanya — hasilnya tertinggal sampai
-  // satu interval sinkronisasi, dan pada sesi kedua di hari yang sama malah
-  // menahan angkanya di total sesi pertama.
+  // lama pemakaian memakai Math.max antara keduanya — hasilnya tertinggal
+  // sampai satu interval sinkronisasi, dan pada sesi kedua di hari yang sama
+  // malah menahan angkanya di total sesi pertama.
   const merge = (rollup, session, synced) => {
     const base = Math.max(0, Number(rollup) || 0)
     const pending = Math.max(0, (Number(session) || 0) - (Number(synced) || 0))
@@ -80,10 +80,8 @@ export function todayActivity({
   }
 
   const steps = Math.round(merge(rollupSteps, sessionSteps, syncedSteps))
-  const activeMinutes = Math.round(
-    merge(rollupActiveMinutes, sessionActiveMinutes, syncedActiveMinutes),
-  )
+  const wearMinutes = Math.round(merge(rollupWearMinutes, sessionWearMinutes, syncedWearMinutes))
 
-  if (steps <= 0 && activeMinutes <= 0) return null
-  return { steps, activeMinutes }
+  if (steps <= 0 && wearMinutes <= 0) return null
+  return { steps, wearMinutes }
 }

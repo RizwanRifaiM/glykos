@@ -74,7 +74,7 @@ function summarize(i18n, data) {
         : fallbackArea,
     humidity: Number(data?.humidity || 0),
     steps: data?.activity?.steps ?? 0,
-    activeMins: data?.activity?.activeMinutes ?? 0,
+    wearMins: data?.activity?.wearMinutes ?? 0,
     deviceName: data?.device?.name ?? data?.deviceId ?? 'glykos-device',
   }
 }
@@ -94,7 +94,7 @@ export function exportToCsv(i18n, data, history = [], filename = 'glykos-report'
     [t(i18n)`Lokasi Suhu`, s.tempLocation],
     [t(i18n)`Kelembapan (%RH)`, s.humidity],
     [t(i18n)`Langkah`, s.steps],
-    [t(i18n)`Waktu Aktif (menit)`, s.activeMins],
+    [t(i18n)`Waktu Pemakaian (menit)`, s.wearMins],
     [],
     [t(i18n)`Histori`],
     [

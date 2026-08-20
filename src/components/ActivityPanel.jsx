@@ -85,8 +85,8 @@ export default function ActivityPanel({ activity, accel, fatigue }) {
     )
   }
 
-  const hours = Math.floor(activity.activeMinutes / 60)
-  const mins = activity.activeMinutes % 60
+  const hours = Math.floor(activity.wearMinutes / 60)
+  const mins = activity.wearMinutes % 60
 
   // Durasi dirakit sebagai satu variabel, bukan dua potongan di dalam JSX.
   // Singkatan jam/menit berbeda antar bahasa ("2j 15m" vs "2h 15m") dan
@@ -131,7 +131,15 @@ export default function ActivityPanel({ activity, accel, fatigue }) {
               )}
             </strong>
             <span>
-              <Trans>Waktu Aktif</Trans>
+              {/* "Waktu Pemakaian", bukan "Waktu Aktif". Angkanya mengukur lama
+                  perangkat TERHUBUNG, bukan lama kaki bergerak — label lama
+                  menjanjikan hal yang berbeda dari yang diukurnya, dan pada
+                  pemakaian seharian sambil duduk perbedaannya besar sekali.
+
+                  Istilahnya juga yang lazim dipakai pada alas kaki diabetik:
+                  wear time adalah ukuran kepatuhan pemakaian, dan justru itu
+                  yang berguna dilihat dokter. */}
+              <Trans>Waktu Pemakaian</Trans>
             </span>
           </div>
         </div>

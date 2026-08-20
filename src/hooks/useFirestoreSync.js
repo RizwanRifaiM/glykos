@@ -14,7 +14,7 @@ const SYNC_INTERVAL_MS = 60000
 // — bukan 0, supaya "sensor tidak mengirim" bisa dibedakan dari "0 °C".
 const areaTemp = (points, key) => (Number.isFinite(points?.[key]) ? points[key] : null)
 
-function pickSnapshot(reading, steps, activeMinutes) {
+function pickSnapshot(reading, steps, wearMinutes) {
   if (!reading) return null
   const tempPoints = reading.temperatureObj?.points
   return {
@@ -38,13 +38,13 @@ function pickSnapshot(reading, steps, activeMinutes) {
     // rangkuman harian bisa menjumlahkan beberapa sesi dalam satu hari tanpa
     // menghitung ganda — lihat mergeDailyRollup di utils/dailyRollup.js.
     steps: Number(steps) || 0,
-    // Menit aktif ikut disimpan, berpasangan dengan `steps`.
+    // Lama perangkat terhubung, berpasangan dengan `steps`.
     //
     // Sebelumnya hanya `steps` yang ditulis dan bahkan itu tidak pernah dibaca
     // balik (useSensorData mencari field `activity` yang tidak pernah ada),
     // sehingga kartu Aktivitas jatuh ke nol begitu BLE terputus — padahal
     // langkahnya sungguh-sungguh sudah terjadi hari itu.
-    activeMinutes: Number(activeMinutes) || 0,
+    wearMinutes: Number(wearMinutes) || 0,
     tanggal: reading.tanggal,
     waktu: reading.waktu,
   }
@@ -65,7 +65,7 @@ async function updateDailyRollup(uid, deviceId, snapshot, sessionId) {
     temperatureDelta: snapshot.temperatureDelta,
     humidity: snapshot.humidity,
     steps: snapshot.steps,
-    activeMinutes: snapshot.activeMinutes,
+    wearMinutes: snapshot.wearMinutes,
     sessionId,
   }
 
@@ -83,10 +83,10 @@ async function updateDailyRollup(uid, deviceId, snapshot, sessionId) {
 //   live/current      -> dibaca useSensorData.js (kondisi sekarang)
 //   history/{id}      -> catatan mentah per menit, append-only
 //   daily/{tanggal}   -> rangkuman yang dibaca useHistoryData.js
-export function useFirestoreSync(uid, deviceId, bleReading, bleActive, steps = 0, activeMinutes = 0) {
+export function useFirestoreSync(uid, deviceId, bleReading, bleActive, steps = 0, wearMinutes = 0) {
   const latestReading = useRef(null)
   const latestSteps = useRef(0)
-  const latestActiveMinutes = useRef(0)
+  const latestWearMinutes = useRef(0)
   // Berapa langkah sesi ini yang SUDAH ikut tertulis ke rangkuman harian.
   //
   // Dipakai pemanggil untuk menghitung total hari ini tanpa menghitung ganda:
@@ -99,7 +99,7 @@ export function useFirestoreSync(uid, deviceId, bleReading, bleActive, steps = 0
   // salahnya tertutup di sisi pemakai: total hari ini dijepit agar tidak pernah
   // turun di bawah angka rangkuman harian (lihat DashboardLayout.jsx).
   const [syncedSteps, setSyncedSteps] = useState(0)
-  const [syncedActiveMinutes, setSyncedActiveMinutes] = useState(0)
+  const [syncedWearMinutes, setSyncedWearMinutes] = useState(0)
 
   useEffect(() => {
     latestReading.current = bleReading
@@ -110,8 +110,8 @@ export function useFirestoreSync(uid, deviceId, bleReading, bleActive, steps = 0
   }, [steps])
 
   useEffect(() => {
-    latestActiveMinutes.current = activeMinutes
-  }, [activeMinutes])
+    latestWearMinutes.current = wearMinutes
+  }, [wearMinutes])
 
   useEffect(() => {
     if (!bleActive || !uid || !deviceId) return
@@ -133,7 +133,7 @@ export function useFirestoreSync(uid, deviceId, bleReading, bleActive, steps = 0
       const snapshot = pickSnapshot(
         latestReading.current,
         latestSteps.current,
-        latestActiveMinutes.current,
+        latestWearMinutes.current,
       )
       if (!snapshot || (cancelled && !force)) return
       try {
@@ -149,7 +149,7 @@ export function useFirestoreSync(uid, deviceId, bleReading, bleActive, steps = 0
         await updateDailyRollup(uid, deviceId, snapshot, sessionId)
         if (!cancelled) {
           setSyncedSteps(snapshot.steps)
-          setSyncedActiveMinutes(snapshot.activeMinutes)
+          setSyncedWearMinutes(snapshot.wearMinutes)
         }
       } catch (err) {
         console.warn('Gagal menyimpan data BLE ke Firestore:', err)
@@ -197,5 +197,5 @@ export function useFirestoreSync(uid, deviceId, bleReading, bleActive, steps = 0
     }
   }, [uid, deviceId, bleActive])
 
-  return { syncedSteps, syncedActiveMinutes }
+  return { syncedSteps, syncedWearMinutes }
 }

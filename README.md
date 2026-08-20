@@ -240,19 +240,22 @@ Sebelumnya kartu ini jatuh ke nol setiap kali BLE putus: `steps` memang ditulis
 ke `live/current`, tapi dibaca kembali sebagai field `activity` yang tidak
 pernah ada.
 
-### "Waktu Aktif" berarti waktu BERGERAK
+### "Waktu Pemakaian", bukan "Waktu Aktif"
 
-Nilainya dulu adalah `(sekarang − mulai sesi)` — yaitu lama perangkat
-**tersambung**, bukan lama bergerak. Seseorang yang memakai sepatunya delapan
-jam sambil duduk melihat "Waktu Aktif 480 menit", pada kartu yang seluruh
-gunanya menggambarkan beban yang diterima kaki.
+Angkanya mengukur **lama perangkat terhubung** (`wearMinutes`), dijumlahkan
+seluruh sesi hari itu — bukan lama kaki bergerak.
 
-Sekarang waktu hanya menumpuk selama langkah masih terdeteksi, dengan ambang
-`ACTIVE_GAP_MS` (12 detik) supaya jeda wajar saat berjalan tidak memotong
-hitungan. Selisih antar sampel ikut dijepit ke ambang yang sama: halaman yang
-sempat dibekukan (layar mati, pindah aplikasi) menghasilkan satu selisih
-raksasa saat hidup lagi, dan tanpa jepitan itu satu sampel bisa menambah
-berjam-jam aktivitas yang tidak pernah terjadi.
+Labelnya dulu "Waktu Aktif", dan itu menjanjikan hal yang berbeda dari yang
+diukurnya: seseorang yang memakai sepatunya delapan jam sambil duduk melihat
+"Waktu Aktif 480 menit". Yang diperbaiki labelnya, karena angkanya sendiri
+memang berguna — *wear time* adalah istilah baku pada alas kaki diabetik, ukuran
+kepatuhan pemakaian yang justru ingin dilihat dokter.
+
+Nama fieldnya ikut diganti dari `activeMinutes` menjadi `wearMinutes`, bukan
+hanya labelnya. Nama yang menyiratkan arti berbeda dari isinya adalah jebakan
+yang sudah sekali menimbulkan bug di proyek ini (lihat prop `id` di
+`SensorFootMap.jsx`). `useSensorData` tetap membaca `activeMinutes` sebagai
+cadangan untuk dokumen yang sempat ditulis dengan nama lama.
 
 ### Data disimpan juga saat sesi berakhir
 

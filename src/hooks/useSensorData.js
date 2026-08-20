@@ -166,7 +166,10 @@ function parseSensorReading(raw, deviceId) {
     // terbaca.
     activity: dataRaw.activity || {
       steps: Number(dataRaw.steps) || 0,
-      activeMinutes: Math.round(Number(dataRaw.activeMinutes) || 0),
+      // `activeMinutes` dibaca sebagai cadangan: itu nama field lama, dan
+      // dokumen yang sempat ditulis dengannya masih ada. Namanya diganti
+      // bersama artinya — lihat catatan di useStepCounter.js.
+      wearMinutes: Math.round(Number(dataRaw.wearMinutes ?? dataRaw.activeMinutes) || 0),
     },
   }
 }

@@ -220,13 +220,13 @@ export default function DashboardLayout() {
   // Firestore (live/current + history) selama perangkat tersambung.
   // Dipanggil SETELAH useStepCounter karena jumlah langkah ikut disimpan;
   // tanpa itu kolom Langkah di tabel Riwayat selalu kosong.
-  const { syncedSteps, syncedActiveMinutes } = useFirestoreSync(
+  const { syncedSteps, syncedWearMinutes } = useFirestoreSync(
     uid,
     deviceId,
     ble.reading,
     bleActive,
     stepCounter.steps,
-    stepCounter.activeMinutes,
+    stepCounter.wearMinutes,
   )
 
   // AKTIVITAS DITAMPILKAN SEBAGAI TOTAL HARI INI, bukan total sesi berjalan.
@@ -238,25 +238,25 @@ export default function DashboardLayout() {
   // penggabungannya ada di utils/dailyReading.js.
   const todayPoint = realHistory.length > 0 ? realHistory[realHistory.length - 1] : null
   const rollupSteps = todayPoint?.date === todayKey ? (todayPoint.steps ?? 0) : 0
-  const rollupActiveMinutes = todayPoint?.date === todayKey ? (todayPoint.activeMinutes ?? 0) : 0
+  const rollupWearMinutes = todayPoint?.date === todayKey ? (todayPoint.wearMinutes ?? 0) : 0
 
   const activityToday = useMemo(
     () =>
       todayActivity({
         rollupSteps,
-        rollupActiveMinutes,
+        rollupWearMinutes,
         sessionSteps: stepCounter.steps,
-        sessionActiveMinutes: stepCounter.activeMinutes,
+        sessionWearMinutes: stepCounter.wearMinutes,
         syncedSteps,
-        syncedActiveMinutes,
+        syncedWearMinutes,
       }),
     [
       rollupSteps,
-      rollupActiveMinutes,
+      rollupWearMinutes,
       stepCounter.steps,
-      stepCounter.activeMinutes,
+      stepCounter.wearMinutes,
       syncedSteps,
-      syncedActiveMinutes,
+      syncedWearMinutes,
     ],
   )
 

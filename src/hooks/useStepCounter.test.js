@@ -64,7 +64,7 @@ describe('StepCounterSession', () => {
   it('mengosongkan hasil saat tidak ada data akselerometer', () => {
     walk(session, 3)
     session.update({ accel: { x: null, y: null, z: null } }, true)
-    expect(session.getSnapshot()).toEqual({ steps: 0, activeMinutes: 0, sessionActive: false })
+    expect(session.getSnapshot()).toEqual({ steps: 0, wearMinutes: 0, sessionActive: false })
   })
 
   it('tetap netral terhadap orientasi pemasangan perangkat', () => {
@@ -82,7 +82,7 @@ describe('StepCounterSession', () => {
   })
 })
 
-describe('waktu aktif', () => {
+describe('lama pemakaian', () => {
   let session
 
   beforeEach(() => {
@@ -96,54 +96,33 @@ describe('waktu aktif', () => {
     vi.useRealTimers()
   })
 
-  // Perilaku LAMA yang sengaja dihapus: activeMinutes adalah (sekarang − mulai
-  // sesi), yaitu lama perangkat TERSAMBUNG. Delapan jam duduk di meja dengan
-  // sepatu terpasang menghasilkan "Waktu Aktif 480 menit" pada kartu yang
-  // seluruh gunanya menggambarkan beban yang diterima kaki.
-  it('tidak menumpuk waktu selama tidak ada langkah', () => {
-    // Perangkat tersambung dan mengirim terus, tapi kakinya diam.
+  // `wearMinutes` mengukur LAMA PERANGKAT TERHUBUNG, bukan lama kaki bergerak.
+  // Itu ukuran kepatuhan pemakaian — pada alas kaki diabetik justru itu yang
+  // berguna dilihat dokter — jadi diam pun tetap terhitung.
+  it('menumpuk selama perangkat terhubung, meski kakinya diam', () => {
     for (let i = 0; i < 60; i++) {
       vi.advanceTimersByTime(1000)
       session.update(readingAt(1.0), true)
     }
-    expect(session.getSnapshot().activeMinutes).toBe(0)
+    expect(session.getSnapshot().wearMinutes).toBeCloseTo(1, 1)
   })
 
-  it('menumpuk waktu selama langkah masih terdeteksi', () => {
-    walk(session, 30) // 30 langkah x 800 ms = 24 detik berjalan
-    const activeMinutes = session.getSnapshot().activeMinutes
-    expect(activeMinutes).toBeGreaterThan(0.2)
-    expect(activeMinutes).toBeLessThan(0.6)
+  it('dihitung sejak sampel pertama sesi, bukan sejak langkah pertama', () => {
+    vi.advanceTimersByTime(5 * 60 * 1000)
+    session.update(readingAt(1.0), true)
+    expect(session.getSnapshot().wearMinutes).toBeCloseTo(5, 1)
   })
 
-  it('berhenti menumpuk setelah berhenti berjalan', () => {
-    walk(session, 10)
-    const setelahJalan = session.getSnapshot().activeMinutes
+  it('kembali ke nol saat sesi baru dimulai', () => {
+    vi.advanceTimersByTime(10 * 60 * 1000)
+    session.update(readingAt(1.0), true)
+    expect(session.getSnapshot().wearMinutes).toBeGreaterThan(9)
 
-    // Diam lima menit, perangkat tetap mengirim.
-    for (let i = 0; i < 60; i++) {
-      vi.advanceTimersByTime(5000)
-      session.update(readingAt(1.0), true)
-    }
-
-    // Hanya sisa ambang ACTIVE_GAP_MS setelah langkah terakhir yang ikut,
-    // bukan lima menit diamnya.
-    const setelahDiam = session.getSnapshot().activeMinutes
-    expect(setelahDiam - setelahJalan).toBeLessThan(0.3)
-  })
-
-  // Halaman yang dibekukan (layar mati, pindah aplikasi) menghasilkan satu
-  // selisih raksasa saat hidup lagi. Tanpa jepitan, satu sampel bisa menambah
-  // berjam-jam aktivitas yang tidak pernah terjadi.
-  it('menjepit lompatan waktu setelah halaman dibekukan', () => {
-    walk(session, 5)
-    const sebelum = session.getSnapshot().activeMinutes
-
-    vi.advanceTimersByTime(3 * 60 * 60 * 1000) // tiga jam membeku
-    session.update(readingAt(1.3), true)
-
-    const sesudah = session.getSnapshot().activeMinutes
-    expect(sesudah - sebelum).toBeLessThan(0.3)
+    // Perangkat terputus lalu tersambung lagi: sesi baru, hitungan dari nol.
+    // Total HARIAN-nya tetap utuh karena dijumlahkan antar sesi di
+    // utils/dailyRollup.js, bukan di sini.
+    session.update(readingAt(1.0), false)
+    session.update(readingAt(1.0), true)
+    expect(session.getSnapshot().wearMinutes).toBeLessThan(0.1)
   })
 })
-

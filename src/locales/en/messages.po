@@ -22,6 +22,10 @@ msgid "Memuat halaman…"
 msgstr "Loading page…"
 
 #: src/components/ActivityPanel.jsx
+#~ msgid "Waktu Aktif"
+#~ msgstr "Active Time"
+
+#: src/components/ActivityPanel.jsx
 msgid "Indikasi Kelelahan"
 msgstr "Fatigue Indication"
 
@@ -66,8 +70,8 @@ msgid "{minsText}m"
 msgstr "{minsText}m"
 
 #: src/components/ActivityPanel.jsx
-msgid "Waktu Aktif"
-msgstr "Active Time"
+msgid "Waktu Pemakaian"
+msgstr "Wear Time"
 
 #: src/components/ActivityPanel.jsx
 msgid "Jumlah langkah adalah estimasi dari data gerak kaki, bisa terhitung lebih sedikit saat berjalan cepat atau berlari."
@@ -1553,6 +1557,10 @@ msgid "Terjadi kesalahan. Silakan coba lagi."
 msgstr "Something went wrong. Please try again."
 
 #: src/utils/exportData.js
+#~ msgid "Waktu Aktif (menit)"
+#~ msgstr "Active Time (minutes)"
+
+#: src/utils/exportData.js
 msgid "Glykos — Laporan Monitoring Kaki Diabetes"
 msgstr "Glykos — Diabetic Foot Monitoring Report"
 
@@ -1585,8 +1593,8 @@ msgid "Lokasi Suhu"
 msgstr "Temperature Location"
 
 #: src/utils/exportData.js
-msgid "Waktu Aktif (menit)"
-msgstr "Active Time (minutes)"
+msgid "Waktu Pemakaian (menit)"
+msgstr "Wear Time (minutes)"
 
 #: src/utils/exportData.js
 msgid "Histori"
@@ -1627,6 +1635,10 @@ msgstr "{days, plural, one {# day ago} other {# days ago}}"
 #: src/utils/sensorContext.js
 #~ msgid "- Aktivitas sesi ini: {stepsText} langkah, {minutesText} menit aktif"
 #~ msgstr "- This session: {stepsText} steps, {minutesText} active minutes"
+
+#: src/utils/sensorContext.js
+#~ msgid "- Aktivitas hari ini: {stepsText} langkah, {minutesText} menit aktif"
+#~ msgstr "- Today: {stepsText} steps, {minutesText} active minutes"
 
 #: src/utils/sensorContext.js
 msgid "aman"
@@ -1689,8 +1701,8 @@ msgid "- Kelembapan dalam sepatu: {humidityText} % RH ({state}; ideal {0}–{1} 
 msgstr "- In-shoe humidity: {humidityText} % RH ({state}; ideal {0}–{1} %, risk > {2} %)"
 
 #: src/utils/sensorContext.js
-msgid "- Aktivitas hari ini: {stepsText} langkah, {minutesText} menit aktif"
-msgstr "- Today: {stepsText} steps, {minutesText} active minutes"
+msgid "- Aktivitas hari ini: {stepsText} langkah, {minutesText} menit pemakaian"
+msgstr "- Today: {stepsText} steps, {minutesText} minutes of wear"
 
 #: src/utils/sensorContext.js
 msgid "tinggi"

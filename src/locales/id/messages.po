@@ -22,6 +22,10 @@ msgid "Memuat halaman…"
 msgstr "Memuat halaman…"
 
 #: src/components/ActivityPanel.jsx
+#~ msgid "Waktu Aktif"
+#~ msgstr "Waktu Aktif"
+
+#: src/components/ActivityPanel.jsx
 msgid "Indikasi Kelelahan"
 msgstr "Indikasi Kelelahan"
 
@@ -66,8 +70,8 @@ msgid "{minsText}m"
 msgstr "{minsText}m"
 
 #: src/components/ActivityPanel.jsx
-msgid "Waktu Aktif"
-msgstr "Waktu Aktif"
+msgid "Waktu Pemakaian"
+msgstr "Waktu Pemakaian"
 
 #: src/components/ActivityPanel.jsx
 msgid "Jumlah langkah adalah estimasi dari data gerak kaki, bisa terhitung lebih sedikit saat berjalan cepat atau berlari."
@@ -1553,6 +1557,10 @@ msgid "Terjadi kesalahan. Silakan coba lagi."
 msgstr "Terjadi kesalahan. Silakan coba lagi."
 
 #: src/utils/exportData.js
+#~ msgid "Waktu Aktif (menit)"
+#~ msgstr "Waktu Aktif (menit)"
+
+#: src/utils/exportData.js
 msgid "Glykos — Laporan Monitoring Kaki Diabetes"
 msgstr "Glykos — Laporan Monitoring Kaki Diabetes"
 
@@ -1585,8 +1593,8 @@ msgid "Lokasi Suhu"
 msgstr "Lokasi Suhu"
 
 #: src/utils/exportData.js
-msgid "Waktu Aktif (menit)"
-msgstr "Waktu Aktif (menit)"
+msgid "Waktu Pemakaian (menit)"
+msgstr "Waktu Pemakaian (menit)"
 
 #: src/utils/exportData.js
 msgid "Histori"
@@ -1627,6 +1635,10 @@ msgstr "{days, plural, one {# hari lalu} other {# hari lalu}}"
 #: src/utils/sensorContext.js
 #~ msgid "- Aktivitas sesi ini: {stepsText} langkah, {minutesText} menit aktif"
 #~ msgstr "- Aktivitas sesi ini: {stepsText} langkah, {minutesText} menit aktif"
+
+#: src/utils/sensorContext.js
+#~ msgid "- Aktivitas hari ini: {stepsText} langkah, {minutesText} menit aktif"
+#~ msgstr "- Aktivitas hari ini: {stepsText} langkah, {minutesText} menit aktif"
 
 #: src/utils/sensorContext.js
 msgid "aman"
@@ -1689,8 +1701,8 @@ msgid "- Kelembapan dalam sepatu: {humidityText} % RH ({state}; ideal {0}–{1} 
 msgstr "- Kelembapan dalam sepatu: {humidityText} % RH ({state}; ideal {0}–{1} %, risiko > {2} %)"
 
 #: src/utils/sensorContext.js
-msgid "- Aktivitas hari ini: {stepsText} langkah, {minutesText} menit aktif"
-msgstr "- Aktivitas hari ini: {stepsText} langkah, {minutesText} menit aktif"
+msgid "- Aktivitas hari ini: {stepsText} langkah, {minutesText} menit pemakaian"
+msgstr "- Aktivitas hari ini: {stepsText} langkah, {minutesText} menit pemakaian"
 
 #: src/utils/sensorContext.js
 msgid "tinggi"
