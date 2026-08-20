@@ -190,8 +190,18 @@ export function useBleSensor() {
 
   const disconnect = useCallback(async () => {
     await sensorRef.current?.disconnect()
-    setRaw(null)
-    setUpdatedAt(null)
+    // Pembacaan terakhir SENGAJA tidak dihapus.
+    //
+    // Sebelumnya `setRaw(null)` di sini mengosongkan angka di kartu begitu
+    // tombol putus ditekan. Itu keliru: yang berakhir adalah koneksinya, bukan
+    // kejadiannya — tekanan 240 kPa yang terbaca sepuluh menit lalu tetap
+    // pernah terjadi pada kaki pengguna. Yang mengakhiri masa berlaku sebuah
+    // pembacaan adalah pergantian hari, dan itu diputuskan di satu tempat:
+    // utils/dailyReading.js.
+    //
+    // `status` sudah berpindah ke 'disconnected', jadi normalizeBleReading
+    // menandai connection.wifi = false — angkanya tetap tampil, tapi tidak
+    // pernah mengaku sebagai pembacaan langsung.
   }, [])
 
   const isConnected = status === 'connected'

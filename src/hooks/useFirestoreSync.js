@@ -1,5 +1,5 @@
 // src/hooks/useFirestoreSync.js
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { addDoc, runTransaction, serverTimestamp, setDoc } from 'firebase/firestore'
 import { db } from '../services/firestore'
 import { dailyDoc, historyCollection, liveDoc } from '../services/paths'
@@ -14,7 +14,7 @@ const SYNC_INTERVAL_MS = 60000
 // — bukan 0, supaya "sensor tidak mengirim" bisa dibedakan dari "0 °C".
 const areaTemp = (points, key) => (Number.isFinite(points?.[key]) ? points[key] : null)
 
-function pickSnapshot(reading, steps) {
+function pickSnapshot(reading, steps, activeMinutes) {
   if (!reading) return null
   const tempPoints = reading.temperatureObj?.points
   return {
@@ -38,6 +38,13 @@ function pickSnapshot(reading, steps) {
     // rangkuman harian bisa menjumlahkan beberapa sesi dalam satu hari tanpa
     // menghitung ganda — lihat mergeDailyRollup di utils/dailyRollup.js.
     steps: Number(steps) || 0,
+    // Menit aktif ikut disimpan, berpasangan dengan `steps`.
+    //
+    // Sebelumnya hanya `steps` yang ditulis dan bahkan itu tidak pernah dibaca
+    // balik (useSensorData mencari field `activity` yang tidak pernah ada),
+    // sehingga kartu Aktivitas jatuh ke nol begitu BLE terputus — padahal
+    // langkahnya sungguh-sungguh sudah terjadi hari itu.
+    activeMinutes: Number(activeMinutes) || 0,
     tanggal: reading.tanggal,
     waktu: reading.waktu,
   }
@@ -75,9 +82,22 @@ async function updateDailyRollup(uid, deviceId, snapshot, sessionId) {
 //   live/current      -> dibaca useSensorData.js (kondisi sekarang)
 //   history/{id}      -> catatan mentah per menit, append-only
 //   daily/{tanggal}   -> rangkuman yang dibaca useHistoryData.js
-export function useFirestoreSync(uid, deviceId, bleReading, bleActive, steps = 0) {
+export function useFirestoreSync(uid, deviceId, bleReading, bleActive, steps = 0, activeMinutes = 0) {
   const latestReading = useRef(null)
   const latestSteps = useRef(0)
+  const latestActiveMinutes = useRef(0)
+  // Berapa langkah sesi ini yang SUDAH ikut tertulis ke rangkuman harian.
+  //
+  // Dipakai pemanggil untuk menghitung total hari ini tanpa menghitung ganda:
+  // rangkuman sudah memuat nilai terakhir yang disinkronkan, jadi yang perlu
+  // ditambahkan hanyalah selisih sejak penulisan itu. Lihat DashboardLayout.jsx.
+  //
+  // TIDAK direset ke 0 saat sesi baru dimulai, meski nilainya lalu sempat
+  // membawa sisa sesi sebelumnya sampai sinkronisasi pertama selesai. Meresetnya
+  // di badan effect melanggar react-hooks/set-state-in-effect, dan jendela
+  // salahnya tertutup di sisi pemakai: total hari ini dijepit agar tidak pernah
+  // turun di bawah angka rangkuman harian (lihat DashboardLayout.jsx).
+  const [syncedSteps, setSyncedSteps] = useState(0)
 
   useEffect(() => {
     latestReading.current = bleReading
@@ -86,6 +106,10 @@ export function useFirestoreSync(uid, deviceId, bleReading, bleActive, steps = 0
   useEffect(() => {
     latestSteps.current = steps
   }, [steps])
+
+  useEffect(() => {
+    latestActiveMinutes.current = activeMinutes
+  }, [activeMinutes])
 
   useEffect(() => {
     if (!bleActive || !uid || !deviceId) return
@@ -98,7 +122,11 @@ export function useFirestoreSync(uid, deviceId, bleReading, bleActive, steps = 0
     let cancelled = false
 
     async function sync() {
-      const snapshot = pickSnapshot(latestReading.current, latestSteps.current)
+      const snapshot = pickSnapshot(
+        latestReading.current,
+        latestSteps.current,
+        latestActiveMinutes.current,
+      )
       if (!snapshot || cancelled) return
       try {
         await setDoc(liveDoc(uid, deviceId), {
@@ -111,6 +139,7 @@ export function useFirestoreSync(uid, deviceId, bleReading, bleActive, steps = 0
           createdAt: serverTimestamp(),
         })
         await updateDailyRollup(uid, deviceId, snapshot, sessionId)
+        if (!cancelled) setSyncedSteps(snapshot.steps)
       } catch (err) {
         console.warn('Gagal menyimpan data BLE ke Firestore:', err)
       }
@@ -123,4 +152,6 @@ export function useFirestoreSync(uid, deviceId, bleReading, bleActive, steps = 0
       clearInterval(intervalId)
     }
   }, [uid, deviceId, bleActive])
+
+  return { syncedSteps }
 }

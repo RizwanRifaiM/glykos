@@ -7,7 +7,14 @@ import { rollupToPoint } from '../utils/dailyRollup'
 import { toDateKey } from '../utils/formatTime'
 import { formatShortDate } from '../utils/locale'
 
-const EMPTY_POINT = { pressure: 0, temperature: 0, temperatureDelta: 0, humidity: 0, steps: 0 }
+const EMPTY_POINT = {
+  pressure: 0,
+  temperature: 0,
+  temperatureDelta: 0,
+  humidity: 0,
+  steps: 0,
+  activeMinutes: 0,
+}
 
 // Membaca rangkuman harian (satu dokumen per tanggal) yang ditulis
 // useFirestoreSync, DIBATASI pada rentang tanggal yang sedang ditampilkan.

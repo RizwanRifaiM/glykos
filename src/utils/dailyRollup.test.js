@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { averageHumidity, emptyRollup, mergeDailyRollup, totalSteps } from './dailyRollup'
+import {
+  averageHumidity,
+  emptyRollup,
+  mergeDailyRollup,
+  totalActiveMinutes,
+  totalSteps,
+} from './dailyRollup'
 
 const sample = (overrides = {}) => ({
   tanggal: '2026-08-13',
@@ -57,5 +63,32 @@ describe('mergeDailyRollup', () => {
     const rollup = mergeDailyRollup(undefined, sample({ pressurePeak: 130 }))
     expect(rollup.pressureMax).toBe(130)
     expect(averageHumidity(emptyRollup('2026-08-13'))).toBe(0)
+  })
+})
+
+describe('menit aktif per sesi', () => {
+  // Pola yang sama dengan langkah, dan karena alasan yang sama: tiap sampel
+  // membawa durasi KUMULATIF sejak sesinya dimulai. Menjumlahkan tiap sampel
+  // akan melipatgandakannya.
+  it('mengambil nilai terbesar tiap sesi, lalu menjumlahkan antar sesi', () => {
+    let rollup = emptyRollup('2026-08-21')
+    const sample = (sessionId, activeMinutes) => ({
+      tanggal: '2026-08-21',
+      activeMinutes,
+      sessionId,
+    })
+
+    rollup = mergeDailyRollup(rollup, sample('pagi', 12))
+    rollup = mergeDailyRollup(rollup, sample('pagi', 34))
+    rollup = mergeDailyRollup(rollup, sample('sore', 21))
+
+    expect(totalActiveMinutes(rollup)).toBe(55)
+  })
+
+  it('mengabaikan nol — belum terukur, bukan nol menit', () => {
+    let rollup = emptyRollup('2026-08-21')
+    rollup = mergeDailyRollup(rollup, { tanggal: '2026-08-21', activeMinutes: 0, sessionId: 'a' })
+    expect(totalActiveMinutes(rollup)).toBe(0)
+    expect(rollup.activeMinutesBySession).toEqual({})
   })
 })

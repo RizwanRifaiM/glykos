@@ -156,11 +156,29 @@ function parseSensorReading(raw, deviceId) {
       points: hasTempAreas ? tempPoints : temperatureVal > 0 ? { metatarsal: temperatureVal } : {},
       delta: tempDelta,
     },
+    // Langkah & menit aktif DIBACA BALIK dari dokumen live.
+    //
+    // Sebelumnya baris ini mencari field `activity` yang tidak pernah ditulis
+    // siapa pun — useFirestoreSync menyimpannya sebagai `steps` di tingkat atas.
+    // Akibatnya kartu Aktivitas jatuh ke nol begitu BLE terputus, seolah
+    // langkah hari itu tidak pernah terjadi. Bentuk objek `activity` tetap
+    // didukung supaya dokumen versi lama yang kebetulan memilikinya tetap
+    // terbaca.
     activity: dataRaw.activity || {
-      steps: 0,
-      activeMinutes: 0,
+      steps: Number(dataRaw.steps) || 0,
+      activeMinutes: Math.round(Number(dataRaw.activeMinutes) || 0),
     },
   }
+}
+
+// Bentuk pembacaan KOSONG — semua nol, tanpa satu pun angka karangan.
+//
+// Dipakai DashboardLayout saat pembacaan terakhir sudah bukan milik hari ini
+// (reset tengah malam). Dibuat lewat parseSensorReading yang sama dengan jalur
+// biasa, jadi bentuknya dijamin identik dengan pembacaan sungguhan dan tidak
+// ada komponen yang perlu tahu bedanya.
+export function emptyReading(deviceId = 'glykos-device') {
+  return parseSensorReading(DEFAULT_JSON, deviceId)
 }
 
 // Membaca dokumen live (users/{uid}/devices/{deviceId}/live/current) secara

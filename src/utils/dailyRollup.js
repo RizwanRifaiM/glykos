@@ -18,6 +18,7 @@ export function emptyRollup(tanggal) {
     humiditySum: 0,
     humidityCount: 0,
     stepsBySession: {},
+    activeMinutesBySession: {},
   }
 }
 
@@ -39,11 +40,25 @@ export function mergeDailyRollup(prev, sample) {
 
   // 0 berarti "sensor belum mengirim", bukan pembacaan — sama seperti guard di
   // useAlerts.js. Nilai nol tidak boleh menarik rata-rata kelembapan ke bawah.
+  const sessionKey = sample.sessionId || 'unknown'
+
   const stepsBySession = { ...base.stepsBySession }
   const steps = positive(sample.steps)
   if (steps > 0) {
-    const key = sample.sessionId || 'unknown'
-    stepsBySession[key] = Math.max(stepsBySession[key] ?? 0, steps)
+    stepsBySession[sessionKey] = Math.max(stepsBySession[sessionKey] ?? 0, steps)
+  }
+
+  // Menit aktif mengikuti pola yang persis sama dengan langkah, dan karena
+  // alasan yang sama: tiap sampel membawa durasi KUMULATIF sejak sesinya
+  // dimulai, jadi menjumlahkan tiap sampel akan melipatgandakannya. Yang benar
+  // nilai terbesar tiap sesi, lalu dijumlahkan antar sesi.
+  const activeMinutesBySession = { ...base.activeMinutesBySession }
+  const activeMinutes = positive(sample.activeMinutes)
+  if (activeMinutes > 0) {
+    activeMinutesBySession[sessionKey] = Math.max(
+      activeMinutesBySession[sessionKey] ?? 0,
+      activeMinutes,
+    )
   }
 
   return {
@@ -54,14 +69,20 @@ export function mergeDailyRollup(prev, sample) {
     humiditySum: base.humiditySum + humidity,
     humidityCount: base.humidityCount + (humidity > 0 ? 1 : 0),
     stepsBySession,
+    activeMinutesBySession,
   }
 }
 
+function sumBySession(bySession) {
+  return Object.values(bySession ?? {}).reduce((total, value) => total + (Number(value) || 0), 0)
+}
+
 export function totalSteps(rollup) {
-  return Object.values(rollup?.stepsBySession ?? {}).reduce(
-    (total, value) => total + (Number(value) || 0),
-    0,
-  )
+  return sumBySession(rollup?.stepsBySession)
+}
+
+export function totalActiveMinutes(rollup) {
+  return Math.round(sumBySession(rollup?.activeMinutesBySession))
 }
 
 export function averageHumidity(rollup) {
@@ -78,5 +99,6 @@ export function rollupToPoint(rollup) {
     temperatureDelta: Number(rollup?.temperatureDeltaMax) || 0,
     humidity: averageHumidity(rollup),
     steps: totalSteps(rollup),
+    activeMinutes: totalActiveMinutes(rollup),
   }
 }

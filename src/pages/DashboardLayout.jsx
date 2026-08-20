@@ -17,7 +17,7 @@ import {
   DEMO_ALERTS,
   DEMO_FATIGUE,
 } from '../constants/demoData'
-import { useSensorData } from '../hooks/useSensorData'
+import { emptyReading, useSensorData } from '../hooks/useSensorData'
 import { useBleSensor } from '../hooks/useBleSensor'
 import { useHistoryData } from '../hooks/useHistoryData'
 import { useAlerts, useAlertMonitor } from '../hooks/useAlerts'
@@ -26,7 +26,9 @@ import { useStepCounter } from '../hooks/useStepCounter'
 import { useFirestoreSync } from '../hooks/useFirestoreSync'
 import { useTemperatureTrendAlert } from '../hooks/useTemperatureTrendAlert'
 import { useWakeLock } from '../hooks/useWakeLock'
+import { useDayKey } from '../hooks/useDayKey'
 import { evaluateTemperatureTrend } from '../utils/temperatureTrend'
+import { resolveReadingSource, todayActivity } from '../utils/dailyReading'
 import { useAuth } from '../contexts/auth-context'
 import {
   IconLayoutDashboard,
@@ -113,6 +115,9 @@ export default function DashboardLayout() {
   const { i18n } = useLinguiCore()
   const [deviceId, setDeviceId] = useState('glykos-device')
   const [historyRange, setHistoryRange] = useState('7d')
+  // Berganti sendiri tepat pukul 00:00 — inilah yang mengakhiri masa berlaku
+  // pembacaan kemarin. Lihat useDayKey.js.
+  const todayKey = useDayKey()
   const demoPref = demoPreference()
 
   // Seluruh data sensor tersimpan di bawah users/{uid} — lihat services/paths.js.
@@ -140,14 +145,72 @@ export default function DashboardLayout() {
 
   // Saat perangkat BLE terhubung dan sudah mengirim paket, datanya jadi sumber
   // live yang meng-override data Firestore/cadangan.
-  const bleActive = ble.isConnected && ble.reading
-  const rawData = bleActive ? ble.reading : firestoreData
-  const isLive = bleActive ? true : firestoreLive
+  //
+  // `Boolean(...)` bukan hiasan. Tanpanya nilainya adalah OBJEK `ble.reading`,
+  // yang identitasnya berganti pada SETIAP paket BLE (~3 kali per detik). Nilai
+  // itu dipakai sebagai dependensi effect di useFirestoreSync dan useWakeLock,
+  // jadi keduanya ikut dipasang ulang tiga kali per detik: interval 60 detik
+  // tidak pernah sempat menembak (setiap pemasangan ulang menulis ke Firestore
+  // lagi), sessionId berganti tiap paket sehingga hitungan langkah harian
+  // menggelembung, dan wake lock berulang kali dilepas lalu diminta ulang.
+  const bleActive = Boolean(ble.isConnected && ble.reading)
+
+  // SUMBER ANGKA DI KARTU, berurutan:
+  //   1. pembacaan BLE terakhir — bertahan setelah perangkat terputus, jadi
+  //      angka yang sudah sempat terbaca tidak hilang hanya karena koneksinya
+  //      putus;
+  //   2. dokumen live Firestore — dipakai setelah halaman dimuat ulang, saat
+  //      pembacaan di memori sudah tidak ada.
+  //
+  // Keduanya dibatasi HARI INI. Lihat catatan tentang reset tengah malam di
+  // bawah.
+  // Aturannya sendiri ada di utils/dailyReading.js (fungsi murni, bisa diuji
+  // tanpa merender apa pun); di sini hanya disambungkan ke sumber datanya.
+  const readingSource = resolveReadingSource({
+    todayKey,
+    bleActive,
+    bleDate: ble.reading?.tanggal ?? null,
+    firestoreHasData,
+    firestoreDate: firestoreData?.tanggal ?? null,
+  })
+  const firestoreIsToday = readingSource === 'firestore'
+  const rawData = readingSource === 'ble' ? ble.reading : firestoreData
+
+  // RESET SEKALI SEHARI, PUKUL 00:00 — bukan saat perangkat terputus.
+  //
+  // Angka di kartu adalah pembacaan TERAKHIR yang diterima, dan pembacaan itu
+  // tetap berlaku sepanjang hari meski perangkat sudah dilepas: kaki yang
+  // menerima tekanan 240 kPa pagi tadi tetap menerima tekanan itu, dan
+  // menghapusnya dari layar begitu Bluetooth putus menyembunyikan kejadian yang
+  // sungguh terjadi.
+  //
+  // Yang mengakhiri masa berlakunya adalah pergantian hari. `useDayKey`
+  // berganti tepat tengah malam, dan karena setiap pembacaan membawa
+  // `tanggal`-nya sendiri, perbandingan ini bekerja sama benarnya baik untuk
+  // halaman yang dibuka melewati tengah malam maupun yang baru dibuka
+  // keesokan harinya.
+  //
+  // Tidak ada apa pun yang dihapus dari Firestore saat reset ini: `live/current`
+  // tetap berisi pembacaan terakhir, hanya berhenti ditampilkan sebagai
+  // pembacaan HARI INI. Riwayat harian tetap utuh di koleksi `daily`.
+  const hasReadingToday = readingSource !== 'none'
+
+  // "Live" menuntut pembacaan hari ini, bukan sekadar dokumen yang segar.
+  // Keduanya nyaris selalu sama — kecuali persis di sekitar tengah malam, saat
+  // dokumen berumur dua menit sudah menjadi milik hari kemarin.
+  const isLive = bleActive ? true : firestoreLive && firestoreIsToday
 
   // Data contoh dipakai selama pengguna belum punya data sendiri — supaya
   // dashboard sesudah login tidak berisi angka nol semua. Begitu ada pembacaan
   // nyata (BLE tersambung ATAU dokumen live sudah pernah ditulis), data contoh
   // mundur seketika: yang nyata selalu menang. Lihat utils/demoMode.js.
+  //
+  // Sengaja memakai `firestoreHasData` (pernah punya data), BUKAN
+  // `hasReadingToday`. Kalau dipakai yang kedua, dashboard akan berbalik
+  // menampilkan data contoh setiap lewat tengah malam — pengguna yang kemarin
+  // melihat angkanya sendiri akan menemukan angka karangan pada 00.01, tanpa
+  // spanduk penanda apa pun (mode auto memang tanpa spanduk). Keadaan kosong
+  // yang jujur jauh lebih baik di sana.
   const hasRealData = Boolean(bleActive || firestoreHasData)
   const demoMode = shouldUseDemoData(demoPref, {
     hasRealData,
@@ -169,17 +232,44 @@ export default function DashboardLayout() {
   // Firestore (live/current + history) selama perangkat tersambung.
   // Dipanggil SETELAH useStepCounter karena jumlah langkah ikut disimpan;
   // tanpa itu kolom Langkah di tabel Riwayat selalu kosong.
-  useFirestoreSync(uid, deviceId, ble.reading, bleActive, stepCounter.steps)
-  const liveData =
-    bleActive && !rawData.activity && stepCounter.sessionActive
-      ? {
-          ...rawData,
-          activity: {
-            steps: stepCounter.steps,
-            activeMinutes: Math.round(stepCounter.activeMinutes),
-          },
-        }
-      : rawData
+  const { syncedSteps } = useFirestoreSync(
+    uid,
+    deviceId,
+    ble.reading,
+    bleActive,
+    stepCounter.steps,
+    stepCounter.activeMinutes,
+  )
+
+  // AKTIVITAS DITAMPILKAN SEBAGAI TOTAL HARI INI, bukan total sesi berjalan.
+  //
+  // Hitungan langkah di useStepCounter direset tiap kali perangkat tersambung
+  // ulang — benar untuk keperluannya sendiri (deteksi kelelahan mengukur satu
+  // sesi pemakaian), tapi salah untuk kartu: seseorang yang menyambungkan
+  // perangkat lagi sore hari akan melihat langkah paginya lenyap. Aturan
+  // penggabungannya ada di utils/dailyReading.js.
+  const todayPoint = realHistory.length > 0 ? realHistory[realHistory.length - 1] : null
+  const rollupSteps = todayPoint?.date === todayKey ? (todayPoint.steps ?? 0) : 0
+  const rollupActiveMinutes = todayPoint?.date === todayKey ? (todayPoint.activeMinutes ?? 0) : 0
+
+  const activityToday = useMemo(
+    () =>
+      todayActivity({
+        rollupSteps,
+        rollupActiveMinutes,
+        sessionSteps: stepCounter.steps,
+        sessionActiveMinutes: stepCounter.activeMinutes,
+        syncedSteps,
+      }),
+    [rollupSteps, rollupActiveMinutes, stepCounter.steps, stepCounter.activeMinutes, syncedSteps],
+  )
+
+  // Tanpa pembacaan hari ini, kartu diisi NOL — bukan angka kemarin, dan bukan
+  // data contoh. Inilah wujud reset pukul 00:00 di layar.
+  const liveData = useMemo(() => {
+    if (!hasReadingToday) return emptyReading(deviceId)
+    return activityToday ? { ...rawData, activity: activityToday } : rawData
+  }, [hasReadingToday, deviceId, rawData, activityToday])
 
   const liveFatigue = useFatigueMonitor(deviceId, liveData, isLive, stepCounter.steps)
 
@@ -213,7 +303,14 @@ export default function DashboardLayout() {
   const displayLive = demoMode ? true : isLive
   // "Basi" hanya berlaku untuk data Firestore: selama BLE tersambung, sumber
   // datanya perangkat langsung dan selalu baru.
-  const displayStale = demoMode || bleActive ? false : firestoreStale
+  //
+  // `!hasReadingToday` juga mematikannya: hari yang baru dimulai bukan "data
+  // yang berhenti diperbarui", melainkan hari yang memang belum punya
+  // pembacaan. Spanduk yang tepat untuk keadaan itu adalah ajakan
+  // menyambungkan perangkat, yang muncul sendiri saat live & stale sama-sama
+  // mati (lihat DashboardOverview.jsx).
+  const displayStale =
+    demoMode || bleActive || !hasReadingToday ? false : firestoreStale
   // Variabel dulu: ekspresi anggota di dalam <Trans> ditolak rule
   // lingui/no-expression-in-message.
   const bleError = ble.error

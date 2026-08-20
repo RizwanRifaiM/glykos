@@ -61,6 +61,8 @@ Bagian itu harus cocok persis dengan firmware.
 | `src/locales/{id,en}/messages.po` | Katalog pesan — dihasilkan `lingui extract` |
 | `scripts/translations.en.mjs` | Sumber terjemahan Inggris (ditulis manusia) |
 | `src/utils/alertMessages.js` | Merakit kalimat peringatan dari data terstruktur |
+| `src/utils/dailyReading.js` | Sumber angka kartu & reset tengah malam |
+| `src/hooks/useDayKey.js` | Kunci tanggal yang berganti sendiri pukul 00:00 |
 | `public/sw.js` | Service worker: jalur notifikasi + cache offline |
 | `firestore.rules` | Aturan akses — berpasangan dengan `paths.js` |
 
@@ -194,6 +196,49 @@ Semua format tanggal & angka lewat `utils/locale.js`; `toFixed()` dan
 `toLocaleString('id-ID')` tidak dipakai lagi untuk teks yang dilihat pengguna.
 Field `waktu` yang tersimpan di Firestore justru dibuat **netral bahasa**
 (`HH:MM:SS`) — ia data, bukan presentasi.
+
+## Masa berlaku angka di kartu
+
+Angka di kartu dashboard adalah **pembacaan terakhir yang diterima**, dan
+berlaku **sepanjang hari itu**. Yang mengakhirinya hanya pergantian hari —
+bukan terputusnya koneksi.
+
+Alasannya: koneksi yang putus tidak membatalkan apa pun yang sudah terjadi.
+Tekanan 240 kPa yang terbaca pagi tadi tetap diterima kaki pengguna, dan
+menghapusnya dari layar begitu Bluetooth dilepas justru menyembunyikan kejadian
+yang paling perlu dilihat.
+
+| Peristiwa | Yang terjadi pada kartu |
+|---|---|
+| Perangkat terputus | Angka **tetap**, badge berubah jadi Offline |
+| Halaman dimuat ulang | Angka diambil dari `live/current` (tertinggal ≤ 60 detik) |
+| Lewat pukul 00:00 | Kartu **kosong** — hari baru, belum ada pembacaan |
+| Tersambung melewati 00:00 | Tetap live; paket berikutnya sudah bertanggal hari baru |
+
+Reset tengah malam **tidak menghapus apa pun** dari Firestore: `live/current`
+tetap berisi pembacaan terakhir, hanya berhenti ditampilkan sebagai pembacaan
+hari ini. Rangkuman harian di koleksi `daily` juga utuh — halaman Riwayat tidak
+terpengaruh.
+
+Aturannya ada di `utils/dailyReading.js` (fungsi murni, diuji), sementara
+`hooks/useDayKey.js` yang menyalakan ulang tepat tengah malam — dengan
+`setTimeout` ke pergantian hari berikutnya, bukan detak per menit, karena
+peristiwanya terjadi sekali sehari.
+
+### Kartu Aktivitas menampilkan total HARI INI
+
+`useStepCounter` mereset hitungannya tiap kali perangkat tersambung ulang — itu
+benar untuk keperluannya sendiri (deteksi kelelahan mengukur satu sesi
+pemakaian), tapi salah untuk kartu: seseorang yang menyambungkan perangkat lagi
+sore hari akan melihat langkah paginya lenyap.
+
+Kartu karena itu memakai rangkuman harian (yang sudah menjumlahkan seluruh sesi
+hari ini) ditambah bagian sesi berjalan yang belum tersinkron — tanpa
+menghitung ganda, dan dijepit agar totalnya tidak pernah turun.
+
+Sebelumnya kartu ini jatuh ke nol setiap kali BLE putus: `steps` memang ditulis
+ke `live/current`, tapi dibaca kembali sebagai field `activity` yang tidak
+pernah ada.
 
 ## Keamanan data
 
