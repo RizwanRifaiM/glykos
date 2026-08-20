@@ -81,3 +81,69 @@ describe('StepCounterSession', () => {
     expect(miring.getSnapshot().steps).toBe(4)
   })
 })
+
+describe('waktu aktif', () => {
+  let session
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 7, 13, 8, 0, 0))
+    session = new StepCounterSession()
+    session.update(readingAt(1.0), true)
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  // Perilaku LAMA yang sengaja dihapus: activeMinutes adalah (sekarang − mulai
+  // sesi), yaitu lama perangkat TERSAMBUNG. Delapan jam duduk di meja dengan
+  // sepatu terpasang menghasilkan "Waktu Aktif 480 menit" pada kartu yang
+  // seluruh gunanya menggambarkan beban yang diterima kaki.
+  it('tidak menumpuk waktu selama tidak ada langkah', () => {
+    // Perangkat tersambung dan mengirim terus, tapi kakinya diam.
+    for (let i = 0; i < 60; i++) {
+      vi.advanceTimersByTime(1000)
+      session.update(readingAt(1.0), true)
+    }
+    expect(session.getSnapshot().activeMinutes).toBe(0)
+  })
+
+  it('menumpuk waktu selama langkah masih terdeteksi', () => {
+    walk(session, 30) // 30 langkah x 800 ms = 24 detik berjalan
+    const activeMinutes = session.getSnapshot().activeMinutes
+    expect(activeMinutes).toBeGreaterThan(0.2)
+    expect(activeMinutes).toBeLessThan(0.6)
+  })
+
+  it('berhenti menumpuk setelah berhenti berjalan', () => {
+    walk(session, 10)
+    const setelahJalan = session.getSnapshot().activeMinutes
+
+    // Diam lima menit, perangkat tetap mengirim.
+    for (let i = 0; i < 60; i++) {
+      vi.advanceTimersByTime(5000)
+      session.update(readingAt(1.0), true)
+    }
+
+    // Hanya sisa ambang ACTIVE_GAP_MS setelah langkah terakhir yang ikut,
+    // bukan lima menit diamnya.
+    const setelahDiam = session.getSnapshot().activeMinutes
+    expect(setelahDiam - setelahJalan).toBeLessThan(0.3)
+  })
+
+  // Halaman yang dibekukan (layar mati, pindah aplikasi) menghasilkan satu
+  // selisih raksasa saat hidup lagi. Tanpa jepitan, satu sampel bisa menambah
+  // berjam-jam aktivitas yang tidak pernah terjadi.
+  it('menjepit lompatan waktu setelah halaman dibekukan', () => {
+    walk(session, 5)
+    const sebelum = session.getSnapshot().activeMinutes
+
+    vi.advanceTimersByTime(3 * 60 * 60 * 1000) // tiga jam membeku
+    session.update(readingAt(1.3), true)
+
+    const sesudah = session.getSnapshot().activeMinutes
+    expect(sesudah - sebelum).toBeLessThan(0.3)
+  })
+})
+

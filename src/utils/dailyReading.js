@@ -66,14 +66,22 @@ export function todayActivity({
   sessionSteps = 0,
   sessionActiveMinutes = 0,
   syncedSteps = 0,
+  syncedActiveMinutes = 0,
 } = {}) {
-  const base = Math.max(0, Number(rollupSteps) || 0)
-  const pending = Math.max(0, (Number(sessionSteps) || 0) - (Number(syncedSteps) || 0))
-  const steps = Math.max(base, base + pending)
+  // Langkah dan menit aktif memakai perhitungan yang PERSIS sama: angka
+  // rangkuman ditambah bagian sesi berjalan yang belum tertulis. Sebelumnya
+  // menit aktif memakai Math.max antara keduanya — hasilnya tertinggal sampai
+  // satu interval sinkronisasi, dan pada sesi kedua di hari yang sama malah
+  // menahan angkanya di total sesi pertama.
+  const merge = (rollup, session, synced) => {
+    const base = Math.max(0, Number(rollup) || 0)
+    const pending = Math.max(0, (Number(session) || 0) - (Number(synced) || 0))
+    return Math.max(base, base + pending)
+  }
 
-  const activeMinutes = Math.max(
-    Math.max(0, Math.round(Number(rollupActiveMinutes) || 0)),
-    Math.max(0, Math.round(Number(sessionActiveMinutes) || 0)),
+  const steps = Math.round(merge(rollupSteps, sessionSteps, syncedSteps))
+  const activeMinutes = Math.round(
+    merge(rollupActiveMinutes, sessionActiveMinutes, syncedActiveMinutes),
   )
 
   if (steps <= 0 && activeMinutes <= 0) return null

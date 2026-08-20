@@ -96,11 +96,32 @@ describe('todayActivity', () => {
     expect(activity.steps).toBe(3000)
   })
 
-  it('memakai menit aktif terbesar antara rangkuman dan sesi berjalan', () => {
-    expect(todayActivity({ rollupSteps: 100, rollupActiveMinutes: 40, sessionActiveMinutes: 12 }))
-      .toMatchObject({ activeMinutes: 40 })
-    expect(todayActivity({ rollupSteps: 100, rollupActiveMinutes: 5, sessionActiveMinutes: 12.6 }))
-      .toMatchObject({ activeMinutes: 13 })
+  // Menit aktif memakai perhitungan yang PERSIS sama dengan langkah. Dulu ia
+  // memakai Math.max antara rangkuman dan sesi berjalan — yang berarti pada
+  // sesi kedua di hari yang sama, angkanya tertahan di total sesi pertama
+  // sampai sinkronisasi berikutnya.
+  it('menjumlahkan menit aktif seluruh sesi hari ini', () => {
+    expect(
+      todayActivity({
+        rollupActiveMinutes: 40,
+        sessionActiveMinutes: 12,
+        syncedActiveMinutes: 0,
+      }),
+    ).toMatchObject({ activeMinutes: 52 })
+  })
+
+  it('tidak menghitung ganda menit yang sudah tersinkron', () => {
+    expect(
+      todayActivity({
+        rollupActiveMinutes: 45,
+        sessionActiveMinutes: 12,
+        syncedActiveMinutes: 5,
+      }),
+    ).toMatchObject({ activeMinutes: 52 })
+  })
+
+  it('membulatkan menit ke bilangan bulat terdekat', () => {
+    expect(todayActivity({ sessionActiveMinutes: 12.6 })).toMatchObject({ activeMinutes: 13 })
   })
 
   it('mengembalikan null saat belum ada apa pun hari ini', () => {

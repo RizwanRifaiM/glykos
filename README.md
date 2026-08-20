@@ -240,6 +240,28 @@ Sebelumnya kartu ini jatuh ke nol setiap kali BLE putus: `steps` memang ditulis
 ke `live/current`, tapi dibaca kembali sebagai field `activity` yang tidak
 pernah ada.
 
+### "Waktu Aktif" berarti waktu BERGERAK
+
+Nilainya dulu adalah `(sekarang − mulai sesi)` — yaitu lama perangkat
+**tersambung**, bukan lama bergerak. Seseorang yang memakai sepatunya delapan
+jam sambil duduk melihat "Waktu Aktif 480 menit", pada kartu yang seluruh
+gunanya menggambarkan beban yang diterima kaki.
+
+Sekarang waktu hanya menumpuk selama langkah masih terdeteksi, dengan ambang
+`ACTIVE_GAP_MS` (12 detik) supaya jeda wajar saat berjalan tidak memotong
+hitungan. Selisih antar sampel ikut dijepit ke ambang yang sama: halaman yang
+sempat dibekukan (layar mati, pindah aplikasi) menghasilkan satu selisih
+raksasa saat hidup lagi, dan tanpa jepitan itu satu sampel bisa menambah
+berjam-jam aktivitas yang tidak pernah terjadi.
+
+### Data disimpan juga saat sesi berakhir
+
+Sinkronisasi berjalan tiap 60 detik, jadi tanpa penulisan penutup setiap sesi
+yang lebih pendek dari itu kehilangan **seluruh** langkahnya — penulisan
+pertama saat menyambung selalu berisi nol langkah. `useFirestoreSync` karena
+itu menyimpan sekali lagi saat sesi berakhir dan saat halaman disembunyikan
+(pindah aplikasi / layar mati di ponsel).
+
 ## Keamanan data
 
 Seluruh data sensor berada di bawah `users/{uid}`, dan `firestore.rules` hanya

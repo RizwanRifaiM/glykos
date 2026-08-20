@@ -220,7 +220,7 @@ export default function DashboardLayout() {
   // Firestore (live/current + history) selama perangkat tersambung.
   // Dipanggil SETELAH useStepCounter karena jumlah langkah ikut disimpan;
   // tanpa itu kolom Langkah di tabel Riwayat selalu kosong.
-  const { syncedSteps } = useFirestoreSync(
+  const { syncedSteps, syncedActiveMinutes } = useFirestoreSync(
     uid,
     deviceId,
     ble.reading,
@@ -248,8 +248,16 @@ export default function DashboardLayout() {
         sessionSteps: stepCounter.steps,
         sessionActiveMinutes: stepCounter.activeMinutes,
         syncedSteps,
+        syncedActiveMinutes,
       }),
-    [rollupSteps, rollupActiveMinutes, stepCounter.steps, stepCounter.activeMinutes, syncedSteps],
+    [
+      rollupSteps,
+      rollupActiveMinutes,
+      stepCounter.steps,
+      stepCounter.activeMinutes,
+      syncedSteps,
+      syncedActiveMinutes,
+    ],
   )
 
   // Tanpa pembacaan hari ini, kartu diisi NOL — bukan angka kemarin, dan bukan

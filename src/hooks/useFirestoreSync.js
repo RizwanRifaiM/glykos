@@ -65,6 +65,7 @@ async function updateDailyRollup(uid, deviceId, snapshot, sessionId) {
     temperatureDelta: snapshot.temperatureDelta,
     humidity: snapshot.humidity,
     steps: snapshot.steps,
+    activeMinutes: snapshot.activeMinutes,
     sessionId,
   }
 
@@ -98,6 +99,7 @@ export function useFirestoreSync(uid, deviceId, bleReading, bleActive, steps = 0
   // salahnya tertutup di sisi pemakai: total hari ini dijepit agar tidak pernah
   // turun di bawah angka rangkuman harian (lihat DashboardLayout.jsx).
   const [syncedSteps, setSyncedSteps] = useState(0)
+  const [syncedActiveMinutes, setSyncedActiveMinutes] = useState(0)
 
   useEffect(() => {
     latestReading.current = bleReading
@@ -145,7 +147,10 @@ export function useFirestoreSync(uid, deviceId, bleReading, bleActive, steps = 0
           createdAt: serverTimestamp(),
         })
         await updateDailyRollup(uid, deviceId, snapshot, sessionId)
-        if (!cancelled) setSyncedSteps(snapshot.steps)
+        if (!cancelled) {
+          setSyncedSteps(snapshot.steps)
+          setSyncedActiveMinutes(snapshot.activeMinutes)
+        }
       } catch (err) {
         console.warn('Gagal menyimpan data BLE ke Firestore:', err)
       }
@@ -192,5 +197,5 @@ export function useFirestoreSync(uid, deviceId, bleReading, bleActive, steps = 0
     }
   }, [uid, deviceId, bleActive])
 
-  return { syncedSteps }
+  return { syncedSteps, syncedActiveMinutes }
 }

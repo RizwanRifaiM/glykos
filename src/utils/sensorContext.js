@@ -121,7 +121,10 @@ export function buildSensorContext(
   if (steps > 0) {
     const stepsText = formatNumber(steps, { locale })
     const minutesText = formatNumber(data.activity?.activeMinutes ?? 0, { locale })
-    lines.push(t(i18n)`- Aktivitas sesi ini: ${stepsText} langkah, ${minutesText} menit aktif`)
+    // "hari ini", bukan "sesi ini": angka ini sekarang total seluruh sesi hari
+    // ini (lihat utils/dailyReading.js). Label yang salah di sini bukan soal
+    // kerapian — model akan mengulanginya kepada pengguna sebagai fakta.
+    lines.push(t(i18n)`- Aktivitas hari ini: ${stepsText} langkah, ${minutesText} menit aktif`)
   }
 
   if (fatigue?.sessionActive) {

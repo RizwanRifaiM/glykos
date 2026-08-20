@@ -1625,6 +1625,10 @@ msgid "{days, plural, one {# hari lalu} other {# hari lalu}}"
 msgstr "{days, plural, one {# day ago} other {# days ago}}"
 
 #: src/utils/sensorContext.js
+#~ msgid "- Aktivitas sesi ini: {stepsText} langkah, {minutesText} menit aktif"
+#~ msgstr "- This session: {stepsText} steps, {minutesText} active minutes"
+
+#: src/utils/sensorContext.js
 msgid "aman"
 msgstr "safe"
 
@@ -1685,8 +1689,8 @@ msgid "- Kelembapan dalam sepatu: {humidityText} % RH ({state}; ideal {0}–{1} 
 msgstr "- In-shoe humidity: {humidityText} % RH ({state}; ideal {0}–{1} %, risk > {2} %)"
 
 #: src/utils/sensorContext.js
-msgid "- Aktivitas sesi ini: {stepsText} langkah, {minutesText} menit aktif"
-msgstr "- This session: {stepsText} steps, {minutesText} active minutes"
+msgid "- Aktivitas hari ini: {stepsText} langkah, {minutesText} menit aktif"
+msgstr "- Today: {stepsText} steps, {minutesText} active minutes"
 
 #: src/utils/sensorContext.js
 msgid "tinggi"

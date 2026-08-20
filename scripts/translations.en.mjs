@@ -412,8 +412,8 @@ export default {
     '- Temperature spread between areas: {deltaText} °C (attention threshold {0} °C — a spread that persists for days is a pre-ulcer predictor)',
   '- Kelembapan dalam sepatu: {humidityText} % RH ({state}; ideal {0}–{1} %, risiko > {2} %)':
     '- In-shoe humidity: {humidityText} % RH ({state}; ideal {0}–{1} %, risk > {2} %)',
-  '- Aktivitas sesi ini: {stepsText} langkah, {minutesText} menit aktif':
-    '- This session: {stepsText} steps, {minutesText} active minutes',
+  '- Aktivitas hari ini: {stepsText} langkah, {minutesText} menit aktif':
+    '- Today: {stepsText} steps, {minutesText} active minutes',
   '- Indikasi kelelahan kaki: {levelText}': '- Foot fatigue indication: {levelText}',
   'RANGKUMAN {rangeText} HARI TERAKHIR ({recordedText} hari tercatat):':
     'SUMMARY OF THE LAST {rangeText} DAYS ({recordedText} days recorded):',
