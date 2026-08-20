@@ -8,9 +8,11 @@
 // rangkuman HARIAN — jadi paling banyak satu catatan per hari, dan hanya saat
 // rangkaiannya benar-benar bertambah panjang.
 import { useEffect, useRef } from 'react'
+import { useLingui } from '@lingui/react'
+import { t } from '@lingui/core/macro'
 import { logAlert } from './useAlerts'
 import { notify } from '../utils/notifications'
-import { describeTemperatureTrend } from '../utils/temperatureTrend'
+import { describeAlert } from '../utils/alertMessages'
 
 function stateKey(uid, deviceId) {
   return `glykos:temp-trend-alert:${uid}:${deviceId}`
@@ -36,6 +38,9 @@ function saveLastLogged(uid, deviceId, value) {
 
 export function useTemperatureTrendAlert(uid, deviceId, trend) {
   const lastRef = useRef(null)
+  // Judul & isi notifikasi mengikuti bahasa yang sedang aktif — diambil dari
+  // konteks, bukan instance global. Lihat catatan yang sama di useAlerts.js.
+  const { i18n } = useLingui()
 
   useEffect(() => {
     lastRef.current = uid && deviceId ? loadLastLogged(uid, deviceId) : null
@@ -56,20 +61,25 @@ export function useTemperatureTrendAlert(uid, deviceId, trend) {
     const last = lastRef.current
     if (last?.date === latestDate && last?.streakDays >= trend.streakDays) return
 
-    const message = describeTemperatureTrend(trend)
-
-    logAlert(uid, deviceId, {
+    // Sama bentuknya dengan peringatan live: metrik + status + ANGKA, tanpa
+    // kalimat. Kalimatnya dirakit saat dibaca (utils/alertMessages.js), supaya
+    // catatan ini bisa ditampilkan dalam bahasa apa pun nanti — termasuk oleh
+    // pengguna yang mengganti bahasa setelah peringatannya tercatat.
+    const item = {
       metric: 'temperatureTrend',
-      label: 'Selisih Suhu Menetap',
       status: 'danger',
-      value: `${trend.maxDelta.toFixed(1)}°C · ${trend.streakDays} hari`,
       location: null,
-      message,
-    })
-    notify('Glykos — Selisih Suhu Menetap', message)
+      values: { streakDays: trend.streakDays, maxDelta: trend.maxDelta },
+    }
+
+    logAlert(uid, deviceId, item)
+    // Judulnya TIDAK memakai riskTitle(): pola "… Berisiko" cocok untuk metrik
+    // sesaat ("Tekanan Berisiko"), tapi janggal untuk temuan yang namanya
+    // sudah berupa keterangan sendiri — "Selisih Suhu Menetap Berisiko".
+    notify(t(i18n)`Glykos — Selisih Suhu Menetap`, describeAlert(i18n, item).message)
 
     const next = { date: latestDate, streakDays: trend.streakDays }
     lastRef.current = next
     saveLastLogged(uid, deviceId, next)
-  }, [uid, deviceId, trend])
+  }, [uid, deviceId, trend, i18n])
 }

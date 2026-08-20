@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { useEffect, useRef, useState } from 'react'
 import { loadRenderKit, loadThreeModules } from '../three/loadThree'
 import {
@@ -36,6 +37,7 @@ const SMOOTHING = 0.0006
 const BASE_PITCH = -0.34
 
 export default function ModuleShowcaseViewer({ className = '' }) {
+  const { t } = useLingui()
   const hostRef = useRef(null)
   const [state, setState] = useState(() =>
     typeof window !== 'undefined' && webglAvailable() ? 'idle' : 'unsupported',
@@ -169,7 +171,7 @@ export default function ModuleShowcaseViewer({ className = '' }) {
       ref={hostRef}
       className={`module-viewer module-viewer--${state} ${className}`.trim()}
       role="img"
-      aria-label="Modul sensor Bluetooth Glykos berputar pelan, dengan LED indikator pengiriman data"
+      aria-label={t`Modul sensor Bluetooth Glykos berputar pelan, dengan LED indikator pengiriman data`}
     />
   )
 }

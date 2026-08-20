@@ -1,6 +1,10 @@
 import { Suspense, useMemo, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
+import { msg } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui as useLinguiCore } from '@lingui/react'
 import BrandMark from '../components/BrandMark'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 import DeviceSelector from '../components/DeviceSelector'
 import ConnectionBar from '../components/ConnectionBar'
 import BleConnectButton from '../components/BleConnectButton'
@@ -35,12 +39,16 @@ import {
 } from '../components/icons'
 import '../App.css'
 
+// Label navigasi sebagai deskriptor `msg`. Daftar ini dievaluasi sekali saat
+// modul dimuat, jadi kalau isinya sudah berupa string ia terkunci pada bahasa
+// saat itu — sidebar akan jadi satu-satunya bagian dashboard yang tidak ikut
+// berganti.
 const NAV_ITEMS = [
-  { to: '/dashboard', label: 'Ringkasan', end: true, icon: IconLayoutDashboard },
-  { to: '/dashboard/chatbot', label: 'Chatbot', icon: IconMessageCircle },
-  { to: '/dashboard/history', label: 'Riwayat', icon: IconHistory },
-  { to: '/dashboard/alerts', label: 'Peringatan', icon: IconShieldAlert },
-  { to: '/dashboard/profile', label: 'Profil', icon: IconIdCard },
+  { to: '/dashboard', label: msg`Ringkasan`, end: true, icon: IconLayoutDashboard },
+  { to: '/dashboard/chatbot', label: msg`Chatbot`, icon: IconMessageCircle },
+  { to: '/dashboard/history', label: msg`Riwayat`, icon: IconHistory },
+  { to: '/dashboard/alerts', label: msg`Peringatan`, icon: IconShieldAlert },
+  { to: '/dashboard/profile', label: msg`Profil`, icon: IconIdCard },
 ]
 
 function Brand() {
@@ -54,7 +62,8 @@ function Brand() {
 
 function TopbarUser() {
   const { user, logout } = useAuth()
-  const label = user?.displayName || user?.email || 'Pengguna'
+  const { t } = useLingui()
+  const label = user?.displayName || user?.email || t`Pengguna`
   const initial = label.charAt(0).toUpperCase()
 
   // Menyimpan URL yang GAGAL, bukan sekadar flag boolean: dengan begini
@@ -69,8 +78,8 @@ function TopbarUser() {
       type="button"
       className="app-topbar__user"
       onClick={logout}
-      title={`Keluar (${label})`}
-      aria-label="Keluar"
+      title={t`Keluar (${label})`}
+      aria-label={t`Keluar`}
     >
       {showPhoto ? (
         <img
@@ -97,6 +106,11 @@ function TopbarUser() {
 }
 
 export default function DashboardLayout() {
+  const { t } = useLingui()
+  // `i18n` dipakai untuk menyelesaikan deskriptor label navigasi. Sekaligus
+  // membuat komponen ini berlangganan perubahan bahasa — penting karena data
+  // contoh (buildDemoHistory) merakit label tanggal menurut bahasa aktif.
+  const { i18n } = useLinguiCore()
   const [deviceId, setDeviceId] = useState('glykos-device')
   const [historyRange, setHistoryRange] = useState('7d')
   const demoPref = demoPreference()
@@ -200,13 +214,16 @@ export default function DashboardLayout() {
   // "Basi" hanya berlaku untuk data Firestore: selama BLE tersambung, sumber
   // datanya perangkat langsung dan selalu baru.
   const displayStale = demoMode || bleActive ? false : firestoreStale
+  // Variabel dulu: ekspresi anggota di dalam <Trans> ditolak rule
+  // lingui/no-expression-in-message.
+  const bleError = ble.error
 
   return (
     <div className="app-shell">
       <aside className="app-sidebar">
         <Brand />
 
-        <nav className="app-sidebar__nav" aria-label="Navigasi dashboard">
+        <nav className="app-sidebar__nav" aria-label={t`Navigasi dashboard`}>
           {NAV_ITEMS.map(({ to, label, end, icon: ItemIcon }) => (
             <NavLink
               key={to}
@@ -222,7 +239,7 @@ export default function DashboardLayout() {
                   <span className="app-sidebar__badge">{alerts.length}</span>
                 )}
               </span>
-              <span>{label}</span>
+              <span>{i18n._(label)}</span>
             </NavLink>
           ))}
         </nav>
@@ -254,12 +271,21 @@ export default function DashboardLayout() {
           {wakeLockStatus === 'active' && (
             <span
               className="wakelock-pill"
-              title="Layar ditahan menyala selama insole tersambung, supaya data tidak terputus saat layar mati."
+              title={t`Layar ditahan menyala selama sepatu tersambung, supaya data tidak terputus saat layar mati.`}
             >
               <IconSunDot size={14} />
-              <span className="wakelock-pill__label">Layar aktif</span>
+              <span className="wakelock-pill__label">
+                <Trans>Layar aktif</Trans>
+              </span>
             </span>
           )}
+
+          {/* Pemilih bahasa di topbar, bukan disembunyikan di halaman Profil:
+              seseorang yang tidak mengerti bahasa yang sedang aktif harus bisa
+              menemukan jalan keluarnya tanpa lebih dulu menavigasi menu
+              berbahasa itu. Bentuk compact (ID/EN) supaya tidak berebut ruang
+              dengan status koneksi. */}
+          <LanguageSwitcher compact />
 
           <ConnectionBar
             connection={
@@ -274,9 +300,9 @@ export default function DashboardLayout() {
           <TopbarUser />
         </header>
 
-        {ble.error && (
+        {bleError && (
           <p className="ble-error" role="alert">
-            Bluetooth: {ble.error}
+            <Trans>Bluetooth: {bleError}</Trans>
           </p>
         )}
 
@@ -319,11 +345,13 @@ export default function DashboardLayout() {
         </main>
 
         <footer className="footer app-footer">
-          <p>Glykos — pemantauan kaki diabetes</p>
+          <p>
+            <Trans>Glykos — pemantauan kaki diabetes</Trans>
+          </p>
         </footer>
       </div>
 
-      <nav className="app-bottom-nav" aria-label="Navigasi dashboard">
+      <nav className="app-bottom-nav" aria-label={t`Navigasi dashboard`}>
         {NAV_ITEMS.map(({ to, label, end, icon: ItemIcon }) => (
           <NavLink
             key={to}
@@ -339,7 +367,7 @@ export default function DashboardLayout() {
                 <span className="app-bottom-nav__badge">{alerts.length}</span>
               )}
             </span>
-            <span>{label}</span>
+            <span>{i18n._(label)}</span>
           </NavLink>
         ))}
       </nav>

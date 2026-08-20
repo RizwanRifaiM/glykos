@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { i18n } from '@lingui/core'
 import { describeTemperatureTrend, evaluateTemperatureTrend } from './temperatureTrend'
 
 // Satu hari riwayat. `temperature` > 0 menandai hari itu TERCATAT — nol berarti
@@ -81,10 +82,12 @@ describe('evaluateTemperatureTrend', () => {
 describe('describeTemperatureTrend', () => {
   it('menyebut jumlah hari saat rangkaian sudah perlu tindakan', () => {
     const trend = evaluateTemperatureTrend([day('2026-08-10', 2.4), day('2026-08-11', 2.9)])
-    expect(describeTemperatureTrend(trend)).toContain('2 hari berturut-turut')
+    expect(describeTemperatureTrend(i18n, trend)).toContain('2 hari berturut-turut')
   })
 
   it('tidak mengarang peringatan saat kondisinya normal', () => {
-    expect(describeTemperatureTrend(evaluateTemperatureTrend([]))).toContain('batas normal')
+    expect(describeTemperatureTrend(i18n, evaluateTemperatureTrend([]))).toContain(
+      'batas normal',
+    )
   })
 })

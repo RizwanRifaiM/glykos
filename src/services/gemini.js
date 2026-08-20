@@ -1,3 +1,5 @@
+import { t } from '@lingui/core/macro'
+
 // Memanggil Gemini langsung dari browser (tanpa backend proxy).
 //
 // Catatan: VITE_GEMINI_API_KEY ikut ter-bundle ke sisi klien, jadi key ini
@@ -16,8 +18,21 @@ const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODE
 // membengkak — percakapan panjang akan memakan kuota free-tier dengan cepat.
 const MAX_HISTORY_MESSAGES = 12
 
-const SYSTEM_INSTRUCTION =
-  'Anda adalah asisten untuk proyek sol sepatu pintar diabetes Glykos. Jawablah hanya pertanyaan yang berkaitan dengan proyek ini, kesehatan kaki penderita diabetes, sensor sepatu pintar, serta pemantauan tekanan, suhu, dan kelembapan. Gunakan bahasa Indonesia dalam semua jawaban. Jangan menjawab pertanyaan di luar cakupan tersebut.'
+// Instruksi sistem ikut bahasa antarmuka.
+//
+// KENAPA INI PENTING, BUKAN SEKADAR KONSISTENSI
+// Kalimat "Gunakan bahasa Indonesia dalam semua jawaban" dulu di-hardcode di
+// sini. Akibatnya antarmuka bisa berbahasa Inggris sementara asistennya tetap
+// menjawab dalam bahasa Indonesia — bagian aplikasi yang paling banyak
+// menghasilkan teks justru satu-satunya yang tidak ikut berganti.
+//
+// Perintah bahasanya sendiri yang DITERJEMAHKAN: pada katalog Inggris kalimat
+// ini menjadi "Answer in English." Jadi instruksinya selalu menyebut bahasa
+// yang sedang aktif tanpa perlu logika pemetaan locale ke nama bahasa — dan
+// menambah bahasa ketiga nanti tidak menuntut perubahan kode apa pun di sini.
+function systemInstruction(i18n) {
+  return t(i18n)`Anda adalah asisten untuk proyek sepatu pintar diabetes Glykos. Jawablah hanya pertanyaan yang berkaitan dengan proyek ini, kesehatan kaki penderita diabetes, sensor sepatu pintar, serta pemantauan tekanan, suhu, dan kelembapan. Gunakan bahasa Indonesia dalam semua jawaban. Jangan menjawab pertanyaan di luar cakupan tersebut.`
+}
 
 // Aturan tambahan yang HANYA berlaku saat data pengguna ikut dikirim.
 //
@@ -25,18 +40,21 @@ const SYSTEM_INSTRUCTION =
 // sungguhan, godaan terbesarnya adalah mengisi yang kosong — menyebut nilai
 // yang tidak ada di ringkasan, atau melangkah dari "tekanan Anda tinggi" ke
 // kesimpulan klinis. Alat ini memantau; yang mendiagnosis tetap manusia.
-const DATA_INSTRUCTION = [
-  'Anda diberi ringkasan pembacaan sensor milik pengguna di bawah ini.',
-  'Pakai angka tersebut bila relevan: sebut nilainya, bandingkan dengan ambangnya, dan jelaskan artinya dengan bahasa sehari-hari.',
-  'JANGAN pernah menyebut angka pembacaan yang tidak ada dalam ringkasan ini. Kalau pengguna menanyakan sesuatu yang tidak tercakup, katakan terus terang bahwa datanya tidak tersedia.',
-  'JANGAN memberi diagnosis, vonis, atau instruksi pengobatan. Untuk pola yang menetap atau tanda luka, arahkan pengguna memeriksakan diri ke tenaga kesehatan.',
-].join(' ')
+function dataInstruction(i18n) {
+  return [
+    t(i18n)`Anda diberi ringkasan pembacaan sensor milik pengguna di bawah ini.`,
+    t(i18n)`Pakai angka tersebut bila relevan: sebut nilainya, bandingkan dengan ambangnya, dan jelaskan artinya dengan bahasa sehari-hari.`,
+    t(i18n)`JANGAN pernah menyebut angka pembacaan yang tidak ada dalam ringkasan ini. Kalau pengguna menanyakan sesuatu yang tidak tercakup, katakan terus terang bahwa datanya tidak tersedia.`,
+    t(i18n)`JANGAN memberi diagnosis, vonis, atau instruksi pengobatan. Untuk pola yang menetap atau tanda luka, arahkan pengguna memeriksakan diri ke tenaga kesehatan.`,
+  ].join(' ')
+}
 
 // Diekspor terpisah supaya bisa diuji tanpa memanggil jaringan.
-export function buildSystemInstruction(context) {
+export function buildSystemInstruction(i18n, context) {
   const trimmed = typeof context === 'string' ? context.trim() : ''
-  if (!trimmed) return SYSTEM_INSTRUCTION
-  return `${SYSTEM_INSTRUCTION}\n\n${DATA_INSTRUCTION}\n\n${trimmed}`
+  const base = systemInstruction(i18n)
+  if (!trimmed) return base
+  return `${base}\n\n${dataInstruction(i18n)}\n\n${trimmed}`
 }
 
 // Menyusun `contents` multi-turn dari riwayat chat di UI.
@@ -67,9 +85,13 @@ export function buildContents(history, prompt) {
 
 // `context` berisi ringkasan sensor pengguna (utils/sensorContext.js). Kosong
 // atau tidak diisi = perilaku lama, yaitu menjawab tanpa data pengguna.
-export async function sendGeminiMessage(prompt, history = [], context = '') {
+//
+// `i18n` dioper dari ChatbotPage: ia menentukan bahasa instruksi sistem — dan
+// karenanya bahasa jawaban model — serta bahasa pesan galat di bawah, yang
+// semuanya tampil langsung di gelembung percakapan.
+export async function sendGeminiMessage(i18n, prompt, history = [], context = '') {
   if (!API_KEY) {
-    throw new Error('Konfigurasi AI belum lengkap. VITE_GEMINI_API_KEY belum diatur.')
+    throw new Error(t(i18n)`Konfigurasi AI belum lengkap. VITE_GEMINI_API_KEY belum diatur.`)
   }
 
   const response = await fetch(ENDPOINT, {
@@ -79,7 +101,7 @@ export async function sendGeminiMessage(prompt, history = [], context = '') {
       'x-goog-api-key': API_KEY,
     },
     body: JSON.stringify({
-      system_instruction: { parts: [{ text: buildSystemInstruction(context) }] },
+      system_instruction: { parts: [{ text: buildSystemInstruction(i18n, context) }] },
       contents: buildContents(history, prompt),
     }),
   })
@@ -88,16 +110,20 @@ export async function sendGeminiMessage(prompt, history = [], context = '') {
     const errBody = await response.json().catch(() => null)
     const status = errBody?.error?.status
     if (status === 'RESOURCE_EXHAUSTED') {
-      throw new Error('Kuota AI sedang penuh. Silakan coba lagi beberapa saat.')
+      throw new Error(t(i18n)`Kuota AI sedang penuh. Silakan coba lagi beberapa saat.`)
     }
     if (status === 'UNAVAILABLE') {
-      throw new Error('Model AI sedang sibuk. Silakan coba lagi sebentar.')
+      throw new Error(t(i18n)`Model AI sedang sibuk. Silakan coba lagi sebentar.`)
     }
-    throw new Error(errBody?.error?.message || `Permintaan gagal (status ${response.status}).`)
+    // Dinamai dulu sebagai variabel: `${response.status}` di dalam pesan akan
+    // ditolak rule lingui/no-expression-in-message, dan placeholder bernama
+    // ({httpStatus}) lebih jelas bagi penerjemah daripada {0}.
+    const httpStatus = response.status
+    throw new Error(errBody?.error?.message || t(i18n)`Permintaan gagal (status ${httpStatus}).`)
   }
 
   const data = await response.json()
   const text =
     data?.candidates?.[0]?.content?.parts?.map((part) => part.text).join('') ?? ''
-  return text || 'Maaf, tidak ada jawaban yang bisa ditampilkan saat ini.'
+  return text || t(i18n)`Maaf, tidak ada jawaban yang bisa ditampilkan saat ini.`
 }

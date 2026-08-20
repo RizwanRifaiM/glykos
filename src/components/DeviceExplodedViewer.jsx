@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { t } from '@lingui/core/macro'
+import { Trans, useLingui as useLinguiMacro } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react'
 import { cloneShoe, loadRenderKit, loadThreeModules } from '../three/loadThree'
 import {
   createDisposer,
@@ -99,6 +102,12 @@ const SMOOTHING = 0.0008
 // tetap sama meski bentuk penyampaiannya berbeda.
 export default function DeviceExplodedViewer({ className = '', fallback = null }) {
   const hostRef = useRef(null)
+  // Dua bentuk useLingui dipakai di sini dengan sengaja:
+  //   - `i18n` (dari '@lingui/react') untuk t(i18n) di DALAM effect, tempat
+  //     label 3D dirakit;
+  //   - `t` (dari '@lingui/react/macro') untuk atribut aria di JSX.
+  const { i18n } = useLingui()
+  const { t: tMacro } = useLinguiMacro()
   const [state, setState] = useState(() =>
     typeof window !== 'undefined' && webglAvailable() ? 'idle' : 'unsupported',
   )
@@ -268,17 +277,20 @@ export default function DeviceExplodedViewer({ className = '', fallback = null }
         const layerLabels = [
           labels.add(
             shoeLayer,
-            'Badan sepatu',
+            t(i18n)`Badan sepatu`,
             'exploded-viewer__label exploded-viewer__label--shoe',
           ),
+          // Label insole memuat <i> sebagai baris kedua. Tag-nya IKUT di dalam
+          // pesan, bukan ditempel dari luar: penerjemah perlu bisa memindahkan
+          // mana bagian yang jadi baris utama dan mana keterangannya.
           labels.add(
             insoleLayer,
-            'Insole bersensor<i>3 titik tekanan</i>',
+            t(i18n)`Insole bersensor<i>3 titik tekanan</i>`,
             'exploded-viewer__label exploded-viewer__label--lead exploded-viewer__label--insole',
           ),
           labels.add(
             moduleLayer,
-            'Modul sensor &amp; Bluetooth',
+            t(i18n)`Modul sensor &amp; Bluetooth`,
             'exploded-viewer__label exploded-viewer__label--module',
           ),
         ]
@@ -396,20 +408,28 @@ export default function DeviceExplodedViewer({ className = '', fallback = null }
       io.disconnect()
       cleanup()
     }
-  }, [])
+    // `i18n.locale` ikut jadi dependensi: label 3D dirakit di dalam effect ini,
+    // jadi satu-satunya cara membuatnya ikut berganti bahasa adalah menyusun
+    // ulang scene-nya. Mahal — tapi hanya terjadi saat pengguna menekan pemilih
+    // bahasa, dan alternatifnya adalah label yang membeku di bahasa lama di
+    // tengah halaman yang sudah berganti seluruhnya.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [i18n.locale])
 
   return (
     <div
       ref={hostRef}
       className={`exploded-viewer exploded-viewer--${state} ${className}`.trim()}
       role="img"
-      aria-label="Tampilan terurai sepatu Glykos: badan sepatu di lapisan atas, insole bersensor berisi tiga titik tekanan di tengah, dan modul sensor Bluetooth di lapisan bawah"
+      aria-label={tMacro`Tampilan terurai sepatu Glykos: badan sepatu di lapisan atas, insole bersensor berisi tiga titik tekanan di tengah, dan modul sensor Bluetooth di lapisan bawah`}
     >
       {(state === 'unsupported' || state === 'failed') &&
         (fallback ?? (
           <p className="exploded-viewer__note">
-            Sepatu Glykos terdiri dari tiga bagian: badan sepatunya, insole bersensor berisi
-            tiga titik tekanan, dan modul sensor Bluetooth di sisi luar.
+            <Trans>
+              Sepatu Glykos terdiri dari tiga bagian: badan sepatunya, insole bersensor berisi tiga
+              titik tekanan, dan modul sensor Bluetooth di sisi luar.
+            </Trans>
           </p>
         ))}
     </div>

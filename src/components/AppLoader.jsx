@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import BrandMark from './BrandMark'
 
 // Layar pemuatan tingkat aplikasi: dipakai saat memeriksa status login
@@ -19,7 +20,19 @@ import BrandMark from './BrandMark'
 // Gayanya ada di index.css (BUKAN Auth.css atau App.css) karena keduanya ikut
 // chunk yang di-lazy-load — loader yang menunggu chunk-nya sendiri untuk bisa
 // tampil rapi jelas tidak ada gunanya.
-export default function AppLoader({ label = 'Menyiapkan dashboard…' }) {
+export default function AppLoader({ label }) {
+  // useLingui dari '@lingui/react/macro' mengembalikan `t` yang sudah terikat
+  // ke instance di konteks — jadi teks bawaan di bawah ikut berganti bahasa
+  // tanpa perlu mengoper apa pun dari pemanggil.
+  const { t } = useLingui()
+
+  // Label bawaan dihitung DI DALAM komponen, bukan sebagai nilai bawaan
+  // parameter. Nilai bawaan parameter tetap dievaluasi setiap render, jadi
+  // keduanya sama-sama bekerja — tapi macro `t` hanya boleh dipanggil di dalam
+  // fungsi (rule lingui/t-call-in-function), dan menaruhnya di posisi parameter
+  // membuat aturan itu lebih mudah dilanggar tanpa sadar saat kode digeser.
+  const text = label ?? t`Menyiapkan dashboard…`
+
   return (
     <div className="app-loader" role="status" aria-live="polite" aria-busy="true">
       <div className="app-loader__panel">
@@ -30,7 +43,7 @@ export default function AppLoader({ label = 'Menyiapkan dashboard…' }) {
         <span className="app-loader__track">
           <span className="app-loader__bar" />
         </span>
-        <span className="app-loader__label">{label}</span>
+        <span className="app-loader__label">{text}</span>
       </div>
     </div>
   )

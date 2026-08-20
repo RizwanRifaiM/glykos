@@ -1,21 +1,34 @@
 import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { msg } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui as useLinguiCore } from '@lingui/react'
 import { useAuth } from '../contexts/auth-context'
 import Button from '../components/Button'
 import GoogleIcon from '../components/GoogleIcon'
-import { getAuthErrorMessage } from '../utils/authErrors'
+import LanguageSwitcher from '../components/LanguageSwitcher'
+import { getAuthErrorMsg } from '../utils/authErrors'
 import { COLORS } from '../constants/theme'
 import './Auth.css'
+
+// Galat validasi sisi klien — dua-duanya deskriptor, sama seperti galat dari
+// Firebase (utils/authErrors.js). Yang disimpan di state adalah DESKRIPTOR,
+// bukan kalimat: kalau pengguna mengganti bahasa selagi pesan galat masih
+// tampil, pesannya ikut berganti alih-alih tertinggal.
+const PASSWORD_MISMATCH = msg`Konfirmasi kata sandi tidak cocok.`
+const PASSWORD_TOO_SHORT = msg`Kata sandi minimal 6 karakter.`
 
 export default function RegisterPage() {
   const { user, register, loginWithGoogle } = useAuth()
   const navigate = useNavigate()
+  const { t } = useLingui()
+  const { i18n } = useLinguiCore()
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [error, setError] = useState('')
+  const [error, setError] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   if (user) {
@@ -24,14 +37,14 @@ export default function RegisterPage() {
 
   async function handleSubmit(event) {
     event.preventDefault()
-    setError('')
+    setError(null)
 
     if (password !== confirmPassword) {
-      setError('Konfirmasi kata sandi tidak cocok.')
+      setError(PASSWORD_MISMATCH)
       return
     }
     if (password.length < 6) {
-      setError('Kata sandi minimal 6 karakter.')
+      setError(PASSWORD_TOO_SHORT)
       return
     }
 
@@ -40,20 +53,20 @@ export default function RegisterPage() {
       await register(name, email, password)
       navigate('/dashboard', { replace: true })
     } catch (err) {
-      setError(getAuthErrorMessage(err))
+      setError(getAuthErrorMsg(err))
     } finally {
       setIsSubmitting(false)
     }
   }
 
   async function handleGoogleRegister() {
-    setError('')
+    setError(null)
     setIsSubmitting(true)
     try {
       await loginWithGoogle()
       navigate('/dashboard', { replace: true })
     } catch (err) {
-      setError(getAuthErrorMessage(err))
+      setError(getAuthErrorMsg(err))
     } finally {
       setIsSubmitting(false)
     }
@@ -80,27 +93,40 @@ export default function RegisterPage() {
           <h1>Glykos</h1>
         </div>
 
-        <h2 className="auth-card__title">Buat akun baru</h2>
+        {/* Halaman masuk/daftar bisa jadi halaman PERTAMA yang dibuka (tautan
+            langsung, PWA yang dipasang ke home screen), jadi pemilih bahasanya
+            harus ada di sini juga — bukan hanya di halaman depan. */}
+        <div className="auth-card__lang">
+          <LanguageSwitcher compact />
+        </div>
+
+        <h2 className="auth-card__title">
+          <Trans>Buat akun baru</Trans>
+        </h2>
         <p className="auth-card__subtitle">
-          Daftar untuk mulai memantau kondisi kaki secara real-time.
+          <Trans>Daftar untuk mulai memantau kondisi kaki secara real-time.</Trans>
         </p>
 
-        {error && <p className="auth-card__error">{error}</p>}
+        {error && <p className="auth-card__error">{i18n._(error)}</p>}
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className="auth-field">
-            <span>Nama Lengkap</span>
+            <span>
+              <Trans>Nama Lengkap</Trans>
+            </span>
             <input
               type="text"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Nama Anda"
+              placeholder={t`Nama Anda`}
               autoComplete="name"
               required
             />
           </label>
           <label className="auth-field">
-            <span>Email</span>
+            <span>
+              <Trans>Email</Trans>
+            </span>
             <input
               type="email"
               value={email}
@@ -111,23 +137,27 @@ export default function RegisterPage() {
             />
           </label>
           <label className="auth-field">
-            <span>Kata Sandi</span>
+            <span>
+              <Trans>Kata Sandi</Trans>
+            </span>
             <input
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="Minimal 6 karakter"
+              placeholder={t`Minimal 6 karakter`}
               autoComplete="new-password"
               required
             />
           </label>
           <label className="auth-field">
-            <span>Konfirmasi Kata Sandi</span>
+            <span>
+              <Trans>Konfirmasi Kata Sandi</Trans>
+            </span>
             <input
               type="password"
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
-              placeholder="Ulangi kata sandi"
+              placeholder={t`Ulangi kata sandi`}
               autoComplete="new-password"
               required
             />
@@ -139,12 +169,14 @@ export default function RegisterPage() {
             className="auth-submit"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Memproses…' : 'Daftar'}
+            {isSubmitting ? t`Memproses…` : t`Daftar`}
           </Button>
         </form>
 
         <div className="auth-divider">
-          <span>atau</span>
+          <span>
+            <Trans>atau</Trans>
+          </span>
         </div>
 
         <Button
@@ -155,11 +187,15 @@ export default function RegisterPage() {
           disabled={isSubmitting}
         >
           <GoogleIcon />
-          Daftar dengan Google
+          <Trans>Daftar dengan Google</Trans>
         </Button>
 
         <p className="auth-card__footer">
-          Sudah punya akun? <Link to="/login">Masuk di sini</Link>
+          {/* Tautan ikut masuk ke dalam pesan — lihat catatan yang sama di
+              LoginPage.jsx. */}
+          <Trans>
+            Sudah punya akun? <Link to="/login">Masuk di sini</Link>
+          </Trans>
         </p>
       </div>
     </div>

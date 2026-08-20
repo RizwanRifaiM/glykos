@@ -1,21 +1,29 @@
 import { useState } from 'react'
+import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui as useLinguiCore } from '@lingui/react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/auth-context'
 import Button from '../components/Button'
 import GoogleIcon from '../components/GoogleIcon'
-import { getAuthErrorMessage } from '../utils/authErrors'
+import LanguageSwitcher from '../components/LanguageSwitcher'
+import { getAuthErrorMsg } from '../utils/authErrors'
 import { COLORS } from '../constants/theme'
 import './Auth.css'
 
 export default function LoginPage() {
   const { user, login, loginWithGoogle } = useAuth()
+  const { t } = useLingui()
+  // Instance i18n dibutuhkan untuk menyelesaikan DESKRIPTOR galat auth
+  // (utils/authErrors.js). Deskriptornya disimpan di state, bukan kalimatnya —
+  // jadi pesan yang sedang tampil ikut berganti saat bahasa diubah.
+  const { i18n } = useLinguiCore()
   const navigate = useNavigate()
   const location = useLocation()
   const redirectTo = location.state?.from?.pathname || '/dashboard'
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [error, setError] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   if (user) {
@@ -24,26 +32,26 @@ export default function LoginPage() {
 
   async function handleSubmit(event) {
     event.preventDefault()
-    setError('')
+    setError(null)
     setIsSubmitting(true)
     try {
       await login(email, password)
       navigate(redirectTo, { replace: true })
     } catch (err) {
-      setError(getAuthErrorMessage(err))
+      setError(getAuthErrorMsg(err))
     } finally {
       setIsSubmitting(false)
     }
   }
 
   async function handleGoogleLogin() {
-    setError('')
+    setError(null)
     setIsSubmitting(true)
     try {
       await loginWithGoogle()
       navigate(redirectTo, { replace: true })
     } catch (err) {
-      setError(getAuthErrorMessage(err))
+      setError(getAuthErrorMsg(err))
     } finally {
       setIsSubmitting(false)
     }
@@ -70,16 +78,27 @@ export default function LoginPage() {
           <h1>Glykos</h1>
         </div>
 
-        <h2 className="auth-card__title">Masuk ke akun Anda</h2>
+        {/* Halaman masuk/daftar bisa jadi halaman PERTAMA yang dibuka (tautan
+            langsung, PWA yang dipasang ke home screen), jadi pemilih bahasanya
+            harus ada di sini juga — bukan hanya di halaman depan. */}
+        <div className="auth-card__lang">
+          <LanguageSwitcher compact />
+        </div>
+
+        <h2 className="auth-card__title">
+          <Trans>Masuk ke akun Anda</Trans>
+        </h2>
         <p className="auth-card__subtitle">
-          Pantau kondisi kaki secara real-time setelah masuk.
+          <Trans>Pantau kondisi kaki secara real-time setelah masuk.</Trans>
         </p>
 
-        {error && <p className="auth-card__error">{error}</p>}
+        {error && <p className="auth-card__error">{i18n._(error)}</p>}
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className="auth-field">
-            <span>Email</span>
+            <span>
+              <Trans>Email</Trans>
+            </span>
             <input
               type="email"
               value={email}
@@ -90,7 +109,9 @@ export default function LoginPage() {
             />
           </label>
           <label className="auth-field">
-            <span>Kata Sandi</span>
+            <span>
+              <Trans>Kata Sandi</Trans>
+            </span>
             <input
               type="password"
               value={password}
@@ -107,12 +128,14 @@ export default function LoginPage() {
             className="auth-submit"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Memproses…' : 'Masuk'}
+            {isSubmitting ? t`Memproses…` : t`Masuk`}
           </Button>
         </form>
 
         <div className="auth-divider">
-          <span>atau</span>
+          <span>
+            <Trans>atau</Trans>
+          </span>
         </div>
 
         <Button
@@ -123,11 +146,16 @@ export default function LoginPage() {
           disabled={isSubmitting}
         >
           <GoogleIcon />
-          Masuk dengan Google
+          <Trans>Masuk dengan Google</Trans>
         </Button>
 
         <p className="auth-card__footer">
-          Belum punya akun? <Link to="/register">Daftar di sini</Link>
+          {/* Tautan ikut MASUK ke dalam pesan. Kalau dipecah jadi teks + <Link>
+              terpisah, penerjemah tidak bisa memindahkan posisi tautannya —
+              padahal susunan kalimatnya berbeda antar bahasa. */}
+          <Trans>
+            Belum punya akun? <Link to="/register">Daftar di sini</Link>
+          </Trans>
         </p>
       </div>
     </div>

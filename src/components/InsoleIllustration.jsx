@@ -1,4 +1,7 @@
+import { useLingui } from '@lingui/react'
 import { COLORS } from '../constants/theme'
+import { locationLabel } from '../utils/alertMessages'
+import { formatDecimal } from '../utils/locale'
 
 // Nilai tekanan datang dari pemanggilnya. Default 0 hanya berlaku kalau
 // tidak ada yang dikirim — dan di halaman pemasaran itu berarti tiga chip
@@ -7,6 +10,10 @@ import { COLORS } from '../constants/theme'
 // seluruhnya di rentang aman (<200 kPa menurut constants/thresholds.js),
 // supaya hero tidak sekaligus memperagakan kondisi bermasalah.
 export default function InsoleIllustration({ pressurePoints = {} }) {
+  // Nama area memakai LOCATION_LABELS yang sama dengan kartu sensor di
+  // dashboard, bukan teks tersendiri — supaya area yang sama tidak punya dua
+  // nama berbeda di dua tempat.
+  const { i18n } = useLingui()
   const toePressure = Number(pressurePoints.toe ?? 0)
   const metatarsalPressure = Number(pressurePoints.metatarsal ?? 0)
   const heelPressure = Number(pressurePoints.heel ?? 0)
@@ -49,24 +56,24 @@ export default function InsoleIllustration({ pressurePoints = {} }) {
       <g>
         <rect x="10" y="86" width="190" height="46" rx="14" fill="#ffffff" stroke="#c9d9c5" />
         <circle cx="34" cy="109" r="5" fill={COLORS.lightBlue} />
-        <text x="56" y="108" fontSize="14" fontWeight="600" fill={COLORS.navy}>{toePressure.toFixed(1)} kPa</text>
-        <text x="56" y="122" fontSize="10" fill={COLORS.blue}>Jari Kaki</text>
+        <text x="56" y="108" fontSize="14" fontWeight="600" fill={COLORS.navy}>{formatDecimal(toePressure)} kPa</text>
+        <text x="56" y="122" fontSize="10" fill={COLORS.blue}>{locationLabel(i18n, 'toe')}</text>
       </g>
 
       {/* Chip: Tekanan Metatarsal — sejajar titik metatarsal (y=223) */}
       <g>
         <rect x="630" y="200" width="190" height="46" rx="14" fill="#ffffff" stroke="#c9d9c5" />
         <circle cx="654" cy="223" r="5" fill={COLORS.lightBlue} />
-        <text x="676" y="222" fontSize="14" fontWeight="600" fill={COLORS.navy}>{metatarsalPressure.toFixed(1)} kPa</text>
-        <text x="676" y="236" fontSize="10" fill={COLORS.blue}>Metatarsal</text>
+        <text x="676" y="222" fontSize="14" fontWeight="600" fill={COLORS.navy}>{formatDecimal(metatarsalPressure)} kPa</text>
+        <text x="676" y="236" fontSize="10" fill={COLORS.blue}>{locationLabel(i18n, 'metatarsal')}</text>
       </g>
 
       {/* Chip: Tekanan Tumit — sejajar titik heel (y=540) */}
       <g>
         <rect x="630" y="517" width="190" height="46" rx="14" fill="#ffffff" stroke="#c9d9c5" />
         <circle cx="654" cy="540" r="5" fill={COLORS.lightBlue} />
-        <text x="676" y="539" fontSize="14" fontWeight="600" fill={COLORS.navy}>{heelPressure.toFixed(1)} kPa</text>
-        <text x="676" y="553" fontSize="10" fill={COLORS.blue}>Tumit</text>
+        <text x="676" y="539" fontSize="14" fontWeight="600" fill={COLORS.navy}>{formatDecimal(heelPressure)} kPa</text>
+        <text x="676" y="553" fontSize="10" fill={COLORS.blue}>{locationLabel(i18n, 'heel')}</text>
       </g>
     </svg>
   )

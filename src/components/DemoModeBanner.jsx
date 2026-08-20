@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { AnchorButton } from './Button'
 import { IconAlertTriangle, IconX } from './icons'
 import { demoToggleHref } from '../utils/demoMode'
@@ -15,9 +16,17 @@ export default function DemoModeBanner() {
         <IconAlertTriangle size={20} />
       </span>
       <p>
-        <strong>Mode Demo aktif.</strong> Semua angka, grafik, dan peringatan di halaman ini
-        adalah <strong>data contoh</strong> — bukan pembacaan sensor dari perangkat Anda dan
-        tidak tersimpan ke basis data.
+        {/* Tag <strong> ikut MASUK ke dalam pesan, bukan memecah kalimatnya jadi
+            beberapa <Trans> terpisah. Kalau dipecah, penerjemah menerima
+            potongan tanpa konteks dan tidak bisa memindahkan penekanannya —
+            padahal bagian yang perlu ditebalkan bisa jatuh di tempat berbeda
+            pada bahasa lain. Lingui menyimpan tag-nya sebagai penanda di dalam
+            pesan, jadi strukturnya tetap utuh. */}
+        <Trans>
+          <strong>Mode Demo aktif.</strong> Semua angka, grafik, dan peringatan di halaman ini
+          adalah <strong>data contoh</strong> — bukan pembacaan sensor dari perangkat Anda dan
+          tidak tersimpan ke basis data.
+        </Trans>
       </p>
 
       <div className="demo-banner__actions">
@@ -25,7 +34,7 @@ export default function DemoModeBanner() {
             akan menyala lagi seketika dan tombolnya terlihat rusak. */}
         <AnchorButton variant="danger" className="demo-banner__exit" href={demoToggleHref(false)}>
           <IconX size={14} />
-          Keluar Mode Demo
+          <Trans>Keluar Mode Demo</Trans>
         </AnchorButton>
       </div>
     </div>

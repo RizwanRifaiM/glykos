@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
+import { i18n } from '@lingui/core'
 import { buildSensorContext } from './sensorContext'
+
+// Ringkasan ini kini ikut bahasa antarmuka, jadi `i18n` dioper masuk — dan
+// angkanya diformat menurut locale. Pada locale sumber ('id', disetel di
+// src/test-setup.js) itu berarti KOMA desimal: "236,7 kPa", bukan "236.7".
+// Assertion di bawah sengaja memeriksa bentuk itu — pemisah desimal yang
+// salah pada angka sensor adalah kegagalan yang sesungguhnya, bukan detail
+// kosmetik.
 
 const reading = (overrides = {}) => ({
   pressure: { peak: 236.7, location: 'metatarsal', points: {} },
@@ -22,26 +30,26 @@ const day = (date, overrides = {}) => ({
 
 describe('buildSensorContext', () => {
   it('mengembalikan string kosong tanpa data, bukan ringkasan karangan', () => {
-    expect(buildSensorContext({ data: null })).toBe('')
+    expect(buildSensorContext(i18n, { data: null })).toBe('')
   })
 
   it('menyertakan angka pembacaan beserta ambangnya', () => {
-    const context = buildSensorContext({ data: reading(), isLive: true })
-    expect(context).toContain('236.7 kPa')
+    const context = buildSensorContext(i18n, { data: reading(), isLive: true })
+    expect(context).toContain('236,7 kPa')
     expect(context).toContain('Metatarsal')
-    expect(context).toContain('32.8 °C')
-    expect(context).toContain('2.7 °C')
-    expect(context).toContain('72.5 % RH')
-    expect(context).toContain('4218 langkah')
+    expect(context).toContain('32,8 °C')
+    expect(context).toContain('2,7 °C')
+    expect(context).toContain('72,5 % RH')
+    expect(context).toContain('langkah')
     // Ambang harus ikut, kalau tidak model hanya punya angka tanpa acuan.
     expect(context).toContain('200')
-    expect(context).toContain('2.2')
+    expect(context).toContain('2,2')
   })
 
   it('melewati metrik yang sensornya belum mengirim', () => {
     // Nol berarti "belum ada pembacaan" — sama seperti guard di alertRules.js.
     // Mengirimkannya sebagai "0 °C" akan membuat model menjelaskan angka palsu.
-    const context = buildSensorContext({
+    const context = buildSensorContext(i18n, {
       data: reading({
         temperatureObj: { highest: 0, delta: 0, location: null, points: {} },
         humidity: 0,
@@ -58,13 +66,13 @@ describe('buildSensorContext', () => {
       day('2026-08-10', { temperature: 0, pressure: 0, humidity: 0, steps: 0 }),
       day('2026-08-11'),
     ]
-    const context = buildSensorContext({ data: reading(), history })
+    const context = buildSensorContext(i18n, { data: reading(), history })
     expect(context).toContain('2 hari tercatat')
     expect(context).toContain('2 dari 2 hari di atas ambang')
   })
 
   it('menyebut pola selisih suhu yang sedang berjalan', () => {
-    const context = buildSensorContext({
+    const context = buildSensorContext(i18n, {
       data: reading(),
       trend: { level: 'danger', streakDays: 3, maxDelta: 2.9, days: [] },
     })
@@ -73,14 +81,14 @@ describe('buildSensorContext', () => {
   })
 
   it('menandai mode demo supaya angka contoh tidak diakui sebagai kondisi nyata', () => {
-    const context = buildSensorContext({ data: reading(), demoMode: true })
+    const context = buildSensorContext(i18n, { data: reading(), demoMode: true })
     expect(context).toContain('DATA CONTOH')
   })
 
   it('tidak pernah menyertakan identitas atau isi profil medis', () => {
     // Kunci Gemini ikut ter-bundle di klien, jadi batas ini yang menahan data
     // paling sensitif agar tidak ikut keluar. Lihat sensorContext.js.
-    const context = buildSensorContext({
+    const context = buildSensorContext(i18n, {
       data: {
         ...reading(),
         deviceId: 'glykos-device-01',

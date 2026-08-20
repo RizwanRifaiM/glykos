@@ -1,3 +1,5 @@
+import { t } from '@lingui/core/macro'
+import { useLingui } from '@lingui/react'
 import { useEffect, useRef, useState } from 'react'
 import { loadRenderKit, loadThreeModules } from '../three/loadThree'
 import {
@@ -14,7 +16,8 @@ import { createGlowSprite, createGlowTexture } from '../three/holo'
 import { createInsoleGeometry, INSOLE_COLOR, INSOLE_DEPTH } from '../three/insoleShape'
 import { applyEnvironment, applyToneMapping, createContactShadow } from '../three/renderQuality'
 import { createHotspot, pressureColor, pulseHotspot, SENSOR_ALONG } from '../three/sensorPoints'
-import { getPressureLabel, getPressureStatus } from '../constants/thresholds'
+import { getPressureLabelMsg, getPressureStatus } from '../constants/thresholds'
+import { formatDecimal } from '../utils/locale'
 import { bob, damp, easeOutBack, staggerProgress, viewportProgress } from '../utils/sceneMath'
 
 // Insole ambang: pelat telapak yang berputar pelan dengan TIGA titik pada tiga
@@ -64,6 +67,7 @@ const SMOOTHING = 0.0006
 const STAGGER = { offset: 0.35, delay: 0.2, duration: 0.5 }
 
 export default function SensorInsoleViewer({ className = '' }) {
+  const { i18n } = useLingui()
   const hostRef = useRef(null)
   const [state, setState] = useState(() =>
     typeof window !== 'undefined' && webglAvailable() ? 'idle' : 'unsupported',
@@ -168,10 +172,17 @@ export default function SensorInsoleViewer({ className = '' }) {
           insole.add(hotspot.group)
 
           const status = getPressureStatus(kpa)
+          // Nama kelas CSS, bukan teks — ditarik jadi variabel supaya
+          // pengecualian lint-nya melekat pada barisnya sendiri, bukan
+          // menumpang pada baris di atasnya.
+          // eslint-disable-next-line lingui/no-unlocalized-strings
+          const labelClass = `insole-viewer__label insole-viewer__label--${status}`
           hotspot.label = labels.add(
             hotspot.group,
-            `<b>${kpa}</b> kPa<i>${getPressureLabel(status)}</i>`,
-            `insole-viewer__label insole-viewer__label--${status}`,
+            // Markup + satu label status yang sudah diterjemahkan.
+            // eslint-disable-next-line lingui/no-unlocalized-strings
+            `<b>${formatDecimal(kpa)}</b> kPa<i>${i18n._(getPressureLabelMsg(status))}</i>`,
+            labelClass,
           )
           return hotspot
         })
@@ -259,14 +270,17 @@ export default function SensorInsoleViewer({ className = '' }) {
       io.disconnect()
       cleanup()
     }
-  }, [])
+    // Label titik sensor dirakit di dalam effect ini, jadi scene disusun ulang
+    // saat bahasa berganti — lihat catatan yang sama di DeviceExplodedViewer.jsx.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [i18n.locale])
 
   return (
     <div
       ref={hostRef}
       className={`insole-viewer insole-viewer--${state} ${className}`.trim()}
       role="img"
-      aria-label="Insole Glykos dengan tiga titik tekanan pada tiga status berbeda: 150 kPa aman, 225 kPa perlu perhatian, dan 300 kPa risiko ulkus"
+      aria-label={t(i18n)`Insole Glykos dengan tiga titik tekanan pada tiga status berbeda: 150 kPa aman, 225 kPa perlu perhatian, dan 300 kPa risiko ulkus`}
     />
   )
 }

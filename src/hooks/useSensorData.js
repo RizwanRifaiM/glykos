@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { onSnapshot } from 'firebase/firestore'
 import { liveDoc } from '../services/paths'
-import { toDateKey } from '../utils/formatTime'
+import { toDateKey, toTimeKey } from '../utils/formatTime'
 
 // Baru ada satu perangkat, dipasang di kaki KANAN. Struktur map dipertahankan
 // supaya perangkat kedua (kaki kiri) tinggal ditambahkan di sini tanpa
@@ -39,7 +39,7 @@ const DEFAULT_JSON = {
   pressure2: 0,
   pressure3: 0,
   tanggal: toDateKey(new Date()),
-  waktu: new Date().toLocaleTimeString('id-ID'),
+  waktu: toTimeKey(new Date()),
 }
 
 // Tiga titik NTC firmware, disimpan per area oleh useFirestoreSync.
@@ -88,7 +88,7 @@ function parseSensorReading(raw, deviceId) {
   const temperatureVal = Number(dataRaw.temperature ?? 0)
   const humidityVal = Number(dataRaw.humidity ?? 0)
   const tanggal = dataRaw.tanggal || toDateKey(new Date())
-  const waktu = dataRaw.waktu || new Date().toLocaleTimeString('id-ID')
+  const waktu = dataRaw.waktu || toTimeKey(new Date())
 
   const tempPoints = readTempPoints(dataRaw)
   const tempValues = Object.values(tempPoints)

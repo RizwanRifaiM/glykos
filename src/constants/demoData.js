@@ -15,7 +15,8 @@
 // Melanggar salah satunya membuat aplikasi pemantauan medis menampilkan angka
 // karangan sebagai kondisi kaki pengguna, tanpa apa pun yang mengoreksinya.
 
-import { toDateKey } from '../utils/formatTime'
+import { toDateKey, toTimeKey } from '../utils/formatTime'
+import { formatShortDate } from '../utils/locale'
 
 // Deterministik: nilai untuk indeks hari yang sama selalu sama, jadi grafik
 // tidak berkedip tiap render ulang.
@@ -62,7 +63,10 @@ export function buildDemoHistory(days = 7) {
 
     points.push({
       date: toDateKey(d),
-      label: d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
+      // Label tanggal ikut bahasa aktif ("13 Agu" / "Aug 13") — lihat
+      // utils/locale.js. Sebelumnya 'id-ID' di-hardcode, jadi grafik demo
+      // tetap berbahasa Indonesia di antarmuka Inggris.
+      label: formatShortDate(d),
       timestamp: d.getTime(),
       pressure: round1(Math.max(0, pressure)),
       temperature: round1(temperature),
@@ -107,7 +111,7 @@ export function buildDemoReading() {
     pressure2: metatarsal,
     pressure3: toe,
     tanggal: toDateKey(now),
-    waktu: now.toLocaleTimeString('id-ID'),
+    waktu: toTimeKey(now),
 
     connection: {
       wifi: true,
@@ -144,9 +148,12 @@ export const DEMO_FATIGUE = {
   sustainedMinutes: 14,
   distributionShiftPct: 7.4,
   steps: 4218,
+  // Kode + angka, bukan kalimat — bentuknya sama dengan yang dihasilkan
+  // useFatigueMonitor.js sekarang. Kalimatnya dirakit describeFatigueReasons()
+  // saat dibaca, jadi alasan contoh ikut berganti bahasa tanpa diduplikasi.
   reasons: [
-    'Beban tinggi berkelanjutan 14 menit',
-    'Distribusi tekanan mulai bergeser ke metatarsal +7pp',
+    { code: 'sustained', minutes: 14 },
+    { code: 'redistribution', pp: 7, severity: 'warning' },
   ],
   sessionActive: true,
 }
@@ -163,105 +170,51 @@ const daysAgo = (d, hour = 14) => {
 // ini) supaya pengelompokan per hari di halaman Peringatan DAN kolom
 // "Peringatan" pada tabel Riwayat sama-sama menunjukkan variasi: ada hari
 // berisiko, hari perlu perhatian, dan hari tanpa peringatan sama sekali.
+//
+// Bentuknya TERSTRUKTUR, sama seperti peringatan sungguhan (lihat
+// utils/alertRules.js): metrik + status + angka, tanpa kalimat. Sebelumnya
+// setiap entri membawa `label`/`value`/`message` berbahasa Indonesia yang
+// ditulis tangan — sepuluh kalimat yang harus diterjemahkan terpisah dan
+// dijaga agar tetap sama bunyinya dengan kalimat sungguhan. Sekarang keduanya
+// dirakit fungsi yang sama, jadi mode demo tidak bisa lagi menyimpang dari
+// tampilan sebenarnya.
 export const DEMO_ALERTS = [
-  {
-    id: 'demo-1',
-    metric: 'pressure',
-    label: 'Tekanan',
-    status: 'danger',
-    value: '265 kPa',
-    location: 'metatarsal',
-    message: 'Tekanan puncak 265 kPa (Risiko Ulkus)',
-    createdAt: hoursAgo(1),
-  },
+  { id: 'demo-1', metric: 'pressure', status: 'danger', location: 'metatarsal', values: { peak: 265 }, createdAt: hoursAgo(1) },
   {
     id: 'demo-2',
     metric: 'temperature',
-    label: 'Suhu',
     status: 'warning',
-    value: '32.8°C',
     location: 'metatarsal',
-    message: 'Selisih suhu 2.7°C antar area — prediktor pre-ulkus',
+    values: { highest: 32.8, delta: 2.7, deltaExceeded: true },
     createdAt: hoursAgo(3),
   },
   {
     id: 'demo-3',
     metric: 'fatigue',
-    label: 'Kelelahan',
     status: 'warning',
-    value: 'Waspada',
     location: null,
-    message: 'Beban tinggi berkelanjutan 14 menit',
+    values: { reasons: [{ code: 'sustained', minutes: 14 }] },
     createdAt: hoursAgo(6),
   },
-  {
-    id: 'demo-4',
-    metric: 'humidity',
-    label: 'Kelembapan',
-    status: 'warning',
-    value: '72.5% RH',
-    location: null,
-    message: 'Kelembapan sepatu 72.5% RH',
-    createdAt: daysAgo(1, 9),
-  },
-  {
-    id: 'demo-5',
-    metric: 'pressure',
-    label: 'Tekanan',
-    status: 'warning',
-    value: '228 kPa',
-    location: 'heel',
-    message: 'Tekanan puncak 228 kPa (Perlu Perhatian)',
-    createdAt: daysAgo(1, 16),
-  },
+  { id: 'demo-4', metric: 'humidity', status: 'warning', location: null, values: { humidity: 72.5 }, createdAt: daysAgo(1, 9) },
+  { id: 'demo-5', metric: 'pressure', status: 'warning', location: 'heel', values: { peak: 228 }, createdAt: daysAgo(1, 16) },
   {
     id: 'demo-6',
     metric: 'temperature',
-    label: 'Suhu',
     status: 'danger',
-    value: '34.1°C',
     location: 'heel',
-    message: 'Selisih suhu 3.2°C antar area — prediktor pre-ulkus',
+    values: { highest: 34.1, delta: 3.2, deltaExceeded: true },
     createdAt: daysAgo(2, 11),
   },
-  {
-    id: 'demo-7',
-    metric: 'humidity',
-    label: 'Kelembapan',
-    status: 'warning',
-    value: '71.2% RH',
-    location: null,
-    message: 'Kelembapan sepatu 71.2% RH',
-    createdAt: daysAgo(4, 15),
-  },
-  {
-    id: 'demo-8',
-    metric: 'pressure',
-    label: 'Tekanan',
-    status: 'danger',
-    value: '258 kPa',
-    location: 'metatarsal',
-    message: 'Tekanan puncak 258 kPa (Risiko Ulkus)',
-    createdAt: daysAgo(5, 10),
-  },
+  { id: 'demo-7', metric: 'humidity', status: 'warning', location: null, values: { humidity: 71.2 }, createdAt: daysAgo(4, 15) },
+  { id: 'demo-8', metric: 'pressure', status: 'danger', location: 'metatarsal', values: { peak: 258 }, createdAt: daysAgo(5, 10) },
   {
     id: 'demo-9',
     metric: 'fatigue',
-    label: 'Kelelahan',
     status: 'warning',
-    value: 'Waspada',
     location: null,
-    message: 'Total 6.140 langkah dalam sesi ini',
+    values: { reasons: [{ code: 'steps', steps: 6140 }] },
     createdAt: daysAgo(12, 13),
   },
-  {
-    id: 'demo-10',
-    metric: 'pressure',
-    label: 'Tekanan',
-    status: 'warning',
-    value: '214 kPa',
-    location: 'heel',
-    message: 'Tekanan puncak 214 kPa (Perlu Perhatian)',
-    createdAt: daysAgo(18, 8),
-  },
+  { id: 'demo-10', metric: 'pressure', status: 'warning', location: 'heel', values: { peak: 214 }, createdAt: daysAgo(18, 8) },
 ]

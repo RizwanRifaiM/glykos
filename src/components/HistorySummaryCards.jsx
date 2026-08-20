@@ -1,21 +1,32 @@
+import { msg, t } from '@lingui/core/macro'
+import { useLingui } from '@lingui/react'
 import {
   getPressureStatus,
-  getPressureLabel,
+  getPressureLabelMsg,
   getTemperatureStatus,
   getHumidityStatus,
 } from '../constants/thresholds'
+import { formatDecimal, formatNumber } from '../utils/locale'
 import { IconGauge, IconThermometer, IconDroplet } from './icons'
 
-const TEMP_STATUS_LABELS = { safe: 'Normal', warning: 'Perlu Perhatian', danger: 'Risiko' }
-const HUMIDITY_STATUS_LABELS = { safe: 'Ideal', warning: 'Perlu Perhatian', danger: 'Risiko Tinggi' }
+// Label status per metrik. Sengaja BERBEDA kata untuk keadaan `safe`
+// ("Normal" untuk suhu, "Ideal" untuk kelembapan) — bedanya bermakna, jadi
+// keduanya tetap dua pesan terpisah supaya penerjemah bisa mempertahankan
+// perbedaan itu.
+const TEMP_STATUS_LABELS = {
+  safe: msg`Normal`,
+  warning: msg`Perlu Perhatian`,
+  danger: msg`Risiko`,
+}
+const HUMIDITY_STATUS_LABELS = {
+  safe: msg`Ideal`,
+  warning: msg`Perlu Perhatian`,
+  danger: msg`Risiko Tinggi`,
+}
 
 function average(values) {
   if (values.length === 0) return null
   return values.reduce((a, b) => a + b, 0) / values.length
-}
-
-function round1(n) {
-  return Math.round(n * 10) / 10
 }
 
 function SummaryCard({ icon, title, value, unit, status, statusLabel, detail }) {
@@ -45,6 +56,8 @@ function SummaryCard({ icon, title, value, unit, status, statusLabel, detail }) 
 // 30 hari). Hari tanpa data (nilai 0 dari useHistoryData) diabaikan supaya
 // tidak menurunkan rata-rata secara artifisial.
 export default function HistorySummaryCards({ history, rangeLabel }) {
+  const { i18n } = useLingui()
+
   const pressureDays = history.filter((d) => d.pressure > 0)
   const temperatureDays = history.filter((d) => d.temperature > 0)
   const humidityDays = history.filter((d) => d.humidity > 0)
@@ -57,34 +70,43 @@ export default function HistorySummaryCards({ history, rangeLabel }) {
   const temperatureStatus = avgTemperature !== null ? getTemperatureStatus(avgTemperature) : null
   const humidityStatus = avgHumidity !== null ? getHumidityStatus(avgHumidity) : null
 
+  // Keterangan "Berdasarkan N dari M hari" dirakit satu tempat, bukan tiga
+  // kali. Selain menghemat dua pesan terjemahan yang identik, ini juga menutup
+  // kemungkinan ketiganya menyimpang bunyinya seiring waktu.
+  const totalText = formatNumber(history.length)
+  const basis = (days) => {
+    const daysText = formatNumber(days.length)
+    return t(i18n)`Berdasarkan ${daysText} dari ${totalText} hari yang tercatat`
+  }
+
   return (
     <section className="metrics-grid">
       <SummaryCard
         icon={<IconGauge size={22} />}
-        title={`Rata-rata Tekanan — ${rangeLabel}`}
-        value={avgPressure !== null ? round1(avgPressure) : null}
+        title={t(i18n)`Rata-rata Tekanan — ${rangeLabel}`}
+        value={avgPressure !== null ? formatDecimal(avgPressure) : null}
         unit="kPa"
         status={pressureStatus}
-        statusLabel={pressureStatus ? getPressureLabel(pressureStatus) : ''}
-        detail={`Berdasarkan ${pressureDays.length} dari ${history.length} hari yang tercatat`}
+        statusLabel={pressureStatus ? i18n._(getPressureLabelMsg(pressureStatus)) : ''}
+        detail={basis(pressureDays)}
       />
       <SummaryCard
         icon={<IconThermometer size={22} />}
-        title={`Rata-rata Suhu Kulit — ${rangeLabel}`}
-        value={avgTemperature !== null ? round1(avgTemperature) : null}
+        title={t(i18n)`Rata-rata Suhu Kulit — ${rangeLabel}`}
+        value={avgTemperature !== null ? formatDecimal(avgTemperature) : null}
         unit="°C"
         status={temperatureStatus}
-        statusLabel={temperatureStatus ? TEMP_STATUS_LABELS[temperatureStatus] : ''}
-        detail={`Berdasarkan ${temperatureDays.length} dari ${history.length} hari yang tercatat`}
+        statusLabel={temperatureStatus ? i18n._(TEMP_STATUS_LABELS[temperatureStatus]) : ''}
+        detail={basis(temperatureDays)}
       />
       <SummaryCard
         icon={<IconDroplet size={22} />}
-        title={`Rata-rata Kelembapan — ${rangeLabel}`}
-        value={avgHumidity !== null ? round1(avgHumidity) : null}
+        title={t(i18n)`Rata-rata Kelembapan — ${rangeLabel}`}
+        value={avgHumidity !== null ? formatDecimal(avgHumidity) : null}
         unit="% RH"
         status={humidityStatus}
-        statusLabel={humidityStatus ? HUMIDITY_STATUS_LABELS[humidityStatus] : ''}
-        detail={`Berdasarkan ${humidityDays.length} dari ${history.length} hari yang tercatat`}
+        statusLabel={humidityStatus ? i18n._(HUMIDITY_STATUS_LABELS[humidityStatus]) : ''}
+        detail={basis(humidityDays)}
       />
     </section>
   )

@@ -1,0 +1,31 @@
+{
+  "name": "Glykos — Diabetic Foot Monitoring",
+  "short_name": "Glykos",
+  "description": "Pressure, temperature, and humidity monitoring from a smart shoe for early detection of diabetic foot ulcer risk.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6f3e6",
+  "theme_color": "#446a45",
+  "categories": [
+    "health",
+    "medical"
+  ],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

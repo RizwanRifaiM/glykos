@@ -1,9 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
+import { msg } from '@lingui/core/macro'
+import { Trans } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react'
 import { IconCheck, IconChevronDown } from './icons'
 
-const footLabel = (foot) => (foot === 'left' ? 'Kiri' : 'Kanan')
+// Deskriptor `msg`, diselesaikan pemanggil dengan i18n._(). Sisi kiri/kanan
+// kaki adalah informasi klinis, bukan hiasan — pada perangkat kedua nanti,
+// salah baca sisi berarti salah kaki yang diperiksa.
+const FOOT_LABELS = { left: msg`Kiri`, right: msg`Kanan` }
+
+const footLabel = (i18n, foot) => i18n._(FOOT_LABELS[foot] ?? FOOT_LABELS.right)
 
 export default function DeviceSelector({ devices, selectedId, onSelect }) {
+  const { i18n } = useLingui()
   const entries = Object.entries(devices)
   const selected = devices[selectedId]
   const [open, setOpen] = useState(false)
@@ -13,6 +22,9 @@ export default function DeviceSelector({ devices, selectedId, onSelect }) {
   // membuka satu opsi yang sudah terpilih. Begitu perangkat kedua
   // ditambahkan di useSensorData.js, pemilihnya aktif kembali sendiri.
   const isSingleDevice = entries.length <= 1
+  // Variabel dulu: pemanggilan fungsi di dalam pesan ditolak rule
+  // lingui/no-expression-in-message.
+  const selectedFoot = footLabel(i18n, selected?.foot)
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -32,7 +44,7 @@ export default function DeviceSelector({ devices, selectedId, onSelect }) {
           <span className="device-picker__label">
             <strong>{selected?.name ?? selectedId}</strong>
             <small>
-              {selectedId} · Kaki {footLabel(selected?.foot)}
+              {selectedId} · <Trans>Kaki {selectedFoot}</Trans>
             </small>
           </span>
         </div>
@@ -53,7 +65,7 @@ export default function DeviceSelector({ devices, selectedId, onSelect }) {
         <span className="device-picker__label">
           <strong>{selected?.name ?? selectedId}</strong>
           <small>
-            {selectedId} · Kaki {footLabel(selected?.foot)}
+            {selectedId} · <Trans>Kaki {selectedFoot}</Trans>
           </small>
         </span>
         <IconChevronDown size={16} className="device-picker__chevron" />
@@ -61,7 +73,9 @@ export default function DeviceSelector({ devices, selectedId, onSelect }) {
 
       {open && (
         <ul className="device-picker__menu" role="listbox">
-          {entries.map(([id, device]) => (
+          {entries.map(([id, device]) => {
+            const deviceFoot = footLabel(i18n, device.foot)
+            return (
             <li key={id}>
               <button
                 type="button"
@@ -76,13 +90,14 @@ export default function DeviceSelector({ devices, selectedId, onSelect }) {
                 <span className="device-picker__option-label">
                   <strong>{device.name}</strong>
                   <small>
-                    {id} · Kaki {footLabel(device.foot)}
+                    {id} · <Trans>Kaki {deviceFoot}</Trans>
                   </small>
                 </span>
                 {selectedId === id && <IconCheck size={16} />}
               </button>
             </li>
-          ))}
+            )
+          })}
         </ul>
       )}
     </div>

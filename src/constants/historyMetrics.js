@@ -8,9 +8,17 @@
 // (#9C6510) — satu-satunya warna di palet yang cukup jauh dari trio di atas
 // (amber vs maroon vs hijau vs koral) tanpa keluar dari brand. Perlakuannya
 // sama: label + unit selalu menyertai warnanya.
+//
+// `label` berupa deskriptor `msg` yang diselesaikan pemanggil dengan
+// i18n._(config.label) — lihat catatan di constants/thresholds.js. `unit` tidak
+// diterjemahkan: kPa, °C, dan % adalah simbol SI yang sama di kedua bahasa, dan
+// menerjemahkannya justru membuka peluang salah tulis pada satuan yang jadi
+// dasar pembacaan.
+import { msg } from '@lingui/core/macro'
+
 export const HISTORY_METRICS_CONFIG = {
-  pressure: { label: 'Tekanan', unit: 'kPa', color: '#6E1936', max: 300 },
-  temperature: { label: 'Suhu Kulit', unit: '°C', color: '#446A45', max: 38 },
-  temperatureDelta: { label: 'Selisih Suhu', unit: '°C', color: '#9C6510', max: 6 },
-  humidity: { label: 'Kelembapan', unit: '%', color: '#ff7373', max: 100 },
+  pressure: { label: msg`Tekanan`, unit: 'kPa', color: '#6E1936', max: 300 },
+  temperature: { label: msg`Suhu Kulit`, unit: '°C', color: '#446A45', max: 38 },
+  temperatureDelta: { label: msg`Selisih Suhu`, unit: '°C', color: '#9C6510', max: 6 },
+  humidity: { label: msg`Kelembapan`, unit: '%', color: '#ff7373', max: 100 },
 }

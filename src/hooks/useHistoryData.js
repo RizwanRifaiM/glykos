@@ -1,9 +1,11 @@
 // src/hooks/useHistoryData.js
 import { useEffect, useMemo, useState } from 'react'
 import { onSnapshot, orderBy, query, where } from 'firebase/firestore'
+import { useLingui } from '@lingui/react'
 import { dailyCollection } from '../services/paths'
 import { rollupToPoint } from '../utils/dailyRollup'
 import { toDateKey } from '../utils/formatTime'
+import { formatShortDate } from '../utils/locale'
 
 const EMPTY_POINT = { pressure: 0, temperature: 0, temperatureDelta: 0, humidity: 0, steps: 0 }
 
@@ -14,7 +16,7 @@ const EMPTY_POINT = { pressure: 0, temperature: 0, temperatureDelta: 0, humidity
 // where/orderBy/limit lalu menyaring tanggalnya di klien — pemakaian normal
 // menulis ~1.440 dokumen per hari, jadi dalam sebulan setiap kali dashboard
 // dibuka puluhan ribu dokumen ikut terunduh. Sekarang 30 hari = 30 dokumen.
-function buildPoints(rollupsByDate, start, days) {
+function buildPoints(rollupsByDate, start, days, locale) {
   const points = []
   for (let i = 0; i < days; i++) {
     const d = new Date(start)
@@ -28,7 +30,14 @@ function buildPoints(rollupsByDate, start, days) {
 
     points.push({
       date: dateKey,
-      label: d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
+      // `locale` dioper masuk, bukan dibaca dari instance global di dalam
+      // formatShortDate. Bedanya bukan gaya penulisan: dengan dioper,
+      // ketergantungan label pada bahasa jadi TERLIHAT oleh
+      // react-hooks/exhaustive-deps, sehingga aturan itu ikut menjaga useMemo
+      // di bawah tetap benar. Kalau dibaca dari global, linter menganggap
+      // dependensi locale-nya berlebihan dan menyarankan menghapusnya — saran
+      // yang justru akan membuat label membeku di bahasa lama.
+      label: formatShortDate(d, locale),
       timestamp: d.getTime(),
       // Tanpa rangkuman untuk hari itu: nol, BUKAN data simulasi.
       ...(rollup ? rollupToPoint(rollup) : EMPTY_POINT),
@@ -40,6 +49,11 @@ function buildPoints(rollupsByDate, start, days) {
 
 export function useHistoryData(uid, deviceId = 'glykos-device', range = '7d') {
   const days = range === '30d' ? 30 : 7
+  // Label sumbu tanggal ("13 Agu" / "Aug 13") ikut bahasa aktif, jadi
+  // `i18n.locale` ikut jadi dependensi useMemo di bawah. Tanpa itu label yang
+  // sudah terhitung tidak pernah dihitung ulang, dan sumbu grafik Riwayat tetap
+  // berbahasa lama setelah pengguna berganti bahasa.
+  const { i18n } = useLingui()
   const subscriptionKey = uid && deviceId ? `${uid}:${deviceId}:${days}` : null
 
   const { start, startKey, endKey } = useMemo(() => {
@@ -89,8 +103,8 @@ export function useHistoryData(uid, deviceId = 'glykos-device', range = '7d') {
 
   const isCurrent = entry.key === subscriptionKey
   const history = useMemo(
-    () => buildPoints(isCurrent ? entry.rollups : {}, start, days),
-    [isCurrent, entry.rollups, start, days],
+    () => buildPoints(isCurrent ? entry.rollups : {}, start, days, i18n.locale),
+    [isCurrent, entry.rollups, start, days, i18n.locale],
   )
 
   return { history, isLoading: Boolean(subscriptionKey) && !isCurrent, range, days }

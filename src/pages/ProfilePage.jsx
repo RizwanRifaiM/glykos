@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore'
+import { msg, t } from '@lingui/core/macro'
+import { Trans } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react'
 import { profileDoc } from '../services/paths'
 import { useAuth } from '../contexts/auth-context'
 import Button from '../components/Button'
@@ -8,6 +11,7 @@ import FaqAccordion from '../components/FaqAccordion'
 import { IconBell } from '../components/icons'
 import PageHeader from '../components/PageHeader'
 import { SkeletonForm } from '../components/Skeleton'
+import { formatTimeOfDay } from '../utils/locale'
 import {
   getNotificationPermission,
   isNotificationSupported,
@@ -22,9 +26,26 @@ const EMPTY_PROFILE = {
   emergencyContact: '',
 }
 
+// Hasil uji notifikasi disimpan sebagai DESKRIPTOR, bukan kalimat: pesannya
+// bertahan di layar dan harus ikut berganti kalau pengguna mengganti bahasa
+// sesudahnya.
+const TEST_DELIVERED = msg`Terkirim — periksa notifikasi perangkat Anda.`
+const TEST_FAILED = msg`Gagal dikirim. Periksa izin notifikasi di pengaturan browser atau sistem.`
+
+// Pilihan tipe diabetes. `value` adalah NILAI TERSIMPAN dan tidak ikut
+// diterjemahkan — ia masuk ke Firestore, jadi mengubahnya berarti memutus
+// hubungan dengan profil yang sudah tersimpan. Yang diterjemahkan hanya
+// labelnya.
+const DIABETES_TYPES = [
+  { value: 'tipe-1', label: msg`Tipe 1` },
+  { value: 'tipe-2', label: msg`Tipe 2` },
+  { value: 'gestasional', label: msg`Gestasional` },
+]
+
 export default function ProfilePage() {
   const { deviceId, data } = useOutletContext()
   const { user } = useAuth()
+  const { i18n } = useLingui()
 
   const [profile, setProfile] = useState(EMPTY_PROFILE)
   const [isLoading, setIsLoading] = useState(true)
@@ -78,28 +99,26 @@ export default function ProfilePage() {
 
   async function handleTestNotification() {
     const delivered = await notify(
-      'Glykos — Notifikasi Uji',
-      'Notifikasi berhasil dikirim. Peringatan sungguhan akan tampil seperti ini.',
+      t(i18n)`Glykos — Notifikasi Uji`,
+      t(i18n)`Notifikasi berhasil dikirim. Peringatan sungguhan akan tampil seperti ini.`,
       { tag: 'glykos-test' },
     )
-    setTestResult(
-      delivered
-        ? 'Terkirim — periksa notifikasi perangkat Anda.'
-        : 'Gagal dikirim. Periksa izin notifikasi di pengaturan browser atau sistem.',
-    )
+    setTestResult(delivered ? TEST_DELIVERED : TEST_FAILED)
   }
+
+  const deviceName = data?.device?.name ?? deviceId
+  const savedTime = savedAt ? formatTimeOfDay(savedAt) : null
 
   return (
     <div className="profile-page">
-      <PageHeader
-        title="Profil"
-        subtitle={user?.displayName || user?.email}
-      />
+      <PageHeader title={t(i18n)`Profil`} subtitle={user?.displayName || user?.email} />
 
       <section className="panel profile-panel">
-        <h2 className="panel__title">Profil Pasien</h2>
+        <h2 className="panel__title">
+          <Trans>Profil Pasien</Trans>
+        </h2>
         <p className="panel__subtitle">
-          Perangkat terpasang: {data?.device?.name ?? deviceId}
+          <Trans>Perangkat terpasang: {deviceName}</Trans>
         </p>
 
         {isLoading ? (
@@ -107,56 +126,66 @@ export default function ProfilePage() {
         ) : (
           <form className="profile-form" onSubmit={handleSubmit}>
             <label className="profile-field">
-              <span>Tipe Diabetes</span>
+              <span>
+                <Trans>Tipe Diabetes</Trans>
+              </span>
               <select
                 value={profile.diabetesType}
                 onChange={(e) => updateField('diabetesType', e.target.value)}
               >
-                <option value="">Pilih tipe</option>
-                <option value="tipe-1">Tipe 1</option>
-                <option value="tipe-2">Tipe 2</option>
-                <option value="gestasional">Gestasional</option>
+                <option value="">{t(i18n)`Pilih tipe`}</option>
+                {DIABETES_TYPES.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {i18n._(option.label)}
+                  </option>
+                ))}
               </select>
             </label>
 
             <label className="profile-field">
-              <span>HbA1c Terakhir (%)</span>
+              <span>
+                <Trans>HbA1c Terakhir (%)</Trans>
+              </span>
               <input
                 type="number"
                 step="0.1"
                 value={profile.hba1c}
                 onChange={(e) => updateField('hba1c', e.target.value)}
-                placeholder="mis. 7.2"
+                placeholder={t(i18n)`mis. 7.2`}
               />
             </label>
 
             <label className="profile-field profile-field--full">
-              <span>Riwayat Luka / Ulkus</span>
+              <span>
+                <Trans>Riwayat Luka / Ulkus</Trans>
+              </span>
               <textarea
                 rows={3}
                 value={profile.woundHistory}
                 onChange={(e) => updateField('woundHistory', e.target.value)}
-                placeholder="Catatan riwayat luka kaki, operasi, atau amputasi sebelumnya"
+                placeholder={t(i18n)`Catatan riwayat luka kaki, operasi, atau amputasi sebelumnya`}
               />
             </label>
 
             <label className="profile-field profile-field--full">
-              <span>Kontak Darurat</span>
+              <span>
+                <Trans>Kontak Darurat</Trans>
+              </span>
               <input
                 type="text"
                 value={profile.emergencyContact}
                 onChange={(e) => updateField('emergencyContact', e.target.value)}
-                placeholder="Nama & nomor telepon"
+                placeholder={t(i18n)`Nama & nomor telepon`}
               />
             </label>
 
             <div className="profile-form__actions profile-field--full">
               <Button type="submit" variant="primary" disabled={isSaving}>
-                {isSaving ? 'Menyimpan…' : 'Simpan Profil'}
+                {isSaving ? t(i18n)`Menyimpan…` : t(i18n)`Simpan Profil`}
               </Button>
-              {savedAt && (
+              {savedTime && (
                 <span className="profile-form__saved">
-                  Tersimpan {savedAt.toLocaleTimeString('id-ID')}
+                  <Trans>Tersimpan {savedTime}</Trans>
                 </span>
               )}
             </div>
@@ -165,15 +194,24 @@ export default function ProfilePage() {
       </section>
 
       <section className="panel profile-panel">
-        <h2 className="panel__title">Notifikasi Peringatan</h2>
+        <h2 className="panel__title">
+          <Trans>Notifikasi Peringatan</Trans>
+        </h2>
         <p className="panel__subtitle">
-          Izinkan notifikasi browser untuk mendapat peringatan instan saat status berubah menjadi Risiko.
+          <Trans>
+            Izinkan notifikasi browser untuk mendapat peringatan instan saat status berubah menjadi
+            Risiko.
+          </Trans>
         </p>
         {!isNotificationSupported() ? (
-          <p>Browser ini tidak mendukung notifikasi.</p>
+          <p>
+            <Trans>Browser ini tidak mendukung notifikasi.</Trans>
+          </p>
         ) : permission === 'granted' ? (
           <>
-            <p className="profile-form__saved">Notifikasi aktif di browser ini.</p>
+            <p className="profile-form__saved">
+              <Trans>Notifikasi aktif di browser ini.</Trans>
+            </p>
             {/* Tombol uji ini bukan pemanis. Notifikasi peringatan hanya
                 muncul saat status benar-benar naik ke Risiko — jadi tanpa cara
                 mencobanya, kegagalan pengiriman (izin dicabut, service worker
@@ -182,25 +220,33 @@ export default function ProfilePage() {
             <div className="profile-form__actions">
               <Button variant="outline" onClick={handleTestNotification}>
                 <IconBell size={16} />
-                Kirim Notifikasi Uji
+                <Trans>Kirim Notifikasi Uji</Trans>
               </Button>
-              {testResult && <span className="profile-form__saved">{testResult}</span>}
+              {testResult && <span className="profile-form__saved">{i18n._(testResult)}</span>}
             </div>
           </>
         ) : permission === 'denied' ? (
-          <p>Notifikasi diblokir. Aktifkan lewat pengaturan izin situs pada browser Anda.</p>
+          <p>
+            <Trans>
+              Notifikasi diblokir. Aktifkan lewat pengaturan izin situs pada browser Anda.
+            </Trans>
+          </p>
         ) : (
           <Button variant="primary" onClick={handleEnableNotifications}>
             <IconBell size={16} />
-            Aktifkan Notifikasi
+            <Trans>Aktifkan Notifikasi</Trans>
           </Button>
         )}
       </section>
 
       <section className="panel profile-panel">
-        <h2 className="panel__title">Bantuan &amp; Pertanyaan Umum</h2>
+        <h2 className="panel__title">
+          <Trans>Bantuan &amp; Pertanyaan Umum</Trans>
+        </h2>
         <p className="panel__subtitle">
-          Masalah yang sering dialami pengguna seputar koneksi perangkat dan fitur aplikasi.
+          <Trans>
+            Masalah yang sering dialami pengguna seputar koneksi perangkat dan fitur aplikasi.
+          </Trans>
         </p>
         <FaqAccordion />
       </section>

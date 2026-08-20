@@ -10,6 +10,8 @@
 // registration.showNotification() adalah satu-satunya jalur yang bekerja di
 // sana. Konstruktor lama tetap dipertahankan sebagai cadangan untuk desktop
 // yang service worker-nya belum sempat aktif.
+import { i18n } from '@lingui/core'
+
 const ICON = '/icon.svg'
 
 export function isNotificationSupported() {
@@ -49,7 +51,17 @@ export async function notify(title, body, options = {}) {
     body,
     icon: ICON,
     badge: ICON,
-    lang: 'id',
+    // Bahasa notifikasi mengikuti bahasa aktif, bukan 'id' tetap. Judul dan isi
+    // notifikasi memang sudah diterjemahkan pemanggilnya (useAlerts.js), tapi
+    // atribut ini yang dipakai OS untuk memilih pelafalan saat notifikasinya
+    // dibacakan — dan sistem yang membacakan teks Inggris dengan fonetik
+    // Indonesia praktis tidak bisa dimengerti.
+    //
+    // Dibaca dari instance global, bukan dioper: fungsi ini dipanggil dari
+    // effect dan callback di luar pohon render, jadi tidak ada konteks React
+    // yang bisa diandalkan di sini. Nilainya dibaca saat notifikasi dikirim,
+    // yang memang saat yang benar.
+    lang: i18n.locale ?? 'id',
     // `tag` membuat peringatan sejenis saling menimpa alih-alih menumpuk di
     // shade notifikasi. Cocok di sini: yang penting kondisi TERBARU.
     tag: options.tag ?? 'glykos-alert',

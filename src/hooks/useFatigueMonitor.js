@@ -118,36 +118,52 @@ export class FatigueSession {
     const tempRiseC = this.baselineTemp !== null ? highestTemp - this.baselineTemp : 0
 
     let points = 0
+
+    // `reasons` berisi KODE + angka, bukan kalimat.
+    //
+    // Sebelumnya di sini dirakit kalimat berbahasa Indonesia lengkap dengan
+    // `toLocaleString('id-ID')`. Itu membuat alasan kelelahan tidak bisa ikut
+    // berganti bahasa — dan kalau alasannya ikut tercatat sebagai peringatan,
+    // bahasanya bahkan tertulis ke Firestore. Perakitan kalimatnya kini ada di
+    // utils/alertMessages.js (describeFatigueReasons) dan terjadi saat dibaca.
     const reasons = []
 
     if (sustainedMinutes >= SUSTAINED_DANGER_MIN) {
       points += 2
-      reasons.push(`Beban tinggi berkelanjutan ${Math.round(sustainedMinutes)} menit`)
+      reasons.push({ code: 'sustained', minutes: Math.round(sustainedMinutes) })
     } else if (sustainedMinutes >= SUSTAINED_WARNING_MIN) {
       points += 1
-      reasons.push(`Beban tinggi berkelanjutan ${Math.round(sustainedMinutes)} menit`)
+      reasons.push({ code: 'sustained', minutes: Math.round(sustainedMinutes) })
     }
 
     if (distributionShiftPct >= REDISTRIBUTION_DANGER_PP) {
       points += 2
-      reasons.push(`Distribusi tekanan bergeser ke metatarsal +${Math.round(distributionShiftPct)}pp`)
+      reasons.push({
+        code: 'redistribution',
+        pp: Math.round(distributionShiftPct),
+        severity: 'danger',
+      })
     } else if (distributionShiftPct >= REDISTRIBUTION_WARNING_PP) {
       points += 1
-      reasons.push(`Distribusi tekanan mulai bergeser ke metatarsal +${Math.round(distributionShiftPct)}pp`)
+      reasons.push({
+        code: 'redistribution',
+        pp: Math.round(distributionShiftPct),
+        severity: 'warning',
+      })
     }
 
     if (tempRiseC >= TEMP_RISE_SECONDARY_C && this.sustainedSince) {
       points += 1
-      reasons.push(`Suhu kaki naik ${tempRiseC.toFixed(1)}°C selama sesi (sinyal sekunder)`)
+      reasons.push({ code: 'tempRise', celsius: tempRiseC })
     }
 
     const totalSteps = Number(steps) || 0
     if (totalSteps >= STEPS_DANGER) {
       points += 2
-      reasons.push(`Total ${totalSteps.toLocaleString('id-ID')} langkah dalam sesi ini`)
+      reasons.push({ code: 'steps', steps: totalSteps })
     } else if (totalSteps >= STEPS_WARNING) {
       points += 1
-      reasons.push(`Total ${totalSteps.toLocaleString('id-ID')} langkah dalam sesi ini`)
+      reasons.push({ code: 'steps', steps: totalSteps })
     }
 
     const level = points >= 4 ? 'danger' : points >= 2 ? 'warning' : 'safe'

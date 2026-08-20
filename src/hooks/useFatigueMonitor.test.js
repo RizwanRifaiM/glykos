@@ -51,7 +51,10 @@ describe('FatigueSession', () => {
     const snapshot = session.getSnapshot()
     expect(snapshot.sustainedMinutes).toBeGreaterThanOrEqual(20)
     expect(snapshot.level).toBe('safe')
-    expect(snapshot.reasons.join(' ')).toContain('berkelanjutan')
+    // `reasons` kini berisi KODE + angka, bukan kalimat — kalimatnya dirakit
+    // describeFatigueReasons() saat dibaca (lihat utils/alertMessages.js).
+    // Yang diuji di sini logikanya, jadi yang diperiksa kodenya.
+    expect(snapshot.reasons.map((r) => r.code)).toContain('sustained')
   })
 
   it('menaikkan status setelah beban tinggi sangat panjang', () => {
@@ -96,7 +99,10 @@ describe('FatigueSession', () => {
     session.update(reading({ heel: 60, metatarsal: 180, toe: 60 }), true, 0)
     const snapshot = session.getSnapshot()
     expect(snapshot.distributionShiftPct).toBeGreaterThan(15)
-    expect(snapshot.reasons.join(' ')).toContain('metatarsal')
+    const redistribution = snapshot.reasons.find((r) => r.code === 'redistribution')
+    expect(redistribution).toBeDefined()
+    expect(redistribution.severity).toBe('danger')
+    expect(redistribution.pp).toBeGreaterThan(15)
   })
 
   it('kosong saat perangkat tidak live', () => {

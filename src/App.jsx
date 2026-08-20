@@ -1,4 +1,5 @@
 import { Suspense, lazy } from 'react'
+import { useLingui } from '@lingui/react/macro'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -22,9 +23,11 @@ const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const ChatbotPage = lazy(() => import('./pages/ChatbotPage'))
 
 function App() {
+  const { t } = useLingui()
+
   return (
     <AuthProvider>
-      <Suspense fallback={<AppLoader label="Memuat halaman…" />}>
+      <Suspense fallback={<AppLoader label={t`Memuat halaman…`} />}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />

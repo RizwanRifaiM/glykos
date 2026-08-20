@@ -1,3 +1,17 @@
+import { t } from '@lingui/core/macro'
+import { locationLabel } from './alertMessages'
+import { formatDateTime, formatNumber } from './locale'
+
+// LAPORAN IKUT BAHASA ANTARMUKA
+// Berkas ini menghasilkan dokumen yang KELUAR dari aplikasi: CSV yang dibuka di
+// Excel dan halaman cetak yang bisa dibawa ke dokter. Justru di situ bahasa
+// paling penting — dokumen yang dicetak seorang pengguna berbahasa Inggris
+// untuk ditunjukkan ke tenaga kesehatan tidak boleh berkepala "Laporan
+// Monitoring Kaki Diabetes".
+//
+// `i18n` dioper dari komponen pemanggil (ProfilePage/HistoryPage), sesuai
+// konvensi di utils/locale.js.
+
 // Nilai apa pun yang masuk ke HTML laporan di-escape dulu. Isinya memang data
 // milik pengguna sendiri (nama perangkat, nama area, label tanggal), tapi
 // menempelkan string mentah ke markup lewat template literal adalah kebiasaan
@@ -22,47 +36,80 @@ function csvCell(value) {
   return /[",\n\r]/.test(guarded) ? `"${guarded.replace(/"/g, '""')}"` : guarded
 }
 
-export function exportToCsv(data, history = [], filename = 'glykos-report') {
+// Ringkasan angka yang sama dipakai CSV maupun halaman cetak. Sebelumnya
+// dihitung dua kali dengan kode yang identik di kedua fungsi — termasuk
+// fallback `'Metatarsal'` yang di-hardcode dua kali.
+function summarize(i18n, data) {
   const peakPressure =
     typeof data?.pressure === 'object'
       ? data.pressure.peak
-      : Math.max(data?.pressure1 ?? 0, data?.pressure2 ?? 0, data?.pressure3 ?? 0, Number(data?.pressure || 0))
-
-  const pressureLocation =
-    typeof data?.pressure === 'object'
-      ? data.pressure.location
-      : 'Metatarsal'
+      : Math.max(
+          data?.pressure1 ?? 0,
+          data?.pressure2 ?? 0,
+          data?.pressure3 ?? 0,
+          Number(data?.pressure || 0),
+        )
 
   const highestTemp =
     typeof data?.temperature === 'object'
       ? data.temperature.highest
       : Number(data?.temperature || 0)
 
-  const tempLocation =
-    typeof data?.temperature === 'object'
-      ? data.temperature.location
-      : 'Metatarsal'
+  // Nama area lewat locationLabel(), bukan string 'Metatarsal' langsung: itu
+  // satu-satunya tempat nama area diterjemahkan, jadi laporan menyebut area
+  // dengan istilah yang sama persis seperti yang dilihat pengguna di kartu
+  // sensor.
+  const fallbackArea = locationLabel(i18n, 'metatarsal')
 
-  const humidity = Number(data?.humidity || 0)
-  const steps = data?.activity?.steps ?? 0
-  const activeMins = data?.activity?.activeMinutes ?? 0
+  return {
+    peakPressure,
+    highestTemp,
+    pressureLocation:
+      typeof data?.pressure === 'object'
+        ? (locationLabel(i18n, data.pressure.location) ?? fallbackArea)
+        : fallbackArea,
+    tempLocation:
+      typeof data?.temperature === 'object'
+        ? (locationLabel(i18n, data.temperature.location) ?? fallbackArea)
+        : fallbackArea,
+    humidity: Number(data?.humidity || 0),
+    steps: data?.activity?.steps ?? 0,
+    activeMins: data?.activity?.activeMinutes ?? 0,
+    deviceName: data?.device?.name ?? data?.deviceId ?? 'glykos-device',
+  }
+}
+
+export function exportToCsv(i18n, data, history = [], filename = 'glykos-report') {
+  const s = summarize(i18n, data)
 
   const rows = [
-    ['Glykos — Laporan Monitoring Kaki Diabetes'],
-    ['Diekspor', new Date().toLocaleString('id-ID')],
-    ['Perangkat', data?.device?.name ?? data?.deviceId ?? 'glykos-device'],
+    [t(i18n)`Glykos — Laporan Monitoring Kaki Diabetes`],
+    [t(i18n)`Diekspor`, formatDateTime(new Date(), i18n.locale)],
+    [t(i18n)`Perangkat`, s.deviceName],
     [],
-    ['Parameter Saat Ini'],
-    ['Tekanan Puncak (kPa)', peakPressure],
-    ['Lokasi Tekanan', pressureLocation],
-    ['Suhu Tertinggi (°C)', highestTemp],
-    ['Lokasi Suhu', tempLocation],
-    ['Kelembapan (%RH)', humidity],
-    ['Langkah', steps],
-    ['Waktu Aktif (menit)', activeMins],
+    [t(i18n)`Parameter Saat Ini`],
+    [t(i18n)`Tekanan Puncak (kPa)`, s.peakPressure],
+    [t(i18n)`Lokasi Tekanan`, s.pressureLocation],
+    [t(i18n)`Suhu Tertinggi (°C)`, s.highestTemp],
+    [t(i18n)`Lokasi Suhu`, s.tempLocation],
+    [t(i18n)`Kelembapan (%RH)`, s.humidity],
+    [t(i18n)`Langkah`, s.steps],
+    [t(i18n)`Waktu Aktif (menit)`, s.activeMins],
     [],
-    ['Histori'],
-    ['Tanggal', 'Tekanan (kPa)', 'Suhu (°C)', 'Selisih Suhu (°C)', 'Kelembapan (%RH)', 'Langkah'],
+    [t(i18n)`Histori`],
+    [
+      t(i18n)`Tanggal`,
+      t(i18n)`Tekanan (kPa)`,
+      t(i18n)`Suhu (°C)`,
+      t(i18n)`Selisih Suhu (°C)`,
+      t(i18n)`Kelembapan (%RH)`,
+      t(i18n)`Langkah`,
+    ],
+    // Angka pada baris histori DIBIARKAN mentah (titik desimal, tanpa pemisah
+    // ribuan). Ini kolom yang akan dihitung ulang di Excel/Sheets, dan angka
+    // yang sudah diformat menurut bahasa ("2,7") terbaca sebagai teks di
+    // spreadsheet berlokal Inggris — atau lebih buruk, sebagai 27. Yang
+    // diterjemahkan adalah judul kolomnya, bukan isinya.
     ...history.map((row) => [
       row.date || row.tanggal,
       row.pressure,
@@ -74,7 +121,7 @@ export function exportToCsv(data, history = [], filename = 'glykos-report') {
   ]
 
   const csv = rows.map((row) => row.map(csvCell).join(',')).join('\r\n')
-  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' })
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
@@ -83,35 +130,37 @@ export function exportToCsv(data, history = [], filename = 'glykos-report') {
   URL.revokeObjectURL(url)
 }
 
-export function exportToPdf(data, history = []) {
-  const peakPressure =
-    typeof data?.pressure === 'object'
-      ? data.pressure.peak
-      : Math.max(data?.pressure1 ?? 0, data?.pressure2 ?? 0, data?.pressure3 ?? 0, Number(data?.pressure || 0))
+export function exportToPdf(i18n, data, history = []) {
+  const s = summarize(i18n, data)
 
-  const pressureLocation =
-    typeof data?.pressure === 'object'
-      ? data.pressure.location
-      : 'Metatarsal'
+  // Judul & label disiapkan sebagai variabel dulu, bukan dipanggil di dalam
+  // template: `${t(i18n)\`…\`}` di tengah markup membuat pesan sulit dilacak
+  // dan melanggar lingui/no-expression-in-message.
+  const title = t(i18n)`Glykos — Laporan Monitoring`
+  const docTitle = t(i18n)`Laporan Glykos`
+  const labelPeak = t(i18n)`Tekanan Puncak`
+  const labelTemp = t(i18n)`Suhu Tertinggi`
+  const labelHumidity = t(i18n)`Kelembapan`
+  const labelHistory = t(i18n)`Histori`
+  const thDate = t(i18n)`Tanggal`
+  const thPressure = t(i18n)`Tekanan`
+  const thTemp = t(i18n)`Suhu`
+  const thDelta = t(i18n)`Selisih Suhu`
+  const thHumidity = t(i18n)`Kelembapan`
+  const thSteps = t(i18n)`Langkah`
+  const exportedAt = formatDateTime(new Date(), i18n.locale)
 
-  const highestTemp =
-    typeof data?.temperature === 'object'
-      ? data.temperature.highest
-      : Number(data?.temperature || 0)
-
-  const tempLocation =
-    typeof data?.temperature === 'object'
-      ? data.temperature.location
-      : 'Metatarsal'
-
-  const humidity = Number(data?.humidity || 0)
-
+  // Template di bawah adalah MARKUP, bukan teks — seluruh kata yang dibaca
+  // manusia sudah disiapkan sebagai variabel terjemahan di atas. Menandainya
+  // untuk diterjemahkan berarti menyerahkan tag HTML dan CSS ke penerjemah,
+  // yang justru cara paling mudah merusak halamannya.
+  // eslint-disable-next-line lingui/no-unlocalized-strings
   const html = `
 <!DOCTYPE html>
-<html lang="id">
+<html lang="${escapeHtml(i18n.locale)}">
 <head>
   <meta charset="UTF-8" />
-  <title>Glykos Report</title>
+  <title>${escapeHtml(docTitle)}</title>
   <style>
     body { font-family: system-ui, sans-serif; color: #446a45; padding: 32px; }
     h1 { color: #446a45; margin-bottom: 4px; }
@@ -126,22 +175,24 @@ export function exportToPdf(data, history = []) {
   </style>
 </head>
 <body>
-  <h1>Glykos — Laporan Monitoring</h1>
-  <p class="subtitle">${escapeHtml(data?.device?.name ?? data?.deviceId ?? 'glykos-device')} · ${escapeHtml(new Date().toLocaleString('id-ID'))}</p>
+  <h1>${escapeHtml(title)}</h1>
+  <p class="subtitle">${escapeHtml(s.deviceName)} · ${escapeHtml(exportedAt)}</p>
   <div class="metrics">
-    <div class="metric"><span>Tekanan Puncak</span><strong>${escapeHtml(peakPressure)} kPa</strong><small>${escapeHtml(pressureLocation)}</small></div>
-    <div class="metric"><span>Suhu Tertinggi</span><strong>${escapeHtml(highestTemp)}°C</strong><small>${escapeHtml(tempLocation)}</small></div>
-    <div class="metric"><span>Kelembapan</span><strong>${escapeHtml(humidity)}% RH</strong></div>
+    <div class="metric"><span>${escapeHtml(labelPeak)}</span><strong>${escapeHtml(s.peakPressure)} kPa</strong><small>${escapeHtml(s.pressureLocation)}</small></div>
+    <div class="metric"><span>${escapeHtml(labelTemp)}</span><strong>${escapeHtml(s.highestTemp)}°C</strong><small>${escapeHtml(s.tempLocation)}</small></div>
+    <div class="metric"><span>${escapeHtml(labelHumidity)}</span><strong>${escapeHtml(s.humidity)}% RH</strong></div>
   </div>
-  <h2>Histori</h2>
+  <h2>${escapeHtml(labelHistory)}</h2>
   <table>
-    <thead><tr><th>Tanggal</th><th>Tekanan</th><th>Suhu</th><th>Selisih Suhu</th><th>Kelembapan</th><th>Langkah</th></tr></thead>
+    <thead><tr><th>${escapeHtml(thDate)}</th><th>${escapeHtml(thPressure)}</th><th>${escapeHtml(thTemp)}</th><th>${escapeHtml(thDelta)}</th><th>${escapeHtml(thHumidity)}</th><th>${escapeHtml(thSteps)}</th></tr></thead>
     <tbody>
       ${history
-        .map(
-          (row) =>
-            `<tr><td>${escapeHtml(row.label || row.date)}</td><td>${escapeHtml(row.pressure)} kPa</td><td>${escapeHtml(row.temperature)}°C</td><td>${escapeHtml(row.temperatureDelta ?? 0)}°C</td><td>${escapeHtml(row.humidity)}%</td><td>${escapeHtml((row.steps ?? 0).toLocaleString('id-ID'))}</td></tr>`,
-        )
+        .map((row) => {
+          // Baris tabel: markup + angka, tanpa satu pun kata. Lihat catatan di
+          // atas.
+          // eslint-disable-next-line lingui/no-unlocalized-strings
+          return `<tr><td>${escapeHtml(row.label || row.date)}</td><td>${escapeHtml(row.pressure)} kPa</td><td>${escapeHtml(row.temperature)}°C</td><td>${escapeHtml(row.temperatureDelta ?? 0)}°C</td><td>${escapeHtml(row.humidity)}%</td><td>${escapeHtml(formatNumber(row.steps ?? 0, { locale: i18n.locale }))}</td></tr>`
+        })
         .join('')}
     </tbody>
   </table>
@@ -156,4 +207,3 @@ export function exportToPdf(data, history = []) {
     printWindow.print()
   }
 }
-

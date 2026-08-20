@@ -1,5 +1,9 @@
+import { t } from '@lingui/core/macro'
+import { Trans } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react'
 import { useId, useRef, useState } from 'react'
 import { HISTORY_METRICS_CONFIG } from '../constants/historyMetrics'
+import { formatDecimal } from '../utils/locale'
 
 const WIDTH = 320
 const HEIGHT = 176
@@ -29,6 +33,8 @@ function areaPath(values, max) {
   const baseline = yFor(0, max)
   const lastX = xFor(values.length - 1, values.length)
   const firstX = xFor(0, values.length)
+  // Perintah path SVG, bukan teks.
+  // eslint-disable-next-line lingui/no-unlocalized-strings
   return `${top} L ${lastX} ${baseline} L ${firstX} ${baseline} Z`
 }
 
@@ -56,7 +62,12 @@ function MetricChart({ metricKey, config, history }) {
     typeof d[metricKey] === 'number' && !Number.isNaN(d[metricKey]) ? d[metricKey] : 0,
   )
   const hasData = values.some((v) => v > 0)
-  const { max, color, label, unit } = config
+  const { i18n } = useLingui()
+  // `config.label` berupa deskriptor pesan (lihat constants/historyMetrics.js),
+  // jadi diselesaikan di sini. `unit` tidak diterjemahkan — kPa/°C/% adalah
+  // simbol SI yang sama di kedua bahasa.
+  const { max, color, unit } = config
+  const label = i18n._(config.label)
   const ticks = [0, max / 2, max]
 
   const lastIndex = values.length - 1
@@ -68,6 +79,12 @@ function MetricChart({ metricKey, config, history }) {
   const xLabels = history.filter(
     (_, i) => i === 0 || i === history.length - 1 || i % xLabelStep === 0,
   )
+
+  // Disiapkan sebagai variabel: indeks array di dalam pesan ditolak rule
+  // lingui/no-expression-in-message, dan penerjemah butuh nama placeholder yang
+  // punya arti.
+  const lastValue = formatDecimal(values[lastIndex])
+  const chartLabel = t(i18n)`Grafik ${label} — nilai terakhir ${lastValue} ${unit}`
 
   function handlePointerMove(e) {
     if (!svgRef.current || values.length === 0) return
@@ -84,7 +101,7 @@ function MetricChart({ metricKey, config, history }) {
         </div>
         {hasData && (
           <div className="history-chart-card__readout">
-            <strong>{activeValue}</strong>
+            <strong>{formatDecimal(activeValue)}</strong>
             <span>{unit}</span>
           </div>
         )}
@@ -97,7 +114,7 @@ function MetricChart({ metricKey, config, history }) {
             viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
             className="history-chart-card__svg"
             role="img"
-            aria-label={`Grafik ${label} — nilai terakhir ${values[lastIndex]} ${unit}`}
+            aria-label={chartLabel}
             onPointerMove={handlePointerMove}
             onPointerLeave={() => setHoverIndex(null)}
           >
@@ -108,23 +125,28 @@ function MetricChart({ metricKey, config, history }) {
               </linearGradient>
             </defs>
 
-            {ticks.map((t) => (
-              <g key={t}>
+            {/* Dinamai `tick`, bukan `t`: nama `t` di sini akan MENUTUPI macro
+                `t` yang diimpor di kepala berkas. Saat ini pemakaian macro-nya
+                berada di luar cakupan ini sehingga tidak bentrok, tapi
+                penamaan yang menutupi macro terjemahan adalah jebakan yang
+                hanya perlu satu kali pemindahan kode untuk meledak. */}
+            {ticks.map((tick) => (
+              <g key={tick}>
                 <line
                   x1={PAD.left}
                   x2={WIDTH - PAD.right}
-                  y1={yFor(t, max)}
-                  y2={yFor(t, max)}
+                  y1={yFor(tick, max)}
+                  y2={yFor(tick, max)}
                   className="history-chart-card__gridline"
                 />
                 <text
                   x={PAD.left - 8}
-                  y={yFor(t, max)}
+                  y={yFor(tick, max)}
                   className="history-chart-card__tick"
                   textAnchor="end"
                   dominantBaseline="middle"
                 >
-                  {Math.round(t)}
+                  {formatDecimal(Math.round(tick), 0)}
                 </text>
               </g>
             ))}
@@ -166,7 +188,7 @@ function MetricChart({ metricKey, config, history }) {
             >
               <span className="history-chart-card__tooltip-date">{activePoint.label}</span>
               <span className="history-chart-card__tooltip-value">
-                {activeValue} {unit}
+                {formatDecimal(activeValue)} {unit}
               </span>
             </div>
           )}
@@ -178,7 +200,9 @@ function MetricChart({ metricKey, config, history }) {
           </div>
         </div>
       ) : (
-        <p className="history-chart-card__empty">Belum ada data pada rentang ini.</p>
+        <p className="history-chart-card__empty">
+          <Trans>Belum ada data pada rentang ini.</Trans>
+        </p>
       )}
     </article>
   )

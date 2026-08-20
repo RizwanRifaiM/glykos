@@ -1,5 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
+import { plural, t } from '@lingui/core/macro'
+import { Trans } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react'
 import Button from '../components/Button'
 import HistoryChart from '../components/HistoryChart'
 import HistorySummaryCards from '../components/HistorySummaryCards'
@@ -8,9 +11,10 @@ import TemperatureTrendBanner from '../components/TemperatureTrendBanner'
 import { SkeletonTableRows } from '../components/Skeleton'
 import { IconDownload, IconFileText, IconHistory } from '../components/icons'
 import { exportToCsv, exportToPdf } from '../utils/exportData'
-import { getPressureLabel, getPressureStatus, TEMP_DELTA_WARNING } from '../constants/thresholds'
+import { getPressureLabelMsg, getPressureStatus, TEMP_DELTA_WARNING } from '../constants/thresholds'
 import { HISTORY_METRICS_CONFIG } from '../constants/historyMetrics'
 import { toDateKey } from '../utils/formatTime'
+import { formatDecimal, formatNumber } from '../utils/locale'
 
 const METRIC_KEYS = Object.keys(HISTORY_METRICS_CONFIG)
 
@@ -45,9 +49,17 @@ function buildAlertsByDate(alerts) {
 export default function HistoryPage() {
   const { data, history, historyLoading, historyRange, setHistoryRange, alerts, temperatureTrend } =
     useOutletContext()
+  const { i18n } = useLingui()
   const [visibleMetrics, setVisibleMetrics] = useState(METRIC_KEYS)
   const [sortDesc, setSortDesc] = useState(true)
-  const rangeText = historyRange === '7d' ? '7 hari' : '30 hari'
+
+  // Rentangnya dipakai sebagai ANGKA lalu dirakit lewat `plural`, bukan dua
+  // kalimat berisi "7 hari"/"30 hari". Bahasa Indonesia tidak membedakan
+  // bentuknya, tapi sisi Inggris butuh "1 day" vs "7 days" — dan angka yang
+  // tertanam di dalam teks membuat bentuk itu tidak mungkin dibuat penerjemah.
+  const rangeDays = historyRange === '7d' ? 7 : 30
+  const rangeText = plural(rangeDays, { one: '# hari', other: '# hari' })
+  const rangeLabel = plural(rangeDays, { one: '# Hari Terakhir', other: '# Hari Terakhir' })
 
   function toggleMetric(key) {
     setVisibleMetrics((prev) => {
@@ -70,18 +82,21 @@ export default function HistoryPage() {
     return rows
   }, [history, sortDesc])
 
+  const sortLabel = sortDesc ? t(i18n)`Terbaru` : t(i18n)`Terlama`
+  const entryCount = formatNumber(sortedHistory.length)
+
   return (
     <div className="history-page">
       <PageHeader
-        title="Riwayat"
-        subtitle="Data historis tekanan, suhu & kelembapan insole"
+        title={t(i18n)`Riwayat`}
+        subtitle={t(i18n)`Data historis tekanan, suhu & kelembapan sepatu`}
         actions={
-          <div className="btn-group" role="group" aria-label="Rentang waktu">
+          <div className="btn-group" role="group" aria-label={t(i18n)`Rentang waktu`}>
             <Button active={historyRange === '7d'} onClick={() => setHistoryRange('7d')}>
-              7 Hari
+              <Trans>7 Hari</Trans>
             </Button>
             <Button active={historyRange === '30d'} onClick={() => setHistoryRange('30d')}>
-              30 Hari
+              <Trans>30 Hari</Trans>
             </Button>
           </div>
         }
@@ -89,20 +104,21 @@ export default function HistoryPage() {
 
       <TemperatureTrendBanner trend={temperatureTrend} />
 
-      <HistorySummaryCards
-        history={history}
-        rangeLabel={historyRange === '7d' ? '7 Hari Terakhir' : '30 Hari Terakhir'}
-      />
+      <HistorySummaryCards history={history} rangeLabel={rangeLabel} />
 
       <section className="panel history-panel">
         <div className="history-panel__header">
           <div>
-            <h2 className="panel__title">Tren Historis</h2>
+            <h2 className="panel__title">
+              <Trans>Tren Historis</Trans>
+            </h2>
             <p className="panel__subtitle">
-              Pola tekanan, suhu, selisih suhu &amp; kelembapan — {rangeText} terakhir
+              <Trans>
+                Pola tekanan, suhu, selisih suhu &amp; kelembapan — {rangeText} terakhir
+              </Trans>
             </p>
           </div>
-          <div className="metric-toggle-group" role="group" aria-label="Tampilkan metrik">
+          <div className="metric-toggle-group" role="group" aria-label={t(i18n)`Tampilkan metrik`}>
             {METRIC_KEYS.map((key) => {
               const config = HISTORY_METRICS_CONFIG[key]
               const active = visibleMetrics.includes(key)
@@ -115,8 +131,12 @@ export default function HistoryPage() {
                   disabled={visibleMetrics.length === 1 && active}
                   aria-pressed={active}
                 >
-                  <span className="metric-toggle__dot" style={{ background: config.color }} aria-hidden="true" />
-                  {config.label}
+                  <span
+                    className="metric-toggle__dot"
+                    style={{ background: config.color }}
+                    aria-hidden="true"
+                  />
+                  {i18n._(config.label)}
                 </button>
               )
             })}
@@ -128,23 +148,36 @@ export default function HistoryPage() {
       <section className="panel history-table-panel">
         <div className="history-panel__header">
           <div>
-            <h2 className="panel__title">Tabel Data</h2>
+            <h2 className="panel__title">
+              <Trans>Tabel Data</Trans>
+            </h2>
             <p className="panel__subtitle">
-              {historyLoading ? 'Memuat data…' : `${sortedHistory.length} entri dalam ${rangeText} terakhir`}
+              {historyLoading ? (
+                <Trans>Memuat data…</Trans>
+              ) : (
+                <Trans>
+                  {entryCount} entri dalam {rangeText} terakhir
+                </Trans>
+              )}
             </p>
           </div>
           <div className="export-panel__actions">
             <Button variant="outline" onClick={() => setSortDesc((v) => !v)}>
-              Urutkan: {sortDesc ? 'Terbaru' : 'Terlama'}
+              {/* Kata kuncinya disiapkan lebih dulu supaya seluruh label jadi
+                  SATU pesan. Kalau "Urutkan:" dan nilainya dipisah, penerjemah
+                  tidak bisa mengubah tanda baca maupun urutannya. */}
+              <Trans>Urutkan: {sortLabel}</Trans>
             </Button>
             <span className="action-divider" aria-hidden="true" />
-            <Button variant="outline" onClick={() => exportToCsv(data, history)}>
+            {/* Laporan yang diekspor ikut bahasa antarmuka — i18n dioper ke
+                exportToCsv/exportToPdf, lihat utils/exportData.js. */}
+            <Button variant="outline" onClick={() => exportToCsv(i18n, data, history)}>
               <IconFileText size={16} />
-              Export CSV
+              <Trans>Export CSV</Trans>
             </Button>
-            <Button variant="secondary" onClick={() => exportToPdf(data, history)}>
+            <Button variant="secondary" onClick={() => exportToPdf(i18n, data, history)}>
               <IconDownload size={16} />
-              Export PDF
+              <Trans>Export PDF</Trans>
             </Button>
           </div>
         </div>
@@ -153,17 +186,33 @@ export default function HistoryPage() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Tanggal</th>
-                <th className="data-table__num">Tekanan (kPa)</th>
-                <th className="data-table__num">Suhu (°C)</th>
+                <th>
+                  <Trans>Tanggal</Trans>
+                </th>
+                <th className="data-table__num">
+                  <Trans>Tekanan (kPa)</Trans>
+                </th>
+                <th className="data-table__num">
+                  <Trans>Suhu (°C)</Trans>
+                </th>
                 {/* Selisih suhu antar-area — prediktor pre-ulkus, lihat
                     utils/temperatureTrend.js. Sudah lama ikut tersimpan di
                     rangkuman harian tapi belum pernah ditampilkan. */}
-                <th className="data-table__num">Selisih (°C)</th>
-                <th className="data-table__num">Kelembapan (%RH)</th>
-                <th className="data-table__num">Langkah</th>
-                <th>Status</th>
-                <th>Peringatan</th>
+                <th className="data-table__num">
+                  <Trans>Selisih (°C)</Trans>
+                </th>
+                <th className="data-table__num">
+                  <Trans>Kelembapan (%RH)</Trans>
+                </th>
+                <th className="data-table__num">
+                  <Trans>Langkah</Trans>
+                </th>
+                <th>
+                  <Trans>Status</Trans>
+                </th>
+                <th>
+                  <Trans>Peringatan</Trans>
+                </th>
               </tr>
             </thead>
             <tbody aria-busy={historyLoading || undefined}>
@@ -174,62 +223,71 @@ export default function HistoryPage() {
                   seperti "tidak ada data" padahal datanya masih dalam
                   perjalanan. */}
               {historyLoading && <SkeletonTableRows rows={sortedHistory.length || 7} columns={8} />}
-              {!historyLoading && sortedHistory.map((row) => {
-                const hasEntry = row.pressure > 0 || row.temperature > 0 || row.humidity > 0
-                const status = hasEntry ? getPressureStatus(row.pressure) : null
-                const alert = alertsByDate[row.date]
-                return (
-                  <tr key={row.date} className={status ? `data-table__row--${status}` : ''}>
-                    <td>{row.label}</td>
-                    <td className="data-table__num">{hasEntry ? row.pressure : '—'}</td>
-                    <td className="data-table__num">{hasEntry ? row.temperature : '—'}</td>
-                    <td className="data-table__num">
-                      {hasEntry && row.temperatureDelta > 0 ? (
-                        <span
-                          className={
-                            row.temperatureDelta >= TEMP_DELTA_WARNING
-                              ? 'data-table__flag'
-                              : undefined
-                          }
-                        >
-                          {row.temperatureDelta.toFixed(1)}
-                        </span>
-                      ) : (
-                        '—'
-                      )}
-                    </td>
-                    <td className="data-table__num">{hasEntry ? row.humidity : '—'}</td>
-                    <td className="data-table__num">
-                      {row.steps > 0 ? row.steps.toLocaleString('id-ID') : '—'}
-                    </td>
-                    <td>
-                      {status ? (
-                        <span className={`status-pill status-pill--${status}`}>
-                          {getPressureLabel(status)}
-                        </span>
-                      ) : (
-                        <span className="data-table__no-entry">Tidak ada log</span>
-                      )}
-                    </td>
-                    <td>
-                      {alert ? (
-                        <span className={`status-pill status-pill--${alert.level}`}>
-                          {alert.count} peringatan
-                        </span>
-                      ) : (
-                        <span className="data-table__no-entry">
-                          {hasEntry ? 'Tidak ada' : '—'}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                )
-              })}
+              {!historyLoading &&
+                sortedHistory.map((row) => {
+                  const hasEntry = row.pressure > 0 || row.temperature > 0 || row.humidity > 0
+                  const status = hasEntry ? getPressureStatus(row.pressure) : null
+                  const alert = alertsByDate[row.date]
+                  return (
+                    <tr key={row.date} className={status ? `data-table__row--${status}` : ''}>
+                      <td>{row.label}</td>
+                      <td className="data-table__num">
+                        {hasEntry ? formatDecimal(row.pressure) : '—'}
+                      </td>
+                      <td className="data-table__num">
+                        {hasEntry ? formatDecimal(row.temperature) : '—'}
+                      </td>
+                      <td className="data-table__num">
+                        {hasEntry && row.temperatureDelta > 0 ? (
+                          <span
+                            className={
+                              row.temperatureDelta >= TEMP_DELTA_WARNING
+                                ? 'data-table__flag'
+                                : undefined
+                            }
+                          >
+                            {formatDecimal(row.temperatureDelta)}
+                          </span>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                      <td className="data-table__num">
+                        {hasEntry ? formatDecimal(row.humidity) : '—'}
+                      </td>
+                      <td className="data-table__num">
+                        {row.steps > 0 ? formatNumber(row.steps) : '—'}
+                      </td>
+                      <td>
+                        {status ? (
+                          <span className={`status-pill status-pill--${status}`}>
+                            {i18n._(getPressureLabelMsg(status))}
+                          </span>
+                        ) : (
+                          <span className="data-table__no-entry">
+                            <Trans>Tidak ada log</Trans>
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        {alert ? (
+                          <span className={`status-pill status-pill--${alert.level}`}>
+                            {plural(alert.count, { one: '# peringatan', other: '# peringatan' })}
+                          </span>
+                        ) : (
+                          <span className="data-table__no-entry">
+                            {hasEntry ? <Trans>Tidak ada</Trans> : '—'}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
               {!historyLoading && sortedHistory.length === 0 && (
                 <tr>
                   <td colSpan={8} className="data-table__empty">
                     <IconHistory size={22} />
-                    Belum ada data histori.
+                    <Trans>Belum ada data histori.</Trans>
                   </td>
                 </tr>
               )}

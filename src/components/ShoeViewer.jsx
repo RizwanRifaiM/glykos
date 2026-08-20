@@ -1,3 +1,5 @@
+import { Trans, useLingui as useLinguiMacro } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react'
 import { useEffect, useRef, useState } from 'react'
 import { cloneShoe, loadRenderKit, loadThreeModules } from '../three/loadThree'
 import {
@@ -125,6 +127,8 @@ const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3)
 // pilihan: pemanggilnya mengirim ilustrasi insole sebagai pengganti, sehingga
 // pengguna tanpa WebGL tetap melihat produknya.
 export default function ShoeViewer({ className = '', fallback = null }) {
+  const { i18n } = useLingui()
+  const { t: tMacro } = useLinguiMacro()
   const hostRef = useRef(null)
   // Dukungan WebGL diputuskan lewat inisialisasi malas useState, bukan lewat
   // setState di dalam effect. Ini fakta lingkungan yang sudah pasti sebelum
@@ -343,7 +347,7 @@ export default function ShoeViewer({ className = '', fallback = null }) {
 
           hotspot.label = labels.add(
             hotspot.group,
-            sensorLabelHtml(area, kpa),
+            sensorLabelHtml(i18n, area, kpa),
             'shoe-viewer__label',
           )
           hotspots.push(hotspot)
@@ -587,7 +591,10 @@ export default function ShoeViewer({ className = '', fallback = null }) {
       io.disconnect()
       cleanup()
     }
-  }, [])
+    // Label titik sensor dirakit di dalam effect ini, jadi scene disusun ulang
+    // saat bahasa berganti — lihat catatan yang sama di DeviceExplodedViewer.jsx.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [i18n.locale])
 
   return (
     <div
@@ -596,14 +603,14 @@ export default function ShoeViewer({ className = '', fallback = null }) {
       role="img"
       aria-label={
         state === 'unsupported' || state === 'failed'
-          ? 'Ilustrasi insole Glykos dengan titik sensor tekanan'
-          : 'Model tiga dimensi sepatu pintar Glykos dengan modul sensor di sisi luarnya, disertai tiga titik sensor tekanan pada tumit, metatarsal, dan jari kaki'
+          ? tMacro`Ilustrasi insole Glykos dengan titik sensor tekanan`
+          : tMacro`Model tiga dimensi sepatu pintar Glykos dengan modul sensor di sisi luarnya, disertai tiga titik sensor tekanan pada tumit, metatarsal, dan jari kaki`
       }
     >
       {(state === 'unsupported' || state === 'failed') &&
         (fallback ?? (
           <p className="shoe-viewer__note" aria-hidden="true">
-            Pratinjau 3D tidak tersedia di peramban ini.
+            <Trans>Pratinjau 3D tidak tersedia di peramban ini.</Trans>
           </p>
         ))}
     </div>

@@ -4,8 +4,10 @@
 // dashboard (MetricCards, InsoleIllustration, alert monitor, export) bekerja
 // tanpa perubahan.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLingui } from '@lingui/react'
+import { msg } from '@lingui/core/macro'
 import { BleSensor, isBleSupported } from '../services/ble'
-import { toDateKey } from '../utils/formatTime'
+import { toDateKey, toTimeKey } from '../utils/formatTime'
 
 // Baru ada satu perangkat, dipasang di kaki KANAN.
 const DEVICE_META = { id: 'glykos-device', name: 'Glykos Device', foot: 'right' }
@@ -89,7 +91,7 @@ function normalizeBleReading(raw, receivedAt, isConnected) {
     pressure2: metatarsal,
     pressure3: toe,
     tanggal: toDateKey(now),
-    waktu: now.toLocaleTimeString('id-ID'),
+    waktu: toTimeKey(now),
 
     connection: {
       wifi: isConnected, // memicu badge "Live" pada ConnectionBar
@@ -128,13 +130,27 @@ function normalizeBleReading(raw, receivedAt, isConnected) {
   }
 }
 
+// Pesan galat BLE dipetakan dari KODE (lihat BleError di services/ble.js),
+// bukan disimpan sebagai kalimat.
+//
+// Bedanya terasa saat pengguna mengganti bahasa selagi pesan galatnya masih
+// tampil di layar: kalau yang tersimpan di state sudah berupa kalimat, ia
+// tertinggal di bahasa lama sementara tombol dan penjelasan di sekitarnya sudah
+// berganti.
+const BLE_ERROR_MESSAGES = {
+  'ble/unsupported': msg`Web Bluetooth tidak didukung di browser ini. Gunakan Chrome/Edge lewat http://localhost atau HTTPS.`,
+}
+
 export function useBleSensor() {
   const [status, setStatus] = useState('idle') // idle|connecting|connected|disconnected|error
   const [deviceName, setDeviceName] = useState(null)
-  const [error, setError] = useState(null)
+  // { code } untuk galat kita sendiri, { text } untuk pesan dari Web Bluetooth
+  // API yang memang tidak bisa kita terjemahkan.
+  const [errorState, setErrorState] = useState(null)
   const [raw, setRaw] = useState(null)
   const [updatedAt, setUpdatedAt] = useState(null)
   const sensorRef = useRef(null)
+  const { i18n } = useLingui()
 
   useEffect(() => {
     const sensor = new BleSensor({
@@ -145,8 +161,11 @@ export function useBleSensor() {
       onStatus: ({ status: next, deviceName: name, error: err }) => {
         setStatus(next)
         if (name) setDeviceName(name)
-        if (err) setError(err.message || String(err))
-        else if (next === 'connecting' || next === 'connected') setError(null)
+        if (err) {
+          setErrorState(err.code ? { code: err.code } : { text: err.message || String(err) })
+        } else if (next === 'connecting' || next === 'connected') {
+          setErrorState(null)
+        }
       },
     })
     sensorRef.current = sensor
@@ -156,14 +175,14 @@ export function useBleSensor() {
   }, [])
 
   const connect = useCallback(async () => {
-    setError(null)
+    setErrorState(null)
     try {
       await sensorRef.current?.connect()
     } catch (err) {
       // Pengguna menutup dialog pemilih perangkat -> NotFoundError, bukan error nyata.
       if (err?.name === 'NotFoundError') {
         setStatus('idle')
-        setError(null)
+        setErrorState(null)
       }
       // Error lain sudah dilaporkan lewat onStatus('error').
     }
@@ -181,6 +200,12 @@ export function useBleSensor() {
     if (!raw) return null
     return normalizeBleReading(raw, updatedAt, isConnected)
   }, [raw, updatedAt, isConnected])
+
+  // Diterjemahkan saat DIBACA, bukan saat disimpan — jadi pesan yang sedang
+  // tampil ikut berganti begitu bahasa diubah.
+  const error = errorState?.code
+    ? i18n._(BLE_ERROR_MESSAGES[errorState.code] ?? BLE_ERROR_MESSAGES['ble/unsupported'])
+    : (errorState?.text ?? null)
 
   return {
     supported: isBleSupported(),

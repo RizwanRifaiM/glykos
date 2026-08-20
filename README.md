@@ -5,7 +5,8 @@ pintar berbasis ESP32. Membaca tekanan, suhu kulit, kelembapan, dan gerak langsu
 dari perangkat lewat Bluetooth, menampilkannya sebagai dashboard, dan menyimpannya
 sebagai riwayat per pengguna.
 
-React 19 + Vite · Firebase Auth & Firestore · Web Bluetooth · Gemini (chatbot).
+React 19 + Vite · Firebase Auth & Firestore · Web Bluetooth · Gemini (chatbot) ·
+Dua bahasa: Indonesia & Inggris (Lingui).
 
 ## Menjalankan
 
@@ -16,6 +17,8 @@ npm run dev               # http://localhost:5173
 ```
 
 Perintah lain: `npm run build`, `npm run preview`, `npm run lint`, `npm test`.
+Untuk terjemahan: `npm run i18n:extract`, `npm run i18n:fill`, `npm run i18n:check`
+(lihat [Dua bahasa](#dua-bahasa)).
 
 > Web Bluetooth hanya berjalan di **Chrome/Edge** (desktop atau Android) dan hanya
 > lewat `http://localhost` atau HTTPS — tidak lewat `file://`. Safari/iOS tidak
@@ -54,6 +57,10 @@ Bagian itu harus cocok persis dengan firmware.
 | `src/constants/thresholds.js` | Ambang tekanan/suhu/kelembapan yang dipakai seluruh UI |
 | `src/utils/temperatureTrend.js` | Aturan selisih suhu yang bertahan antar hari (lihat di bawah) |
 | `src/utils/sensorContext.js` | Ringkasan sensor yang dikirim ke chatbot — sekaligus batas privasinya |
+| `src/i18n.js` | Bahasa aktif: deteksi, pergantian, penyimpanan pilihan |
+| `src/locales/{id,en}/messages.po` | Katalog pesan — dihasilkan `lingui extract` |
+| `scripts/translations.en.mjs` | Sumber terjemahan Inggris (ditulis manusia) |
+| `src/utils/alertMessages.js` | Merakit kalimat peringatan dari data terstruktur |
 | `public/sw.js` | Service worker: jalur notifikasi + cache offline |
 | `firestore.rules` | Aturan akses — berpasangan dengan `paths.js` |
 
@@ -91,6 +98,102 @@ npm run build && npm run preview
 Selama BLE tersambung, layar ditahan menyala (Screen Wake Lock) — layar mati
 membekukan halaman, dan halaman inilah satu-satunya jalur data perangkat.
 Statusnya terlihat sebagai penanda "Layar aktif" di topbar.
+
+## Dua bahasa
+
+Antarmuka tersedia dalam bahasa Indonesia dan Inggris. Bahasa Indonesia adalah
+**bahasa sumber**: teksnya ditulis langsung di dalam kode, jadi tidak pernah
+bisa "hilang" — yang perlu diisi hanya sisi Inggrisnya.
+
+Pemilih bahasa ada di tiga tempat yang semuanya bisa jadi halaman pertama:
+navigasi halaman depan, kartu masuk/daftar, dan topbar dashboard. Pilihannya
+disimpan di `localStorage`; tanpa pilihan tersimpan, bahasa mengikuti pengaturan
+browser lalu jatuh ke Indonesia.
+
+### Tiga penjaga
+
+Masalah bilingual yang sebenarnya bukan "terjemahannya kurang tepat", melainkan
+"ada teks yang tidak ikut berganti". Ada tiga cara teks bisa lolos, dan
+masing-masing ditutup oleh satu penjaga yang **menggagalkan perintah**, bukan
+sekadar memperingatkan:
+
+| Cara teks lolos | Penjaga | Kapan gagal |
+|---|---|---|
+| Tidak pernah dibungkus | `eslint-plugin-lingui` (`no-unlocalized-strings`) | `npm run lint` |
+| Terekstrak tapi belum diterjemahkan | `failOnMissing` di `vite.config.js` | `npm run build` |
+| Diterjemahkan tapi placeholder-nya salah | `scripts/check-catalog.mjs` | `npm run i18n:check` |
+
+Penjaga ketiga ada karena dua yang pertama tidak menangkapnya: `{peakText}` yang
+diterjemahkan jadi `{peak}` tetap dianggap terisi dan tetap lolos kompilasi —
+lalu di layar angkanya hilang dari kalimat. Pada aplikasi pemantauan, "Peak
+pressure kPa" tanpa angkanya lebih menyesatkan daripada kalimat yang tidak
+diterjemahkan sama sekali.
+
+### Menambah atau mengubah teks
+
+```bash
+npm run i18n:extract   # pindai kode, tarik pesan baru ke katalog
+# isi terjemahannya di scripts/translations.en.mjs
+npm run i18n:fill      # salin ke katalog + jalankan pemeriksaan
+```
+
+Terjemahan ditulis di `scripts/translations.en.mjs`, bukan langsung di berkas
+`.po`, karena `lingui extract` menulis ulang `.po` setiap kali ada pesan baru —
+satu ekstraksi yang salah jalan sudah cukup menghapus pekerjaan berjam-jam.
+Kamusnya bertahan di luar siklus itu, jadi katalog selalu bisa dibangun ulang.
+
+Terjemahannya **ditulis manusia, bukan mesin**. Istilah di aplikasi ini klinis
+(pre-ulkus, metatarsal, selisih suhu antar area, maserasi), dan justru di
+istilah seperti itu terjemahan mesin paling sering bergeser artinya.
+
+### Konvensi di dalam kode
+
+| Tempat | Bentuk |
+|---|---|
+| Teks di JSX | `<Trans>…</Trans>` |
+| String di dalam komponen | `const { t } = useLingui()` |
+| Peta label di `constants/` | `msg\`…\`` (deskriptor), diselesaikan pemanggil dengan `i18n._()` |
+| Util murni | macro `t`/`plural` biasa |
+
+Satu aturan yang tidak boleh dilanggar: **komponen yang menampilkan teks hasil
+util wajib memanggil `useLingui()`** (atau memuat `<Trans>`). Macro di util
+membaca instance i18n global, jadi hasilnya benar segera setelah bahasa
+berganti — tapi React tidak tahu harus render ulang. `useLingui()` yang
+berlangganan perubahan itu. Tanpanya teks membeku di bahasa lama, dan React
+Compiler yang aktif di proyek ini justru memperbesar peluangnya.
+
+### Peringatan tersimpan tidak lagi membawa bahasa
+
+`logAlert()` dulu menyimpan **kalimat jadi** ke Firestore (`message`, `label`,
+`value`). Akibatnya bahasa ikut tertulis ke dalam catatan medis: berpindah ke
+Inggris tidak mengubah satu pun peringatan lama.
+
+Sekarang yang disimpan hanya `metric` + `status` + `values` (angka), dan
+kalimatnya dirakit `utils/alertMessages.js` **saat dibaca** — jadi satu catatan
+yang sama tampil dalam bahasa apa pun tanpa datanya pernah disentuh.
+
+Catatan yang ditulis sebelum perubahan ini **tidak dimigrasikan**: ia tetap
+tampil apa adanya dalam bahasa Indonesia. Menulis ulang catatan medis demi
+kenyamanan terjemahan bukan hal yang dilakukan di sini, dan koleksi `alerts`
+memang bersifat append-only.
+
+### Yang di luar React ikut berganti
+
+- `document.title`, meta description, dan atribut `lang` pada `<html>` (`src/i18n.js`)
+- Manifest PWA — ada satu per bahasa (`public/manifest.{id,en}.webmanifest`),
+  yang ditukar adalah tautannya. Tanpa ini, pengguna berbahasa Inggris memasang
+  ikon bernama "Monitoring Kaki Diabetes" di layar utamanya.
+- Atribut `lang` pada notifikasi — dipakai OS untuk memilih pelafalan
+- Laporan CSV & PDF hasil ekspor, termasuk instruksi sistem chatbot sehingga
+  jawabannya ikut bahasa antarmuka
+
+### Angka juga ikut bahasa
+
+Indonesia memakai **koma** desimal ("2,2 °C"), Inggris memakai titik ("2.2 °C").
+Semua format tanggal & angka lewat `utils/locale.js`; `toFixed()` dan
+`toLocaleString('id-ID')` tidak dipakai lagi untuk teks yang dilihat pengguna.
+Field `waktu` yang tersimpan di Firestore justru dibuat **netral bahasa**
+(`HH:MM:SS`) — ia data, bukan presentasi.
 
 ## Keamanan data
 

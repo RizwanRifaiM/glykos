@@ -9,7 +9,9 @@
 //
 // Aksesibilitas: seluruh kerangka `aria-hidden` — pembaca layar tidak perlu
 // mendengar deretan kotak kosong. Yang diumumkan hanyalah satu teks status di
-// wadahnya, lewat komponen SkeletonRegion.
+// wadahnya, lewat komponen SkeletonRegion — dan teks itulah satu-satunya di
+// berkas ini yang perlu diterjemahkan, karena satu-satunya yang dibacakan.
+import { useLingui } from '@lingui/react/macro'
 
 export function Skeleton({ width, height, radius, className = '' }) {
   return (
@@ -54,8 +56,10 @@ export function SkeletonTableRows({ rows = 7, columns = 7 }) {
 
 // Daftar peringatan kerangka — meniru ikon bulat + dua baris teks + pil status.
 export function SkeletonAlertList({ items = 4 }) {
+  const { t } = useLingui()
+
   return (
-    <SkeletonRegion label="Memuat riwayat peringatan" className="skeleton-list">
+    <SkeletonRegion label={t`Memuat riwayat peringatan`} className="skeleton-list">
       {Array.from({ length: items }, (_, index) => (
         <div key={index} className="skeleton-list__item" aria-hidden="true">
           <Skeleton width={38} height={38} radius={999} />
@@ -78,8 +82,10 @@ export function SkeletonAlertList({ items = 4 }) {
 // sidebar dan topbar sudah ada di layar dan tidak perlu ikut hilang. Yang
 // berganti hanya area konten, jadi hanya area itu yang berkerangka.
 export function SkeletonPage() {
+  const { t } = useLingui()
+
   return (
-    <SkeletonRegion label="Memuat halaman" className="skeleton-page">
+    <SkeletonRegion label={t`Memuat halaman`} className="skeleton-page">
       <div className="skeleton-page__header" aria-hidden="true">
         <div className="skeleton-page__heading">
           <Skeleton height={22} width={180} />
@@ -109,8 +115,10 @@ export function SkeletonPage() {
 
 // Form profil kerangka — meniru grid label + input.
 export function SkeletonForm({ fields = 4 }) {
+  const { t } = useLingui()
+
   return (
-    <SkeletonRegion label="Memuat profil" className="skeleton-form">
+    <SkeletonRegion label={t`Memuat profil`} className="skeleton-form">
       {Array.from({ length: fields }, (_, index) => (
         <div
           key={index}

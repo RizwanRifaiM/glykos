@@ -1,15 +1,24 @@
 import { describe, expect, it } from 'vitest'
+import { i18n } from '@lingui/core'
 import { buildContents, buildSystemInstruction } from './gemini'
+
+// Instruksi sistem kini ikut bahasa antarmuka, jadi `i18n` dioper masuk.
+// src/test-setup.js sudah mengaktifkan locale sumber dengan katalog kosong,
+// sehingga pesannya jatuh ke teks aslinya (bahasa Indonesia) — yang diuji di
+// sini strukturnya, bukan isi katalognya.
 
 describe('buildSystemInstruction', () => {
   it('tanpa konteks, perilakunya sama seperti sebelumnya', () => {
-    const instruction = buildSystemInstruction('')
-    expect(instruction).toContain('asisten untuk proyek sol sepatu pintar diabetes Glykos')
+    const instruction = buildSystemInstruction(i18n, '')
+    expect(instruction).toContain('asisten untuk proyek sepatu pintar diabetes Glykos')
     expect(instruction).not.toContain('ringkasan pembacaan sensor')
   })
 
   it('menempelkan konteks sensor beserta pagar pembatasnya', () => {
-    const instruction = buildSystemInstruction('KONDISI TERKINI:\n- Tekanan puncak: 236 kPa')
+    const instruction = buildSystemInstruction(
+      i18n,
+      'KONDISI TERKINI:\n- Tekanan puncak: 236 kPa',
+    )
     expect(instruction).toContain('236 kPa')
     // Dua pagar yang tidak boleh hilang begitu model memegang angka nyata:
     // jangan mengarang pembacaan, jangan mendiagnosis.
@@ -18,7 +27,7 @@ describe('buildSystemInstruction', () => {
   })
 
   it('memperlakukan konteks berisi spasi saja sebagai tidak ada', () => {
-    expect(buildSystemInstruction('   \n  ')).toBe(buildSystemInstruction())
+    expect(buildSystemInstruction(i18n, '   \n  ')).toBe(buildSystemInstruction(i18n))
   })
 })
 

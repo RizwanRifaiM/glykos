@@ -498,3 +498,72 @@ a {
   color: var(--cream);
   box-shadow: var(--shadow-sm);
 }
+
+
+/* ---------------------------------------------------------------------------
+   Pemilih bahasa (components/LanguageSwitcher.jsx)
+
+   Ada di index.css, bukan di App.css/Landing.css, karena komponennya dipakai di
+   TIGA tempat yang memuat berkas CSS berbeda: halaman depan, halaman
+   masuk/daftar, dan topbar dashboard. Menaruh gayanya di salah satu berkas rute
+   berarti pemilih bahasanya tampil tanpa gaya di dua tempat lainnya — dan
+   kontrol inilah yang justru paling perlu terlihat oleh orang yang sedang
+   tersesat di bahasa yang tidak ia mengerti.
+   --------------------------------------------------------------------------- */
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.lang-switch__btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.lang-switch__btn:hover:not(:disabled) {
+  color: var(--navy);
+}
+
+/* Bahasa yang sedang aktif. Dibedakan lewat LATAR dan warna teks, bukan hanya
+   tebal huruf: pada dua tombol berdampingan, perbedaan berat huruf saja terlalu
+   halus untuk dibaca sekilas — terutama pada label dua huruf (ID/EN). */
+.lang-switch__btn--active {
+  background: var(--surface);
+  color: var(--navy);
+  box-shadow: 0 1px 2px rgba(68, 106, 69, 0.12);
+}
+
+.lang-switch__btn:disabled {
+  cursor: default;
+}
+
+/* Fokus keyboard mengikuti pola yang sama dengan tombol lain di aplikasi. */
+.lang-switch__btn:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 2px;
+}
+
+/* Bentuk compact (ID/EN) dipakai di topbar dashboard & navigasi halaman depan,
+   tempat ruang horizontalnya sudah diperebutkan status koneksi dan tombol BLE. */
+.lang-switch--compact .lang-switch__btn {
+  padding: 6px 9px;
+  letter-spacing: 0.04em;
+}

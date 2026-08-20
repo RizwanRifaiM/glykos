@@ -16,6 +16,16 @@ export function isBleSupported() {
   return typeof navigator !== 'undefined' && !!navigator.bluetooth
 }
 
+// Galat BLE yang berasal dari kode kita sendiri (bukan dari Web Bluetooth API).
+// `code` yang dipetakan ke pesan berbahasa pengguna ada di useBleSensor.js.
+export class BleError extends Error {
+  constructor(code) {
+    super(code)
+    this.name = 'BleError'
+    this.code = code
+  }
+}
+
 // Ubah satu baris "K:V,K:V" menjadi { K: number, ... }.
 // Pair tanpa ":" atau nilai non-numerik diabaikan (tahan paket rusak).
 export function parseCsvLine(line) {
@@ -49,9 +59,15 @@ export class BleSensor {
 
   async connect() {
     if (!isBleSupported()) {
-      throw new Error(
-        'Web Bluetooth tidak didukung di browser ini. Gunakan Chrome/Edge lewat http://localhost atau HTTPS.',
-      )
+      // KODE, bukan kalimat — berkas ini sengaja tidak memuat teks antarmuka.
+      //
+      // Pesan yang tampil ke pengguna dirakit useBleSensor.js dari kode ini
+      // (pola yang sama seperti utils/authErrors.js untuk kode error Firebase).
+      // Alasannya: lapisan servis tidak punya akses ke bahasa yang sedang
+      // aktif, dan kalaupun dipaksa punya, ia jadi satu-satunya tempat teks
+      // antarmuka hidup di luar komponen — tempat yang paling mudah terlewat
+      // saat memeriksa cakupan terjemahan.
+      throw new BleError('ble/unsupported')
     }
 
     this._emitStatus('connecting')

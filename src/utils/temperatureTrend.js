@@ -17,16 +17,20 @@
 //
 // Ini tetap heuristik pemantauan, BUKAN diagnosis — lihat catatan serupa di
 // constants/fatigue.js.
+import { msg, t } from '@lingui/core/macro'
 import { TEMP_DELTA_WARNING } from '../constants/thresholds'
+import { formatDecimal, formatNumber } from './locale'
 
 // Berapa hari berturut-turut selisih harus bertahan sebelum dinaikkan dari
 // "perhatian" jadi "perlu tindakan".
 export const SUSTAINED_DAYS = 2
 
+// Deskriptor `msg`, diselesaikan pemanggil dengan i18n._(). Lihat alasannya di
+// constants/thresholds.js.
 export const TREND_LEVEL_LABELS = {
-  safe: 'Normal',
-  warning: 'Perlu Perhatian',
-  danger: 'Perlu Tindakan',
+  safe: msg`Normal`,
+  warning: msg`Perlu Perhatian`,
+  danger: msg`Perlu Tindakan`,
 }
 
 // Satu hari dianggap TERCATAT hanya bila ada pembacaan suhu di hari itu.
@@ -111,17 +115,26 @@ export function evaluateTemperatureTrend(history, options = {}) {
 
 // Kalimat yang dibaca pengguna. Disatukan di sini supaya spanduk, notifikasi,
 // dan catatan peringatan memakai kata yang sama persis.
-export function describeTemperatureTrend(trend) {
+//
+// `i18n` dioper eksplisit (lihat konvensi di utils/locale.js). Angkanya lewat
+// formatDecimal, bukan toFixed(1): toFixed selalu memakai TITIK desimal,
+// sehingga pada antarmuka Indonesia kalimat ini menulis "2.7 °C" sementara
+// seluruh teks di sekitarnya menulis "2,7 °C".
+export function describeTemperatureTrend(i18n, trend) {
   if (!trend || trend.level === 'safe') {
-    return 'Selisih suhu antar area kaki dalam batas normal.'
+    return t(i18n)`Selisih suhu antar area kaki dalam batas normal.`
   }
 
-  const delta = trend.maxDelta.toFixed(1)
-  const ambang = trend.threshold.toFixed(1)
+  // Locale diambil dari instance yang DIOPER, bukan dari global — lihat catatan
+  // "PEMBERIAN LOCALE KE FORMATTER" di utils/alertMessages.js.
+  const locale = i18n.locale
+  const deltaText = formatDecimal(trend.maxDelta, 1, locale)
+  const thresholdText = formatDecimal(trend.threshold, 1, locale)
 
   if (trend.level === 'danger') {
-    return `Selisih suhu antar area bertahan di atas ${ambang} °C selama ${trend.streakDays} hari berturut-turut (tertinggi ${delta} °C).`
+    const daysText = formatNumber(trend.streakDays, { locale })
+    return t(i18n)`Selisih suhu antar area bertahan di atas ${thresholdText} °C selama ${daysText} hari berturut-turut (tertinggi ${deltaText} °C).`
   }
 
-  return `Selisih suhu antar area mencapai ${delta} °C hari ini, di atas ambang ${ambang} °C.`
+  return t(i18n)`Selisih suhu antar area mencapai ${deltaText} °C hari ini, di atas ambang ${thresholdText} °C.`
 }

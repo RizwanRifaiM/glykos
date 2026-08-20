@@ -1,4 +1,6 @@
 import { useOutletContext } from 'react-router-dom'
+import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui as useLinguiCore } from '@lingui/react'
 import { PressureCard, TemperatureCard, HumidityCard } from '../components/MetricCards'
 import ActivityPanel from '../components/ActivityPanel'
 import DeviceOnboardingBanner from '../components/DeviceOnboardingBanner'
@@ -15,25 +17,29 @@ import { exportToCsv, exportToPdf } from '../utils/exportData'
 export default function DashboardOverview() {
   const { data, isLive, isStale, updatedAtMs, refresh, history, fatigue, temperatureTrend, ble } =
     useOutletContext()
+  const { t } = useLingui()
+  // exportToCsv/exportToPdf menerima i18n: laporan yang keluar dari aplikasi
+  // ikut bahasa antarmuka — lihat catatan di utils/exportData.js.
+  const { i18n } = useLinguiCore()
 
   return (
     <div className="dashboard-overview">
       <PageHeader
-        title="Ringkasan"
-        subtitle="Kondisi kaki & insole secara real-time"
+        title={t`Ringkasan`}
+        subtitle={t`Kondisi kaki & sepatu secara real-time`}
         actions={
           <>
-            <Button variant="outline" onClick={() => exportToCsv(data, history)}>
+            <Button variant="outline" onClick={() => exportToCsv(i18n, data, history)}>
               <IconFileText size={16} />
               CSV
             </Button>
-            <Button variant="outline" onClick={() => exportToPdf(data, history)}>
+            <Button variant="outline" onClick={() => exportToPdf(i18n, data, history)}>
               <IconDownload size={16} />
               PDF
             </Button>
             <Button variant="primary" onClick={refresh}>
               <IconRefreshCw size={16} />
-              Refresh
+              <Trans>Refresh</Trans>
             </Button>
           </>
         }
@@ -72,9 +78,11 @@ export default function DashboardOverview() {
 
       <div className="dashboard__row">
         <section className="panel foot-map-panel">
-          <h2 className="panel__title">Peta Sensor Insole</h2>
+          <h2 className="panel__title">
+            <Trans>Peta Sensor Insole</Trans>
+          </h2>
           <p className="panel__subtitle">
-            Titik tekanan &amp; suhu per sensor pada insole secara real-time
+            <Trans>Titik tekanan &amp; suhu per sensor pada insole secara real-time</Trans>
           </p>
           <div className="foot-map-panel__visual">
             <SensorFootMap
@@ -90,13 +98,15 @@ export default function DashboardOverview() {
       <section className="panel history-panel">
         <div className="history-panel__header">
           <div>
-            <h2 className="panel__title">Histori Tren</h2>
+            <h2 className="panel__title">
+              <Trans>Histori Tren</Trans>
+            </h2>
             <p className="panel__subtitle">
-              Pola tekanan, suhu, selisih suhu &amp; kelembapan — 7 hari terakhir
+              <Trans>Pola tekanan, suhu, selisih suhu &amp; kelembapan — 7 hari terakhir</Trans>
             </p>
           </div>
           <LinkButton to="/dashboard/history" variant="outline">
-            Lihat Selengkapnya
+            <Trans>Lihat Selengkapnya</Trans>
           </LinkButton>
         </div>
         <HistoryChart

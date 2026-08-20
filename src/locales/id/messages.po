@@ -1,0 +1,1734 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-08-20 12:24+0700\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: id\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#: src/utils/authErrors.js
+msgid "Popup login diblokir oleh browser. Izinkan popup lalu coba lagi."
+msgstr "Popup login diblokir oleh browser. Izinkan popup lalu coba lagi."
+
+#: src/App.jsx
+msgid "Memuat halaman…"
+msgstr "Memuat halaman…"
+
+#: src/components/ActivityPanel.jsx
+msgid "Indikasi Kelelahan"
+msgstr "Indikasi Kelelahan"
+
+#: src/components/ActivityPanel.jsx
+msgid "Belum ada data sesi pemakaian."
+msgstr "Belum ada data sesi pemakaian."
+
+#: src/components/ActivityPanel.jsx
+msgid "Beban tinggi berkelanjutan: {sustainedText} menit"
+msgstr "Beban tinggi berkelanjutan: {sustainedText} menit"
+
+#: src/components/ActivityPanel.jsx
+msgid "Belum ada indikasi kelelahan berarti."
+msgstr "Belum ada indikasi kelelahan berarti."
+
+#: src/components/ActivityPanel.jsx
+msgid "Estimasi berbasis pola sensor, bukan pengukuran klinis kelelahan otot."
+msgstr "Estimasi berbasis pola sensor, bukan pengukuran klinis kelelahan otot."
+
+#: src/components/ActivityPanel.jsx
+msgid "Aktivitas Harian"
+msgstr "Aktivitas Harian"
+
+#: src/components/ActivityPanel.jsx
+msgid "Pola gerak & beban kaki harian"
+msgstr "Pola gerak & beban kaki harian"
+
+#: src/components/ActivityPanel.jsx
+msgid "Belum ada data langkah dari perangkat ini — sensor gerak belum terdeteksi atau belum mengirim data."
+msgstr "Belum ada data langkah dari perangkat ini — sensor gerak belum terdeteksi atau belum mengirim data."
+
+#: src/components/ActivityPanel.jsx
+msgid "Total Langkah"
+msgstr "Total Langkah"
+
+#: src/components/ActivityPanel.jsx
+msgid "{hoursText}j {minsText}m"
+msgstr "{hoursText}j {minsText}m"
+
+#: src/components/ActivityPanel.jsx
+msgid "{minsText}m"
+msgstr "{minsText}m"
+
+#: src/components/ActivityPanel.jsx
+msgid "Waktu Aktif"
+msgstr "Waktu Aktif"
+
+#: src/components/ActivityPanel.jsx
+msgid "Jumlah langkah adalah estimasi dari data gerak kaki, bisa terhitung lebih sedikit saat berjalan cepat atau berlari."
+msgstr "Jumlah langkah adalah estimasi dari data gerak kaki, bisa terhitung lebih sedikit saat berjalan cepat atau berlari."
+
+#: src/components/AppLoader.jsx
+msgid "Menyiapkan dashboard…"
+msgstr "Menyiapkan dashboard…"
+
+#: src/components/BleConnectButton.jsx
+msgid "Web Bluetooth hanya didukung di Chrome/Edge lewat http://localhost atau HTTPS"
+msgstr "Web Bluetooth hanya didukung di Chrome/Edge lewat http://localhost atau HTTPS"
+
+#: src/components/BleConnectButton.jsx
+msgid "BLE tak didukung"
+msgstr "BLE tak didukung"
+
+#: src/components/BleConnectButton.jsx
+msgid "perangkat BLE"
+msgstr "perangkat BLE"
+
+#: src/components/BleConnectButton.jsx
+msgid "Terhubung ke {target} — klik untuk memutuskan"
+msgstr "Terhubung ke {target} — klik untuk memutuskan"
+
+#: src/components/BleConnectButton.jsx
+msgid "Terhubung"
+msgstr "Terhubung"
+
+#: src/components/BleConnectButton.jsx
+msgid "Sambungkan ke perangkat Glykos via Bluetooth"
+msgstr "Sambungkan ke perangkat Glykos via Bluetooth"
+
+#: src/components/BleConnectButton.jsx
+#: src/components/DeviceOnboardingBanner.jsx
+#: src/components/StaleDataBanner.jsx
+msgid "Menyambungkan…"
+msgstr "Menyambungkan…"
+
+#: src/components/BleConnectButton.jsx
+msgid "Sambungkan BLE"
+msgstr "Sambungkan BLE"
+
+#: src/components/ConnectionBar.jsx
+msgid "Terhubung ke perangkat"
+msgstr "Terhubung ke perangkat"
+
+#: src/components/ConnectionBar.jsx
+msgid "Perangkat belum terhubung"
+msgstr "Perangkat belum terhubung"
+
+#: src/components/ConnectionBar.jsx
+#: src/components/StatusBanner.jsx
+msgid "Live"
+msgstr "Live"
+
+#: src/components/ConnectionBar.jsx
+#: src/components/StatusBanner.jsx
+msgid "Offline"
+msgstr "Offline"
+
+#: src/components/DemoModeBanner.jsx
+msgid "<0>Mode Demo aktif.</0> Semua angka, grafik, dan peringatan di halaman ini adalah <1>data contoh</1> — bukan pembacaan sensor dari perangkat Anda dan tidak tersimpan ke basis data."
+msgstr "<0>Mode Demo aktif.</0> Semua angka, grafik, dan peringatan di halaman ini adalah <1>data contoh</1> — bukan pembacaan sensor dari perangkat Anda dan tidak tersimpan ke basis data."
+
+#: src/components/DemoModeBanner.jsx
+msgid "Keluar Mode Demo"
+msgstr "Keluar Mode Demo"
+
+#: src/components/DeviceExplodedViewer.jsx
+msgid "Badan sepatu"
+msgstr "Badan sepatu"
+
+#: src/components/DeviceExplodedViewer.jsx
+msgid "Insole bersensor<i>3 titik tekanan</i>"
+msgstr "Insole bersensor<i>3 titik tekanan</i>"
+
+#: src/components/DeviceExplodedViewer.jsx
+msgid "Modul sensor &amp; Bluetooth"
+msgstr "Modul sensor &amp; Bluetooth"
+
+#: src/components/DeviceExplodedViewer.jsx
+msgid "Tampilan terurai sepatu Glykos: badan sepatu di lapisan atas, insole bersensor berisi tiga titik tekanan di tengah, dan modul sensor Bluetooth di lapisan bawah"
+msgstr "Tampilan terurai sepatu Glykos: badan sepatu di lapisan atas, insole bersensor berisi tiga titik tekanan di tengah, dan modul sensor Bluetooth di lapisan bawah"
+
+#: src/components/DeviceExplodedViewer.jsx
+msgid "Sepatu Glykos terdiri dari tiga bagian: badan sepatunya, insole bersensor berisi tiga titik tekanan, dan modul sensor Bluetooth di sisi luar."
+msgstr "Sepatu Glykos terdiri dari tiga bagian: badan sepatunya, insole bersensor berisi tiga titik tekanan, dan modul sensor Bluetooth di sisi luar."
+
+#: src/components/DeviceOnboardingBanner.jsx
+msgid "Belum ada data dari perangkat"
+msgstr "Belum ada data dari perangkat"
+
+#: src/components/DeviceOnboardingBanner.jsx
+msgid "Sambungkan perangkat Glykos Anda lewat Bluetooth untuk mulai memantau tekanan, suhu, dan kelembapan kaki secara real-time. Angka 0 di bawah ini bukan hasil pembacaan sensor — hanya belum ada data yang tercatat."
+msgstr "Sambungkan perangkat Glykos Anda lewat Bluetooth untuk mulai memantau tekanan, suhu, dan kelembapan kaki secara real-time. Angka 0 di bawah ini bukan hasil pembacaan sensor — hanya belum ada data yang tercatat."
+
+#: src/components/DeviceOnboardingBanner.jsx
+msgid "Browser ini tidak mendukung Web Bluetooth. Buka halaman ini lewat Chrome atau Edge (desktop/Android) untuk bisa menyambungkan perangkat."
+msgstr "Browser ini tidak mendukung Web Bluetooth. Buka halaman ini lewat Chrome atau Edge (desktop/Android) untuk bisa menyambungkan perangkat."
+
+#: src/components/DeviceOnboardingBanner.jsx
+msgid "Sambungkan Perangkat"
+msgstr "Sambungkan Perangkat"
+
+#: src/components/DeviceOnboardingBanner.jsx
+msgid "Lihat Contoh Tampilan"
+msgstr "Lihat Contoh Tampilan"
+
+#: src/components/DeviceOnboardingBanner.jsx
+msgid "“Lihat Contoh Tampilan” mengisi dashboard dengan <0>data contoh</0> supaya Anda bisa melihat bentuk grafik & kartu tanpa perangkat. Angkanya tidak tersimpan ke basis data."
+msgstr "“Lihat Contoh Tampilan” mengisi dashboard dengan <0>data contoh</0> supaya Anda bisa melihat bentuk grafik & kartu tanpa perangkat. Angkanya tidak tersimpan ke basis data."
+
+#: src/components/DeviceOnboardingBanner.jsx
+#: src/components/StaleDataBanner.jsx
+#: src/pages/DashboardLayout.jsx
+msgid "Bluetooth: {bleError}"
+msgstr "Bluetooth: {bleError}"
+
+#: src/components/DeviceSelector.jsx
+msgid "Kiri"
+msgstr "Kiri"
+
+#: src/components/DeviceSelector.jsx
+msgid "Kanan"
+msgstr "Kanan"
+
+#: src/components/DeviceSelector.jsx
+msgid "Kaki {selectedFoot}"
+msgstr "Kaki {selectedFoot}"
+
+#: src/components/DeviceSelector.jsx
+msgid "Kaki {deviceFoot}"
+msgstr "Kaki {deviceFoot}"
+
+#: src/components/HistoryChart.jsx
+msgid "Grafik {label} — nilai terakhir {lastValue} {unit}"
+msgstr "Grafik {label} — nilai terakhir {lastValue} {unit}"
+
+#: src/components/HistoryChart.jsx
+msgid "Belum ada data pada rentang ini."
+msgstr "Belum ada data pada rentang ini."
+
+#: src/components/HistorySummaryCards.jsx
+#: src/utils/temperatureTrend.js
+msgid "Normal"
+msgstr "Normal"
+
+#: src/components/HistorySummaryCards.jsx
+#: src/constants/thresholds.js
+#: src/pages/AlertsPage.jsx
+#: src/utils/temperatureTrend.js
+msgid "Perlu Perhatian"
+msgstr "Perlu Perhatian"
+
+#: src/components/HistorySummaryCards.jsx
+#: src/components/MetricCards.jsx
+#: src/components/StatusBanner.jsx
+#: src/pages/AlertsPage.jsx
+msgid "Risiko"
+msgstr "Risiko"
+
+#: src/components/HistorySummaryCards.jsx
+msgid "Ideal"
+msgstr "Ideal"
+
+#: src/components/HistorySummaryCards.jsx
+msgid "Risiko Tinggi"
+msgstr "Risiko Tinggi"
+
+#: src/components/HistorySummaryCards.jsx
+msgid "Berdasarkan {daysText} dari {totalText} hari yang tercatat"
+msgstr "Berdasarkan {daysText} dari {totalText} hari yang tercatat"
+
+#: src/components/HistorySummaryCards.jsx
+msgid "Rata-rata Tekanan — {rangeLabel}"
+msgstr "Rata-rata Tekanan — {rangeLabel}"
+
+#: src/components/HistorySummaryCards.jsx
+msgid "Rata-rata Suhu Kulit — {rangeLabel}"
+msgstr "Rata-rata Suhu Kulit — {rangeLabel}"
+
+#: src/components/HistorySummaryCards.jsx
+msgid "Rata-rata Kelembapan — {rangeLabel}"
+msgstr "Rata-rata Kelembapan — {rangeLabel}"
+
+#: src/components/MetricCards.jsx
+#: src/components/StatusBanner.jsx
+#: src/constants/thresholds.js
+msgid "Aman"
+msgstr "Aman"
+
+#: src/components/MetricCards.jsx
+#: src/components/StatusBanner.jsx
+#: src/pages/AlertsPage.jsx
+msgid "Perhatian"
+msgstr "Perhatian"
+
+#: src/components/MetricCards.jsx
+msgid "Belum ada data"
+msgstr "Belum ada data"
+
+#: src/components/MetricCards.jsx
+#: src/utils/exportData.js
+msgid "Tekanan Puncak"
+msgstr "Tekanan Puncak"
+
+#: src/components/MetricCards.jsx
+msgid "Titik tertinggi: {location} · {statusText}"
+msgstr "Titik tertinggi: {location} · {statusText}"
+
+#: src/components/MetricCards.jsx
+msgid "Ambang: <{safeText} kPa aman · {safeText}–{warnText} perhatian · >{warnText} risiko ulkus"
+msgstr "Ambang: <{safeText} kPa aman · {safeText}–{warnText} perhatian · >{warnText} risiko ulkus"
+
+#: src/components/MetricCards.jsx
+#: src/constants/historyMetrics.js
+msgid "Suhu Kulit"
+msgstr "Suhu Kulit"
+
+#: src/components/MetricCards.jsx
+msgid "Area terpanas: {location}"
+msgstr "Area terpanas: {location}"
+
+#: src/components/MetricCards.jsx
+msgid "Belum ada pembacaan dari sensor NTC. Sambungkan perangkat lewat Bluetooth untuk melihat suhu per area ({areaList})."
+msgstr "Belum ada pembacaan dari sensor NTC. Sambungkan perangkat lewat Bluetooth untuk melihat suhu per area ({areaList})."
+
+#: src/components/MetricCards.jsx
+#: src/pages/LandingPage.jsx
+msgid "Selisih suhu antar area"
+msgstr "Selisih suhu antar area"
+
+#: src/components/MetricCards.jsx
+msgid "Selisih suhu >{thresholdText}°C — prediktor kuat pre-ulkus"
+msgstr "Selisih suhu >{thresholdText}°C — prediktor kuat pre-ulkus"
+
+#: src/components/MetricCards.jsx
+msgid "Kelembapan Sepatu"
+msgstr "Kelembapan Sepatu"
+
+#: src/components/MetricCards.jsx
+msgid "Kelembapan udara di dalam sepatu"
+msgstr "Kelembapan udara di dalam sepatu"
+
+#: src/components/MetricCards.jsx
+msgid "Sensor kelembapan belum mengirim data. Sambungkan perangkat lewat Bluetooth."
+msgstr "Sensor kelembapan belum mengirim data. Sambungkan perangkat lewat Bluetooth."
+
+#: src/components/MetricCards.jsx
+msgid "Ideal {idealMin}–{idealMax}%"
+msgstr "Ideal {idealMin}–{idealMax}%"
+
+#: src/components/MetricCards.jsx
+msgid ">70% RH meningkatkan risiko maserasi, jamur & infeksi"
+msgstr ">70% RH meningkatkan risiko maserasi, jamur & infeksi"
+
+#: src/components/MetricCards.jsx
+msgid "Suhu udara sekitar: {airText}°C"
+msgstr "Suhu udara sekitar: {airText}°C"
+
+#: src/components/ModuleShowcaseViewer.jsx
+msgid "Modul sensor Bluetooth Glykos berputar pelan, dengan LED indikator pengiriman data"
+msgstr "Modul sensor Bluetooth Glykos berputar pelan, dengan LED indikator pengiriman data"
+
+#: src/components/ProtectedRoute.jsx
+msgid "Memeriksa sesi…"
+msgstr "Memeriksa sesi…"
+
+#: src/components/SensorInsoleViewer.jsx
+msgid "Insole Glykos dengan tiga titik tekanan pada tiga status berbeda: 150 kPa aman, 225 kPa perlu perhatian, dan 300 kPa risiko ulkus"
+msgstr "Insole Glykos dengan tiga titik tekanan pada tiga status berbeda: 150 kPa aman, 225 kPa perlu perhatian, dan 300 kPa risiko ulkus"
+
+#: src/components/ShoeViewer.jsx
+msgid "Ilustrasi insole Glykos dengan titik sensor tekanan"
+msgstr "Ilustrasi insole Glykos dengan titik sensor tekanan"
+
+#: src/components/ShoeViewer.jsx
+msgid "Model tiga dimensi sepatu pintar Glykos dengan modul sensor di sisi luarnya, disertai tiga titik sensor tekanan pada tumit, metatarsal, dan jari kaki"
+msgstr "Model tiga dimensi sepatu pintar Glykos dengan modul sensor di sisi luarnya, disertai tiga titik sensor tekanan pada tumit, metatarsal, dan jari kaki"
+
+#: src/components/ShoeViewer.jsx
+msgid "Pratinjau 3D tidak tersedia di peramban ini."
+msgstr "Pratinjau 3D tidak tersedia di peramban ini."
+
+#: src/components/Skeleton.jsx
+msgid "Memuat riwayat peringatan"
+msgstr "Memuat riwayat peringatan"
+
+#: src/components/Skeleton.jsx
+msgid "Memuat halaman"
+msgstr "Memuat halaman"
+
+#: src/components/Skeleton.jsx
+msgid "Memuat profil"
+msgstr "Memuat profil"
+
+#: src/components/StaleDataBanner.jsx
+msgid "Data tidak diperbarui"
+msgstr "Data tidak diperbarui"
+
+#: src/components/StaleDataBanner.jsx
+msgid "Perangkat sedang tidak mengirim data. Angka di bawah adalah pembacaan terakhir yang tersimpan <0>{lastSeen}</0>, bukan kondisi kaki Anda saat ini."
+msgstr "Perangkat sedang tidak mengirim data. Angka di bawah adalah pembacaan terakhir yang tersimpan <0>{lastSeen}</0>, bukan kondisi kaki Anda saat ini."
+
+#: src/components/StaleDataBanner.jsx
+msgid "Sambungkan Ulang"
+msgstr "Sambungkan Ulang"
+
+#: src/components/StatusBanner.jsx
+msgid "Update terakhir {lastUpdateText}"
+msgstr "Update terakhir {lastUpdateText}"
+
+#: src/components/TemperatureTrendBanner.jsx
+msgid "Periksa kaki secara visual hari ini — cari kemerahan, lecet, atau kulit yang terasa lebih hangat."
+msgstr "Periksa kaki secara visual hari ini — cari kemerahan, lecet, atau kulit yang terasa lebih hangat."
+
+#: src/components/TemperatureTrendBanner.jsx
+msgid "Pakai sepatu Glykos lagi besok supaya polanya bisa dipastikan, bukan sekadar satu hari yang panas."
+msgstr "Pakai sepatu Glykos lagi besok supaya polanya bisa dipastikan, bukan sekadar satu hari yang panas."
+
+#: src/components/TemperatureTrendBanner.jsx
+msgid "Kurangi beban pada kaki tersebut: batasi berdiri dan berjalan lama selama beberapa hari."
+msgstr "Kurangi beban pada kaki tersebut: batasi berdiri dan berjalan lama selama beberapa hari."
+
+#: src/components/TemperatureTrendBanner.jsx
+msgid "Periksa kaki dua kali sehari — kemerahan, lecet, atau luka sekecil apa pun."
+msgstr "Periksa kaki dua kali sehari — kemerahan, lecet, atau luka sekecil apa pun."
+
+#: src/components/TemperatureTrendBanner.jsx
+msgid "Hubungi tenaga kesehatan bila selisih ini bertahan, atau bila ada luka, nanah, atau demam."
+msgstr "Hubungi tenaga kesehatan bila selisih ini bertahan, atau bila ada luka, nanah, atau demam."
+
+#: src/components/TemperatureTrendBanner.jsx
+msgid "Selisih Suhu Antar Area"
+msgstr "Selisih Suhu Antar Area"
+
+#: src/components/TemperatureTrendBanner.jsx
+msgid "Hari yang terpantau: <0>{period}</0>"
+msgstr "Hari yang terpantau: <0>{period}</0>"
+
+#: src/components/TemperatureTrendBanner.jsx
+msgid "Indikator pemantauan, bukan diagnosis. Keputusan penanganan tetap ada pada tenaga kesehatan Anda."
+msgstr "Indikator pemantauan, bukan diagnosis. Keputusan penanganan tetap ada pada tenaga kesehatan Anda."
+
+#: src/constants/faq.js
+msgid "Koneksi & Perangkat"
+msgstr "Koneksi & Perangkat"
+
+#: src/constants/faq.js
+msgid "Tombol \"Sambungkan\" tidak menemukan perangkat saya"
+msgstr "Tombol \"Sambungkan\" tidak menemukan perangkat saya"
+
+#: src/constants/faq.js
+msgid "Web Bluetooth hanya berjalan di Chrome atau Edge (desktop maupun Android) — Safari dan browser iOS tidak didukung. Halaman juga harus dibuka lewat HTTPS atau http://localhost, bukan file://. Pastikan Bluetooth di perangkat Anda aktif dan browser sudah diberi izin akses Bluetooth, lalu pilih perangkat bernama \"glykos device\" di jendela pemilih yang muncul."
+msgstr "Web Bluetooth hanya berjalan di Chrome atau Edge (desktop maupun Android) — Safari dan browser iOS tidak didukung. Halaman juga harus dibuka lewat HTTPS atau http://localhost, bukan file://. Pastikan Bluetooth di perangkat Anda aktif dan browser sudah diberi izin akses Bluetooth, lalu pilih perangkat bernama \"glykos device\" di jendela pemilih yang muncul."
+
+#: src/constants/faq.js
+msgid "Perangkat terputus sendiri saat dipakai"
+msgstr "Perangkat terputus sendiri saat dipakai"
+
+#: src/constants/faq.js
+msgid "Koneksi Bluetooth Low Energy bisa putus kalau sepatu di luar jangkauan (±10 m), baterai perangkat lemah, atau tab browser lama tidak aktif di latar belakang. Sambungkan kembali lewat tombol Bluetooth di bagian atas dashboard — data yang sempat tersimpan sebelum putus tidak hilang."
+msgstr "Koneksi Bluetooth Low Energy bisa putus kalau sepatu di luar jangkauan (±10 m), baterai perangkat lemah, atau tab browser lama tidak aktif di latar belakang. Sambungkan kembali lewat tombol Bluetooth di bagian atas dashboard — data yang sempat tersimpan sebelum putus tidak hilang."
+
+#: src/constants/faq.js
+msgid "Indikator \"Live\" tidak menyala meski perangkat sudah tersambung"
+msgstr "Indikator \"Live\" tidak menyala meski perangkat sudah tersambung"
+
+#: src/constants/faq.js
+msgid "Badge \"Live\" menyala saat ada paket data baru dari BLE. Jika belum menyala, cek status koneksi di pojok kanan atas dashboard — kemungkinan perangkat masih dalam proses pairing atau notifikasi karakteristik belum aktif. Coba putuskan lalu sambungkan ulang."
+msgstr "Badge \"Live\" menyala saat ada paket data baru dari BLE. Jika belum menyala, cek status koneksi di pojok kanan atas dashboard — kemungkinan perangkat masih dalam proses pairing atau notifikasi karakteristik belum aktif. Coba putuskan lalu sambungkan ulang."
+
+#: src/constants/faq.js
+msgid "Sebagian angka (kelembapan, suhu udara, akselerasi) terus menampilkan 0"
+msgstr "Sebagian angka (kelembapan, suhu udara, akselerasi) terus menampilkan 0"
+
+#: src/constants/faq.js
+msgid "Beberapa sensor pada firmware (RH, TA, serta AX/AY/AZ) hanya mengirim datanya kalau modul tersebut terdeteksi saat startup. Kalau salah satu sensor tidak terpasang atau gagal diinisialisasi, key-nya memang tidak dikirim dan web app menampilkannya sebagai 0 — ini bukan galat di aplikasi, melainkan kondisi perangkat keras."
+msgstr "Beberapa sensor pada firmware (RH, TA, serta AX/AY/AZ) hanya mengirim datanya kalau modul tersebut terdeteksi saat startup. Kalau salah satu sensor tidak terpasang atau gagal diinisialisasi, key-nya memang tidak dikirim dan web app menampilkannya sebagai 0 — ini bukan galat di aplikasi, melainkan kondisi perangkat keras."
+
+#: src/constants/faq.js
+msgid "Data & Fitur"
+msgstr "Data & Fitur"
+
+#: src/constants/faq.js
+msgid "Grafik dan tabel di halaman Riwayat kosong"
+msgstr "Grafik dan tabel di halaman Riwayat kosong"
+
+#: src/constants/faq.js
+msgid "Riwayat hanya terisi dari sesi yang benar-benar tersambung BLE — web app menulis data ke Firestore kira-kira tiap 1 menit selama perangkat aktif. Kalau baru pertama kali memakai sepatu Glykos atau sesi pemakaian sangat singkat, hari tersebut memang belum punya catatan."
+msgstr "Riwayat hanya terisi dari sesi yang benar-benar tersambung BLE — web app menulis data ke Firestore kira-kira tiap 1 menit selama perangkat aktif. Kalau baru pertama kali memakai sepatu Glykos atau sesi pemakaian sangat singkat, hari tersebut memang belum punya catatan."
+
+#: src/constants/faq.js
+msgid "Jumlah langkah terasa kurang akurat, terutama saat jalan cepat atau lari"
+msgstr "Jumlah langkah terasa kurang akurat, terutama saat jalan cepat atau lari"
+
+#: src/constants/faq.js
+msgid "Jumlah langkah dihitung dari data akselerasi yang dikirim firmware sekitar 3 kali per detik. Untuk jalan santai angka ini cukup akurat, tapi pada cadence cepat beberapa langkah bisa tidak terhitung karena keterbatasan laju pengiriman data tersebut — bukan kesalahan pada algoritmanya."
+msgstr "Jumlah langkah dihitung dari data akselerasi yang dikirim firmware sekitar 3 kali per detik. Untuk jalan santai angka ini cukup akurat, tapi pada cadence cepat beberapa langkah bisa tidak terhitung karena keterbatasan laju pengiriman data tersebut — bukan kesalahan pada algoritmanya."
+
+#: src/constants/faq.js
+msgid "Apakah status \"Risiko Kelelahan\" adalah diagnosis medis?"
+msgstr "Apakah status \"Risiko Kelelahan\" adalah diagnosis medis?"
+
+#: src/constants/faq.js
+msgid "Bukan. Indikator kelelahan adalah heuristik transparan yang menggabungkan durasi beban tekanan tinggi, pergeseran distribusi tekanan, kenaikan suhu, dan jumlah langkah dalam satu sesi pemakaian. Ini sinyal pendukung untuk mengingatkan Anda beristirahat, bukan pengukuran klinis kelelahan otot — tetap konsultasikan kondisi kaki Anda ke tenaga medis."
+msgstr "Bukan. Indikator kelelahan adalah heuristik transparan yang menggabungkan durasi beban tekanan tinggi, pergeseran distribusi tekanan, kenaikan suhu, dan jumlah langkah dalam satu sesi pemakaian. Ini sinyal pendukung untuk mengingatkan Anda beristirahat, bukan pengukuran klinis kelelahan otot — tetap konsultasikan kondisi kaki Anda ke tenaga medis."
+
+#: src/constants/faq.js
+msgid "Chatbot tidak menjawab atau muncul pesan kuota penuh"
+msgstr "Chatbot tidak menjawab atau muncul pesan kuota penuh"
+
+#: src/constants/faq.js
+msgid "Chatbot memakai model AI gratis yang punya batas pemakaian harian; pesan \"Kuota AI sedang penuh\" atau \"Model AI sedang sibuk\" berarti perlu mencoba lagi beberapa saat kemudian. Chatbot ini juga sengaja dibatasi hanya menjawab topik seputar Glykos dan kesehatan kaki diabetes."
+msgstr "Chatbot memakai model AI gratis yang punya batas pemakaian harian; pesan \"Kuota AI sedang penuh\" atau \"Model AI sedang sibuk\" berarti perlu mencoba lagi beberapa saat kemudian. Chatbot ini juga sengaja dibatasi hanya menjawab topik seputar Glykos dan kesehatan kaki diabetes."
+
+#: src/constants/faq.js
+msgid "Notifikasi peringatan tidak pernah muncul"
+msgstr "Notifikasi peringatan tidak pernah muncul"
+
+#: src/constants/faq.js
+msgid "Notifikasi perlu diaktifkan manual lewat tombol \"Aktifkan Notifikasi\" di halaman ini, dan browser Anda harus mendukung Notification API. Jika status menunjukkan \"diblokir\", izinnya harus diubah lewat pengaturan situs pada browser (ikon gembok di address bar), bukan dari dalam aplikasi."
+msgstr "Notifikasi perlu diaktifkan manual lewat tombol \"Aktifkan Notifikasi\" di halaman ini, dan browser Anda harus mendukung Notification API. Jika status menunjukkan \"diblokir\", izinnya harus diubah lewat pengaturan situs pada browser (ikon gembok di address bar), bukan dari dalam aplikasi."
+
+#: src/constants/faq.js
+msgid "Apakah data kaki saya aman dan siapa yang bisa melihatnya?"
+msgstr "Apakah data kaki saya aman dan siapa yang bisa melihatnya?"
+
+#: src/constants/faq.js
+msgid "Setiap pembacaan sensor dan profil kesehatan tersimpan di Firestore terikat ke akun Anda, dan seluruh halaman dashboard hanya bisa diakses setelah login. Jangan bagikan kredensial akun Anda ke orang lain untuk menjaga data tetap privat."
+msgstr "Setiap pembacaan sensor dan profil kesehatan tersimpan di Firestore terikat ke akun Anda, dan seluruh halaman dashboard hanya bisa diakses setelah login. Jangan bagikan kredensial akun Anda ke orang lain untuk menjaga data tetap privat."
+
+#: src/constants/fatigue.js
+msgid "Rendah"
+msgstr "Rendah"
+
+#: src/constants/fatigue.js
+msgid "Sedang"
+msgstr "Sedang"
+
+#: src/constants/fatigue.js
+msgid "Tinggi"
+msgstr "Tinggi"
+
+#: src/constants/historyMetrics.js
+#: src/utils/alertMessages.js
+#: src/utils/exportData.js
+msgid "Tekanan"
+msgstr "Tekanan"
+
+#: src/constants/historyMetrics.js
+#: src/utils/exportData.js
+msgid "Selisih Suhu"
+msgstr "Selisih Suhu"
+
+#: src/constants/historyMetrics.js
+#: src/utils/alertMessages.js
+#: src/utils/exportData.js
+msgid "Kelembapan"
+msgstr "Kelembapan"
+
+#: src/constants/thresholds.js
+msgid "Risiko Ulkus"
+msgstr "Risiko Ulkus"
+
+#: src/constants/thresholds.js
+msgid "Tumit"
+msgstr "Tumit"
+
+#: src/constants/thresholds.js
+msgid "Metatarsal"
+msgstr "Metatarsal"
+
+#: src/constants/thresholds.js
+msgid "Jari Kaki"
+msgstr "Jari Kaki"
+
+#: src/constants/thresholds.js
+msgid "Lateral"
+msgstr "Lateral"
+
+#: src/hooks/useAlerts.js
+msgid "Glykos — {label} Berisiko"
+msgstr "Glykos — {label} Berisiko"
+
+#: src/hooks/useBleSensor.js
+msgid "Web Bluetooth tidak didukung di browser ini. Gunakan Chrome/Edge lewat http://localhost atau HTTPS."
+msgstr "Web Bluetooth tidak didukung di browser ini. Gunakan Chrome/Edge lewat http://localhost atau HTTPS."
+
+#: src/hooks/useTemperatureTrendAlert.js
+msgid "Glykos — Selisih Suhu Menetap"
+msgstr "Glykos — Selisih Suhu Menetap"
+
+#: src/i18n.js
+msgid "Glykos — Monitoring Kaki Diabetes"
+msgstr "Glykos — Monitoring Kaki Diabetes"
+
+#: src/i18n.js
+msgid "Glykos — dashboard pemantauan sepatu pintar untuk deteksi dini risiko ulkus diabetik."
+msgstr "Glykos — dashboard pemantauan sepatu pintar untuk deteksi dini risiko ulkus diabetik."
+
+#: src/pages/AlertsPage.jsx
+msgid "Semua"
+msgstr "Semua"
+
+#: src/pages/AlertsPage.jsx
+msgid "Hari Ini"
+msgstr "Hari Ini"
+
+#: src/pages/AlertsPage.jsx
+msgid "Kemarin"
+msgstr "Kemarin"
+
+#: src/pages/AlertsPage.jsx
+msgid "Waktu tidak diketahui"
+msgstr "Waktu tidak diketahui"
+
+#: src/pages/AlertsPage.jsx
+#: src/pages/DashboardLayout.jsx
+#: src/pages/HistoryPage.jsx
+msgid "Peringatan"
+msgstr "Peringatan"
+
+#: src/pages/AlertsPage.jsx
+msgid "Dipicu saat tekanan, suhu, atau kelembapan memasuki status Perhatian/Risiko"
+msgstr "Dipicu saat tekanan, suhu, atau kelembapan memasuki status Perhatian/Risiko"
+
+#: src/pages/AlertsPage.jsx
+msgid "Total Peringatan"
+msgstr "Total Peringatan"
+
+#: src/pages/AlertsPage.jsx
+msgid "entri"
+msgstr "entri"
+
+#: src/pages/AlertsPage.jsx
+msgid "Peringatan terakhir: {lastAlertAt}"
+msgstr "Peringatan terakhir: {lastAlertAt}"
+
+#: src/pages/AlertsPage.jsx
+msgid "Status mendekati ambang risiko"
+msgstr "Status mendekati ambang risiko"
+
+#: src/pages/AlertsPage.jsx
+msgid "Risiko Terdeteksi"
+msgstr "Risiko Terdeteksi"
+
+#: src/pages/AlertsPage.jsx
+msgid "Melewati ambang aman — perlu tindakan"
+msgstr "Melewati ambang aman — perlu tindakan"
+
+#: src/pages/AlertsPage.jsx
+msgid "Riwayat Peringatan"
+msgstr "Riwayat Peringatan"
+
+#: src/pages/AlertsPage.jsx
+msgid "Memuat riwayat peringatan…"
+msgstr "Memuat riwayat peringatan…"
+
+#: src/pages/AlertsPage.jsx
+msgid "{shownCount} dari {totalCount} entri"
+msgstr "{shownCount} dari {totalCount} entri"
+
+#: src/pages/AlertsPage.jsx
+msgid "Filter tingkat keparahan"
+msgstr "Filter tingkat keparahan"
+
+#: src/pages/AlertsPage.jsx
+msgid "Belum ada peringatan tercatat. Semua parameter masih dalam batas aman."
+msgstr "Belum ada peringatan tercatat. Semua parameter masih dalam batas aman."
+
+#: src/pages/AlertsPage.jsx
+msgid "Tidak ada peringatan dengan filter ini."
+msgstr "Tidak ada peringatan dengan filter ini."
+
+#: src/pages/AlertsPage.jsx
+msgid "Lokasi: {areaName}"
+msgstr "Lokasi: {areaName}"
+
+#: src/pages/AlertsPage.jsx
+msgid "Catatan hanya dibuat saat dashboard sedang dibuka di browser. Untuk peringatan yang tetap terkirim saat aplikasi tertutup, diperlukan pemantauan sisi server (Cloud Function + push notification) yang belum diaktifkan pada proyek ini."
+msgstr "Catatan hanya dibuat saat dashboard sedang dibuka di browser. Untuk peringatan yang tetap terkirim saat aplikasi tertutup, diperlukan pemantauan sisi server (Cloud Function + push notification) yang belum diaktifkan pada proyek ini."
+
+#: src/pages/ChatbotPage.jsx
+msgid "Halo! Saya asisten Glykos. Saya bisa membaca angka sensor sepatu Anda — tanyakan kondisi kaki Anda hari ini, arti tekanan/suhu/kelembapan yang terbaca, atau perawatan kaki diabetes pada umumnya."
+msgstr "Halo! Saya asisten Glykos. Saya bisa membaca angka sensor sepatu Anda — tanyakan kondisi kaki Anda hari ini, arti tekanan/suhu/kelembapan yang terbaca, atau perawatan kaki diabetes pada umumnya."
+
+#: src/pages/ChatbotPage.jsx
+msgid "Bagaimana kondisi kaki saya hari ini?"
+msgstr "Bagaimana kondisi kaki saya hari ini?"
+
+#: src/pages/ChatbotPage.jsx
+msgid "Apa yang perlu saya perhatikan dari data minggu ini?"
+msgstr "Apa yang perlu saya perhatikan dari data minggu ini?"
+
+#: src/pages/ChatbotPage.jsx
+msgid "Kenapa suhu kulit dipantau?"
+msgstr "Kenapa suhu kulit dipantau?"
+
+#: src/pages/ChatbotPage.jsx
+msgid "Mengapa kelembapan dalam sepatu berbahaya?"
+msgstr "Mengapa kelembapan dalam sepatu berbahaya?"
+
+#: src/pages/ChatbotPage.jsx
+msgid "Terjadi kesalahan saat mengirim pesan."
+msgstr "Terjadi kesalahan saat mengirim pesan."
+
+#: src/pages/ChatbotPage.jsx
+msgid "Asisten Glykos"
+msgstr "Asisten Glykos"
+
+#: src/pages/ChatbotPage.jsx
+msgid "Ditenagai AI · Online"
+msgstr "Ditenagai AI · Online"
+
+#: src/pages/ChatbotPage.jsx
+msgid "Asisten sedang mengetik"
+msgstr "Asisten sedang mengetik"
+
+#: src/pages/ChatbotPage.jsx
+msgid "Pertanyaan cepat"
+msgstr "Pertanyaan cepat"
+
+#: src/pages/ChatbotPage.jsx
+msgid "Tulis pertanyaan Anda…"
+msgstr "Tulis pertanyaan Anda…"
+
+#: src/pages/ChatbotPage.jsx
+msgid "Kirim pesan"
+msgstr "Kirim pesan"
+
+#: src/pages/ChatbotPage.jsx
+msgid "Jawaban memakai pembacaan sensor sepatu Anda (tekanan, suhu, kelembapan, langkah). Data profil seperti nama, HbA1c, dan riwayat luka tidak dikirim. Informasi bersifat edukatif dan bukan pengganti diagnosis dokter."
+msgstr "Jawaban memakai pembacaan sensor sepatu Anda (tekanan, suhu, kelembapan, langkah). Data profil seperti nama, HbA1c, dan riwayat luka tidak dikirim. Informasi bersifat edukatif dan bukan pengganti diagnosis dokter."
+
+#: src/pages/DashboardLayout.jsx
+#: src/pages/DashboardOverview.jsx
+msgid "Ringkasan"
+msgstr "Ringkasan"
+
+#: src/pages/DashboardLayout.jsx
+msgid "Chatbot"
+msgstr "Chatbot"
+
+#: src/pages/DashboardLayout.jsx
+#: src/pages/HistoryPage.jsx
+msgid "Riwayat"
+msgstr "Riwayat"
+
+#: src/pages/DashboardLayout.jsx
+#: src/pages/ProfilePage.jsx
+msgid "Profil"
+msgstr "Profil"
+
+#: src/pages/DashboardLayout.jsx
+msgid "Pengguna"
+msgstr "Pengguna"
+
+#: src/pages/DashboardLayout.jsx
+msgid "Keluar ({label})"
+msgstr "Keluar ({label})"
+
+#: src/pages/DashboardLayout.jsx
+msgid "Keluar"
+msgstr "Keluar"
+
+#: src/pages/DashboardLayout.jsx
+msgid "Navigasi dashboard"
+msgstr "Navigasi dashboard"
+
+#: src/pages/DashboardLayout.jsx
+msgid "Layar ditahan menyala selama sepatu tersambung, supaya data tidak terputus saat layar mati."
+msgstr "Layar ditahan menyala selama sepatu tersambung, supaya data tidak terputus saat layar mati."
+
+#: src/pages/DashboardLayout.jsx
+msgid "Layar aktif"
+msgstr "Layar aktif"
+
+#: src/pages/DashboardLayout.jsx
+msgid "Glykos — pemantauan kaki diabetes"
+msgstr "Glykos — pemantauan kaki diabetes"
+
+#: src/pages/DashboardOverview.jsx
+msgid "Kondisi kaki & sepatu secara real-time"
+msgstr "Kondisi kaki & sepatu secara real-time"
+
+#: src/pages/DashboardOverview.jsx
+msgid "Refresh"
+msgstr "Refresh"
+
+#: src/pages/DashboardOverview.jsx
+msgid "Peta Sensor Insole"
+msgstr "Peta Sensor Insole"
+
+#: src/pages/DashboardOverview.jsx
+msgid "Titik tekanan & suhu per sensor pada insole secara real-time"
+msgstr "Titik tekanan & suhu per sensor pada insole secara real-time"
+
+#: src/pages/DashboardOverview.jsx
+msgid "Histori Tren"
+msgstr "Histori Tren"
+
+#: src/pages/DashboardOverview.jsx
+msgid "Pola tekanan, suhu, selisih suhu & kelembapan — 7 hari terakhir"
+msgstr "Pola tekanan, suhu, selisih suhu & kelembapan — 7 hari terakhir"
+
+#: src/pages/DashboardOverview.jsx
+msgid "Lihat Selengkapnya"
+msgstr "Lihat Selengkapnya"
+
+#: src/pages/HistoryPage.jsx
+msgid "{rangeDays, plural, one {# hari} other {# hari}}"
+msgstr "{rangeDays, plural, one {# hari} other {# hari}}"
+
+#: src/pages/HistoryPage.jsx
+msgid "{rangeDays, plural, one {# Hari Terakhir} other {# Hari Terakhir}}"
+msgstr "{rangeDays, plural, one {# Hari Terakhir} other {# Hari Terakhir}}"
+
+#: src/pages/HistoryPage.jsx
+msgid "Terbaru"
+msgstr "Terbaru"
+
+#: src/pages/HistoryPage.jsx
+msgid "Terlama"
+msgstr "Terlama"
+
+#: src/pages/HistoryPage.jsx
+msgid "Data historis tekanan, suhu & kelembapan sepatu"
+msgstr "Data historis tekanan, suhu & kelembapan sepatu"
+
+#: src/pages/HistoryPage.jsx
+msgid "Rentang waktu"
+msgstr "Rentang waktu"
+
+#: src/pages/HistoryPage.jsx
+msgid "7 Hari"
+msgstr "7 Hari"
+
+#: src/pages/HistoryPage.jsx
+msgid "30 Hari"
+msgstr "30 Hari"
+
+#: src/pages/HistoryPage.jsx
+msgid "Tren Historis"
+msgstr "Tren Historis"
+
+#: src/pages/HistoryPage.jsx
+msgid "Pola tekanan, suhu, selisih suhu & kelembapan — {rangeText} terakhir"
+msgstr "Pola tekanan, suhu, selisih suhu & kelembapan — {rangeText} terakhir"
+
+#: src/pages/HistoryPage.jsx
+msgid "Tampilkan metrik"
+msgstr "Tampilkan metrik"
+
+#: src/pages/HistoryPage.jsx
+msgid "Tabel Data"
+msgstr "Tabel Data"
+
+#: src/pages/HistoryPage.jsx
+msgid "Memuat data…"
+msgstr "Memuat data…"
+
+#: src/pages/HistoryPage.jsx
+msgid "{entryCount} entri dalam {rangeText} terakhir"
+msgstr "{entryCount} entri dalam {rangeText} terakhir"
+
+#: src/pages/HistoryPage.jsx
+msgid "Urutkan: {sortLabel}"
+msgstr "Urutkan: {sortLabel}"
+
+#: src/pages/HistoryPage.jsx
+msgid "Export CSV"
+msgstr "Export CSV"
+
+#: src/pages/HistoryPage.jsx
+msgid "Export PDF"
+msgstr "Export PDF"
+
+#: src/pages/HistoryPage.jsx
+#: src/utils/exportData.js
+msgid "Tanggal"
+msgstr "Tanggal"
+
+#: src/pages/HistoryPage.jsx
+#: src/utils/exportData.js
+msgid "Tekanan (kPa)"
+msgstr "Tekanan (kPa)"
+
+#: src/pages/HistoryPage.jsx
+#: src/utils/exportData.js
+msgid "Suhu (°C)"
+msgstr "Suhu (°C)"
+
+#: src/pages/HistoryPage.jsx
+msgid "Selisih (°C)"
+msgstr "Selisih (°C)"
+
+#: src/pages/HistoryPage.jsx
+#: src/utils/exportData.js
+msgid "Kelembapan (%RH)"
+msgstr "Kelembapan (%RH)"
+
+#: src/pages/HistoryPage.jsx
+#: src/utils/exportData.js
+msgid "Langkah"
+msgstr "Langkah"
+
+#: src/pages/HistoryPage.jsx
+msgid "Status"
+msgstr "Status"
+
+#: src/pages/HistoryPage.jsx
+msgid "Tidak ada log"
+msgstr "Tidak ada log"
+
+#. placeholder {0}: alert.count
+#: src/pages/HistoryPage.jsx
+msgid "{0, plural, one {# peringatan} other {# peringatan}}"
+msgstr "{0, plural, one {# peringatan} other {# peringatan}}"
+
+#: src/pages/HistoryPage.jsx
+msgid "Tidak ada"
+msgstr "Tidak ada"
+
+#: src/pages/HistoryPage.jsx
+msgid "Belum ada data histori."
+msgstr "Belum ada data histori."
+
+#: src/pages/LandingPage.jsx
+msgid "Pemantauan Tekanan Plantar"
+msgstr "Pemantauan Tekanan Plantar"
+
+#: src/pages/LandingPage.jsx
+msgid "Sensor pada titik tumit, metatarsal & jari kaki mendeteksi tekanan berlebih yang berisiko memicu luka."
+msgstr "Sensor pada titik tumit, metatarsal & jari kaki mendeteksi tekanan berlebih yang berisiko memicu luka."
+
+#: src/pages/LandingPage.jsx
+msgid "Deteksi Selisih Suhu Kaki"
+msgstr "Deteksi Selisih Suhu Kaki"
+
+#: src/pages/LandingPage.jsx
+msgid "Selisih suhu antar area adalah salah satu prediktor dini peradangan sebelum luka terlihat kasat mata."
+msgstr "Selisih suhu antar area adalah salah satu prediktor dini peradangan sebelum luka terlihat kasat mata."
+
+#: src/pages/LandingPage.jsx
+msgid "Kelembapan Dalam Sepatu"
+msgstr "Kelembapan Dalam Sepatu"
+
+#: src/pages/LandingPage.jsx
+msgid "Kelembapan berlebih meningkatkan risiko maserasi & infeksi jamur pada kulit yang sudah rentan."
+msgstr "Kelembapan berlebih meningkatkan risiko maserasi & infeksi jamur pada kulit yang sudah rentan."
+
+#: src/pages/LandingPage.jsx
+msgid "Aktivitas & Pola Gerak"
+msgstr "Aktivitas & Pola Gerak"
+
+#: src/pages/LandingPage.jsx
+msgid "Rekam jumlah langkah dan waktu aktif harian untuk memahami beban yang diterima kaki sepanjang hari."
+msgstr "Rekam jumlah langkah dan waktu aktif harian untuk memahami beban yang diterima kaki sepanjang hari."
+
+#: src/pages/LandingPage.jsx
+msgid "Dashboard Real-time"
+msgstr "Dashboard Real-time"
+
+#: src/pages/LandingPage.jsx
+msgid "Semua data sensor tersaji dalam satu dashboard yang mudah dibaca, kapan saja dan di mana saja."
+msgstr "Semua data sensor tersaji dalam satu dashboard yang mudah dibaca, kapan saja dan di mana saja."
+
+#: src/pages/LandingPage.jsx
+msgid "Export Laporan Medis"
+msgstr "Export Laporan Medis"
+
+#: src/pages/LandingPage.jsx
+msgid "Unduh riwayat data dalam format CSV atau PDF untuk dibawa ke konsultasi dengan dokter."
+msgstr "Unduh riwayat data dalam format CSV atau PDF untuk dibawa ke konsultasi dengan dokter."
+
+#: src/pages/LandingPage.jsx
+msgid "Selisih suhu di atas ambang ini dikenal dalam literatur kaki diabetik sebagai penanda pre-ulkus — sering muncul sebelum luka terlihat."
+msgstr "Selisih suhu di atas ambang ini dikenal dalam literatur kaki diabetik sebagai penanda pre-ulkus — sering muncul sebelum luka terlihat."
+
+#: src/pages/LandingPage.jsx
+msgid "Batas tekanan plantar"
+msgstr "Batas tekanan plantar"
+
+#: src/pages/LandingPage.jsx
+msgid "Di bawah 200 kPa ditandai aman, 200–250 kPa perlu perhatian, di atas 250 kPa ditandai sebagai risiko ulkus pada dashboard."
+msgstr "Di bawah 200 kPa ditandai aman, 200–250 kPa perlu perhatian, di atas 250 kPa ditandai sebagai risiko ulkus pada dashboard."
+
+#: src/pages/LandingPage.jsx
+msgid "Batas kelembapan sepatu"
+msgstr "Batas kelembapan sepatu"
+
+#: src/pages/LandingPage.jsx
+msgid "Kelembapan di atas ambang ini meningkatkan risiko maserasi kulit dan infeksi jamur pada kaki yang sudah rentan."
+msgstr "Kelembapan di atas ambang ini meningkatkan risiko maserasi kulit dan infeksi jamur pada kaki yang sudah rentan."
+
+#: src/pages/LandingPage.jsx
+msgid "Pakai Sepatu Glykos"
+msgstr "Pakai Sepatu Glykos"
+
+#: src/pages/LandingPage.jsx
+msgid "Pakai seperti sepatu biasa — insole bersensor sudah terpasang di dalamnya, tidak ada yang perlu dirakit sendiri."
+msgstr "Pakai seperti sepatu biasa — insole bersensor sudah terpasang di dalamnya, tidak ada yang perlu dirakit sendiri."
+
+#: src/pages/LandingPage.jsx
+msgid "Sensor Merekam Kondisi Kaki"
+msgstr "Sensor Merekam Kondisi Kaki"
+
+#: src/pages/LandingPage.jsx
+msgid "Tekanan, suhu, kelembapan & aktivitas terekam otomatis dan dikirim ke ponsel lewat Bluetooth."
+msgstr "Tekanan, suhu, kelembapan & aktivitas terekam otomatis dan dikirim ke ponsel lewat Bluetooth."
+
+#: src/pages/LandingPage.jsx
+msgid "Pantau & Tindak Lanjuti"
+msgstr "Pantau & Tindak Lanjuti"
+
+#: src/pages/LandingPage.jsx
+msgid "Anda, keluarga, atau dokter dapat memantau dashboard dan mengambil tindakan preventif lebih awal."
+msgstr "Anda, keluarga, atau dokter dapat memantau dashboard dan mengambil tindakan preventif lebih awal."
+
+#: src/pages/LandingPage.jsx
+msgid "Jenis sensor"
+msgstr "Jenis sensor"
+
+#: src/pages/LandingPage.jsx
+msgid "Titik tekanan"
+msgstr "Titik tekanan"
+
+#: src/pages/LandingPage.jsx
+msgid "Real-time"
+msgstr "Real-time"
+
+#: src/pages/LandingPage.jsx
+msgid "Kirim via Bluetooth"
+msgstr "Kirim via Bluetooth"
+
+#: src/pages/LandingPage.jsx
+msgid "Mengapa Glykos"
+msgstr "Mengapa Glykos"
+
+#: src/pages/LandingPage.jsx
+msgid "Dasar Pemantauan"
+msgstr "Dasar Pemantauan"
+
+#: src/pages/LandingPage.jsx
+msgid "Fitur"
+msgstr "Fitur"
+
+#: src/pages/LandingPage.jsx
+msgid "Cara Kerja"
+msgstr "Cara Kerja"
+
+#: src/pages/LandingPage.jsx
+msgid "Tim"
+msgstr "Tim"
+
+#: src/pages/LandingPage.jsx
+msgid "Buka Dashboard"
+msgstr "Buka Dashboard"
+
+#: src/pages/LandingPage.jsx
+#: src/pages/LoginPage.jsx
+msgid "Masuk"
+msgstr "Masuk"
+
+#: src/pages/LandingPage.jsx
+msgid "Daftar Gratis"
+msgstr "Daftar Gratis"
+
+#: src/pages/LandingPage.jsx
+msgid "Lompat ke konten utama"
+msgstr "Lompat ke konten utama"
+
+#: src/pages/LandingPage.jsx
+msgid "Navigasi halaman"
+msgstr "Navigasi halaman"
+
+#: src/pages/LandingPage.jsx
+msgid "Buka menu navigasi"
+msgstr "Buka menu navigasi"
+
+#: src/pages/LandingPage.jsx
+msgid "Tutup menu"
+msgstr "Tutup menu"
+
+#: src/pages/LandingPage.jsx
+msgid "Wearable Health-Tech"
+msgstr "Wearable Health-Tech"
+
+#: src/pages/LandingPage.jsx
+msgid "Sepatu Pintar Pendeteksi Dini <0>Risiko Ulkus Diabetik</0>"
+msgstr "Sepatu Pintar Pendeteksi Dini <0>Risiko Ulkus Diabetik</0>"
+
+#: src/pages/LandingPage.jsx
+msgid "Glykos adalah sepatu pintar yang memantau tekanan, suhu, kelembapan, dan aktivitas kaki secara real-time — membantu penderita diabetes dengan neuropati mendeteksi tanda awal luka sebelum menjadi masalah serius."
+msgstr "Glykos adalah sepatu pintar yang memantau tekanan, suhu, kelembapan, dan aktivitas kaki secara real-time — membantu penderita diabetes dengan neuropati mendeteksi tanda awal luka sebelum menjadi masalah serius."
+
+#: src/pages/LandingPage.jsx
+msgid "Lihat Cara Kerja"
+msgstr "Lihat Cara Kerja"
+
+#: src/pages/LandingPage.jsx
+msgid "Seret ke samping & ke atas untuk memutar"
+msgstr "Seret ke samping & ke atas untuk memutar"
+
+#: src/pages/LandingPage.jsx
+msgid "Spesifikasi ringkas"
+msgstr "Spesifikasi ringkas"
+
+#: src/pages/LandingPage.jsx
+msgid "Mengapa Kaki Diabetes Butuh Perhatian Ekstra?"
+msgstr "Mengapa Kaki Diabetes Butuh Perhatian Ekstra?"
+
+#: src/pages/LandingPage.jsx
+msgid "Banyak penderita diabetes mengalami neuropati — mati rasa pada saraf kaki — sehingga tidak menyadari tekanan berlebih atau peradangan dini yang berisiko menjadi ulkus diabetik. Glykos hadir sebagai “indera pengganti” yang bekerja diam-diam di dalam sepatu."
+msgstr "Banyak penderita diabetes mengalami neuropati — mati rasa pada saraf kaki — sehingga tidak menyadari tekanan berlebih atau peradangan dini yang berisiko menjadi ulkus diabetik. Glykos hadir sebagai “indera pengganti” yang bekerja diam-diam di dalam sepatu."
+
+#: src/pages/LandingPage.jsx
+msgid "Sulit Disadari Sejak Dini"
+msgstr "Sulit Disadari Sejak Dini"
+
+#: src/pages/LandingPage.jsx
+msgid "Neuropati membuat tanda-tanda awal luka — tekanan berlebih, panas, dan lembap — sulit dirasakan langsung oleh penderita."
+msgstr "Neuropati membuat tanda-tanda awal luka — tekanan berlebih, panas, dan lembap — sulit dirasakan langsung oleh penderita."
+
+#: src/pages/LandingPage.jsx
+msgid "Berisiko Menjadi Luka Kronis"
+msgstr "Berisiko Menjadi Luka Kronis"
+
+#: src/pages/LandingPage.jsx
+msgid "Tanpa deteksi dini, cedera kecil dapat berkembang menjadi luka yang sulit sembuh dan berisiko komplikasi lebih lanjut."
+msgstr "Tanpa deteksi dini, cedera kecil dapat berkembang menjadi luka yang sulit sembuh dan berisiko komplikasi lebih lanjut."
+
+#: src/pages/LandingPage.jsx
+msgid "Perlu Pemantauan Berkelanjutan"
+msgstr "Perlu Pemantauan Berkelanjutan"
+
+#: src/pages/LandingPage.jsx
+msgid "Pemantauan rutin membantu pasien, keluarga, dan dokter mengambil tindakan preventif sebelum kondisi memburuk."
+msgstr "Pemantauan rutin membantu pasien, keluarga, dan dokter mengambil tindakan preventif sebelum kondisi memburuk."
+
+#: src/pages/LandingPage.jsx
+msgid "Contoh pembacaan: 150 / 225 / 300 kPa"
+msgstr "Contoh pembacaan: 150 / 225 / 300 kPa"
+
+#: src/pages/LandingPage.jsx
+msgid "Ambang yang Dipakai Glykos"
+msgstr "Ambang yang Dipakai Glykos"
+
+#: src/pages/LandingPage.jsx
+msgid "Setiap status “aman”, “perhatian”, dan “risiko” pada dashboard dihitung dari ambang berikut — bukan penilaian samar, sehingga bisa Anda periksa dan diskusikan dengan dokter."
+msgstr "Setiap status “aman”, “perhatian”, dan “risiko” pada dashboard dihitung dari ambang berikut — bukan penilaian samar, sehingga bisa Anda periksa dan diskusikan dengan dokter."
+
+#: src/pages/LandingPage.jsx
+msgid "Semua yang Dibutuhkan untuk Memantau Kaki"
+msgstr "Semua yang Dibutuhkan untuk Memantau Kaki"
+
+#: src/pages/LandingPage.jsx
+msgid "Empat jenis sensor, satu dashboard, dipantau kapan saja."
+msgstr "Empat jenis sensor, satu dashboard, dipantau kapan saja."
+
+#: src/pages/LandingPage.jsx
+msgid "Unit sensor<0>Bluetooth Low Energy</0>"
+msgstr "Unit sensor<0>Bluetooth Low Energy</0>"
+
+#: src/pages/LandingPage.jsx
+msgid "Tiga Langkah Menuju Kaki yang Terpantau"
+msgstr "Tiga Langkah Menuju Kaki yang Terpantau"
+
+#: src/pages/LandingPage.jsx
+msgid "Dari memakai sepatunya sampai membaca hasilnya di dashboard."
+msgstr "Dari memakai sepatunya sampai membaca hasilnya di dashboard."
+
+#: src/pages/LandingPage.jsx
+msgid "Gulir untuk memisahkan ketiga bagiannya: badan sepatu, insole bersensor dengan tiga titik tekanan, dan modul sensor di sisi luar."
+msgstr "Gulir untuk memisahkan ketiga bagiannya: badan sepatu, insole bersensor dengan tiga titik tekanan, dan modul sensor di sisi luar."
+
+#: src/pages/LandingPage.jsx
+msgid "Tim di Balik Glykos"
+msgstr "Tim di Balik Glykos"
+
+#: src/pages/LandingPage.jsx
+msgid "Tim inti yang membangun Glykos dari riset hingga produk."
+msgstr "Tim inti yang membangun Glykos dari riset hingga produk."
+
+#: src/pages/LandingPage.jsx
+msgid "Mulai hari ini"
+msgstr "Mulai hari ini"
+
+#: src/pages/LandingPage.jsx
+msgid "Mulai Pantau Kesehatan Kaki Anda Hari Ini"
+msgstr "Mulai Pantau Kesehatan Kaki Anda Hari Ini"
+
+#: src/pages/LandingPage.jsx
+msgid "Gratis untuk mendaftar — hubungkan perangkat Glykos Anda dalam hitungan menit."
+msgstr "Gratis untuk mendaftar — hubungkan perangkat Glykos Anda dalam hitungan menit."
+
+#: src/pages/LandingPage.jsx
+msgid "Sepatu pintar pemantau tekanan, suhu, dan kelembapan kaki untuk membantu deteksi dini risiko ulkus diabetik."
+msgstr "Sepatu pintar pemantau tekanan, suhu, dan kelembapan kaki untuk membantu deteksi dini risiko ulkus diabetik."
+
+#: src/pages/LandingPage.jsx
+msgid "Navigasi footer"
+msgstr "Navigasi footer"
+
+#: src/pages/LandingPage.jsx
+msgid "Produk"
+msgstr "Produk"
+
+#: src/pages/LandingPage.jsx
+msgid "Akun"
+msgstr "Akun"
+
+#: src/pages/LandingPage.jsx
+msgid "Dashboard"
+msgstr "Dashboard"
+
+#: src/pages/LandingPage.jsx
+msgid "<0>Catatan penting:</0> Glykos adalah alat bantu pemantauan, bukan alat diagnosis medis. Data yang ditampilkan tidak menggantikan pemeriksaan, diagnosis, atau saran tenaga kesehatan profesional. Segera hubungi dokter jika Anda menemukan luka, perubahan warna, atau nyeri pada kaki."
+msgstr "<0>Catatan penting:</0> Glykos adalah alat bantu pemantauan, bukan alat diagnosis medis. Data yang ditampilkan tidak menggantikan pemeriksaan, diagnosis, atau saran tenaga kesehatan profesional. Segera hubungi dokter jika Anda menemukan luka, perubahan warna, atau nyeri pada kaki."
+
+#: src/pages/LandingPage.jsx
+msgid "Sepatu pintar untuk pemantauan kaki diabetes"
+msgstr "Sepatu pintar untuk pemantauan kaki diabetes"
+
+#: src/pages/LoginPage.jsx
+msgid "Masuk ke akun Anda"
+msgstr "Masuk ke akun Anda"
+
+#: src/pages/LoginPage.jsx
+msgid "Pantau kondisi kaki secara real-time setelah masuk."
+msgstr "Pantau kondisi kaki secara real-time setelah masuk."
+
+#: src/pages/LoginPage.jsx
+#: src/pages/RegisterPage.jsx
+msgid "Email"
+msgstr "Email"
+
+#: src/pages/LoginPage.jsx
+#: src/pages/RegisterPage.jsx
+msgid "Kata Sandi"
+msgstr "Kata Sandi"
+
+#: src/pages/LoginPage.jsx
+#: src/pages/RegisterPage.jsx
+msgid "Memproses…"
+msgstr "Memproses…"
+
+#: src/pages/LoginPage.jsx
+#: src/pages/RegisterPage.jsx
+msgid "atau"
+msgstr "atau"
+
+#: src/pages/LoginPage.jsx
+msgid "Masuk dengan Google"
+msgstr "Masuk dengan Google"
+
+#: src/pages/LoginPage.jsx
+msgid "Belum punya akun? <0>Daftar di sini</0>"
+msgstr "Belum punya akun? <0>Daftar di sini</0>"
+
+#: src/pages/ProfilePage.jsx
+msgid "Terkirim — periksa notifikasi perangkat Anda."
+msgstr "Terkirim — periksa notifikasi perangkat Anda."
+
+#: src/pages/ProfilePage.jsx
+msgid "Gagal dikirim. Periksa izin notifikasi di pengaturan browser atau sistem."
+msgstr "Gagal dikirim. Periksa izin notifikasi di pengaturan browser atau sistem."
+
+#: src/pages/ProfilePage.jsx
+msgid "Tipe 1"
+msgstr "Tipe 1"
+
+#: src/pages/ProfilePage.jsx
+msgid "Tipe 2"
+msgstr "Tipe 2"
+
+#: src/pages/ProfilePage.jsx
+msgid "Gestasional"
+msgstr "Gestasional"
+
+#: src/pages/ProfilePage.jsx
+msgid "Glykos — Notifikasi Uji"
+msgstr "Glykos — Notifikasi Uji"
+
+#: src/pages/ProfilePage.jsx
+msgid "Notifikasi berhasil dikirim. Peringatan sungguhan akan tampil seperti ini."
+msgstr "Notifikasi berhasil dikirim. Peringatan sungguhan akan tampil seperti ini."
+
+#: src/pages/ProfilePage.jsx
+msgid "Profil Pasien"
+msgstr "Profil Pasien"
+
+#: src/pages/ProfilePage.jsx
+msgid "Perangkat terpasang: {deviceName}"
+msgstr "Perangkat terpasang: {deviceName}"
+
+#: src/pages/ProfilePage.jsx
+msgid "Tipe Diabetes"
+msgstr "Tipe Diabetes"
+
+#: src/pages/ProfilePage.jsx
+msgid "Pilih tipe"
+msgstr "Pilih tipe"
+
+#: src/pages/ProfilePage.jsx
+msgid "HbA1c Terakhir (%)"
+msgstr "HbA1c Terakhir (%)"
+
+#: src/pages/ProfilePage.jsx
+msgid "mis. 7.2"
+msgstr "mis. 7.2"
+
+#: src/pages/ProfilePage.jsx
+msgid "Riwayat Luka / Ulkus"
+msgstr "Riwayat Luka / Ulkus"
+
+#: src/pages/ProfilePage.jsx
+msgid "Catatan riwayat luka kaki, operasi, atau amputasi sebelumnya"
+msgstr "Catatan riwayat luka kaki, operasi, atau amputasi sebelumnya"
+
+#: src/pages/ProfilePage.jsx
+msgid "Kontak Darurat"
+msgstr "Kontak Darurat"
+
+#: src/pages/ProfilePage.jsx
+msgid "Nama & nomor telepon"
+msgstr "Nama & nomor telepon"
+
+#: src/pages/ProfilePage.jsx
+msgid "Menyimpan…"
+msgstr "Menyimpan…"
+
+#: src/pages/ProfilePage.jsx
+msgid "Simpan Profil"
+msgstr "Simpan Profil"
+
+#: src/pages/ProfilePage.jsx
+msgid "Tersimpan {savedTime}"
+msgstr "Tersimpan {savedTime}"
+
+#: src/pages/ProfilePage.jsx
+msgid "Notifikasi Peringatan"
+msgstr "Notifikasi Peringatan"
+
+#: src/pages/ProfilePage.jsx
+msgid "Izinkan notifikasi browser untuk mendapat peringatan instan saat status berubah menjadi Risiko."
+msgstr "Izinkan notifikasi browser untuk mendapat peringatan instan saat status berubah menjadi Risiko."
+
+#: src/pages/ProfilePage.jsx
+msgid "Browser ini tidak mendukung notifikasi."
+msgstr "Browser ini tidak mendukung notifikasi."
+
+#: src/pages/ProfilePage.jsx
+msgid "Notifikasi aktif di browser ini."
+msgstr "Notifikasi aktif di browser ini."
+
+#: src/pages/ProfilePage.jsx
+msgid "Kirim Notifikasi Uji"
+msgstr "Kirim Notifikasi Uji"
+
+#: src/pages/ProfilePage.jsx
+msgid "Notifikasi diblokir. Aktifkan lewat pengaturan izin situs pada browser Anda."
+msgstr "Notifikasi diblokir. Aktifkan lewat pengaturan izin situs pada browser Anda."
+
+#: src/pages/ProfilePage.jsx
+msgid "Aktifkan Notifikasi"
+msgstr "Aktifkan Notifikasi"
+
+#: src/pages/ProfilePage.jsx
+msgid "Bantuan & Pertanyaan Umum"
+msgstr "Bantuan & Pertanyaan Umum"
+
+#: src/pages/ProfilePage.jsx
+msgid "Masalah yang sering dialami pengguna seputar koneksi perangkat dan fitur aplikasi."
+msgstr "Masalah yang sering dialami pengguna seputar koneksi perangkat dan fitur aplikasi."
+
+#: src/pages/RegisterPage.jsx
+msgid "Konfirmasi kata sandi tidak cocok."
+msgstr "Konfirmasi kata sandi tidak cocok."
+
+#: src/pages/RegisterPage.jsx
+#: src/utils/authErrors.js
+msgid "Kata sandi minimal 6 karakter."
+msgstr "Kata sandi minimal 6 karakter."
+
+#: src/pages/RegisterPage.jsx
+msgid "Buat akun baru"
+msgstr "Buat akun baru"
+
+#: src/pages/RegisterPage.jsx
+msgid "Daftar untuk mulai memantau kondisi kaki secara real-time."
+msgstr "Daftar untuk mulai memantau kondisi kaki secara real-time."
+
+#: src/pages/RegisterPage.jsx
+msgid "Nama Lengkap"
+msgstr "Nama Lengkap"
+
+#: src/pages/RegisterPage.jsx
+msgid "Nama Anda"
+msgstr "Nama Anda"
+
+#: src/pages/RegisterPage.jsx
+msgid "Minimal 6 karakter"
+msgstr "Minimal 6 karakter"
+
+#: src/pages/RegisterPage.jsx
+msgid "Konfirmasi Kata Sandi"
+msgstr "Konfirmasi Kata Sandi"
+
+#: src/pages/RegisterPage.jsx
+msgid "Ulangi kata sandi"
+msgstr "Ulangi kata sandi"
+
+#: src/pages/RegisterPage.jsx
+msgid "Daftar"
+msgstr "Daftar"
+
+#: src/pages/RegisterPage.jsx
+msgid "Daftar dengan Google"
+msgstr "Daftar dengan Google"
+
+#: src/pages/RegisterPage.jsx
+msgid "Sudah punya akun? <0>Masuk di sini</0>"
+msgstr "Sudah punya akun? <0>Masuk di sini</0>"
+
+#: src/services/gemini.js
+msgid "Anda adalah asisten untuk proyek sepatu pintar diabetes Glykos. Jawablah hanya pertanyaan yang berkaitan dengan proyek ini, kesehatan kaki penderita diabetes, sensor sepatu pintar, serta pemantauan tekanan, suhu, dan kelembapan. Gunakan bahasa Indonesia dalam semua jawaban. Jangan menjawab pertanyaan di luar cakupan tersebut."
+msgstr "Anda adalah asisten untuk proyek sepatu pintar diabetes Glykos. Jawablah hanya pertanyaan yang berkaitan dengan proyek ini, kesehatan kaki penderita diabetes, sensor sepatu pintar, serta pemantauan tekanan, suhu, dan kelembapan. Gunakan bahasa Indonesia dalam semua jawaban. Jangan menjawab pertanyaan di luar cakupan tersebut."
+
+#: src/services/gemini.js
+msgid "Anda diberi ringkasan pembacaan sensor milik pengguna di bawah ini."
+msgstr "Anda diberi ringkasan pembacaan sensor milik pengguna di bawah ini."
+
+#: src/services/gemini.js
+msgid "Pakai angka tersebut bila relevan: sebut nilainya, bandingkan dengan ambangnya, dan jelaskan artinya dengan bahasa sehari-hari."
+msgstr "Pakai angka tersebut bila relevan: sebut nilainya, bandingkan dengan ambangnya, dan jelaskan artinya dengan bahasa sehari-hari."
+
+#: src/services/gemini.js
+msgid "JANGAN pernah menyebut angka pembacaan yang tidak ada dalam ringkasan ini. Kalau pengguna menanyakan sesuatu yang tidak tercakup, katakan terus terang bahwa datanya tidak tersedia."
+msgstr "JANGAN pernah menyebut angka pembacaan yang tidak ada dalam ringkasan ini. Kalau pengguna menanyakan sesuatu yang tidak tercakup, katakan terus terang bahwa datanya tidak tersedia."
+
+#: src/services/gemini.js
+msgid "JANGAN memberi diagnosis, vonis, atau instruksi pengobatan. Untuk pola yang menetap atau tanda luka, arahkan pengguna memeriksakan diri ke tenaga kesehatan."
+msgstr "JANGAN memberi diagnosis, vonis, atau instruksi pengobatan. Untuk pola yang menetap atau tanda luka, arahkan pengguna memeriksakan diri ke tenaga kesehatan."
+
+#: src/services/gemini.js
+msgid "Konfigurasi AI belum lengkap. VITE_GEMINI_API_KEY belum diatur."
+msgstr "Konfigurasi AI belum lengkap. VITE_GEMINI_API_KEY belum diatur."
+
+#: src/services/gemini.js
+msgid "Kuota AI sedang penuh. Silakan coba lagi beberapa saat."
+msgstr "Kuota AI sedang penuh. Silakan coba lagi beberapa saat."
+
+#: src/services/gemini.js
+msgid "Model AI sedang sibuk. Silakan coba lagi sebentar."
+msgstr "Model AI sedang sibuk. Silakan coba lagi sebentar."
+
+#: src/services/gemini.js
+msgid "Permintaan gagal (status {httpStatus})."
+msgstr "Permintaan gagal (status {httpStatus})."
+
+#: src/services/gemini.js
+msgid "Maaf, tidak ada jawaban yang bisa ditampilkan saat ini."
+msgstr "Maaf, tidak ada jawaban yang bisa ditampilkan saat ini."
+
+#: src/utils/alertMessages.js
+#: src/utils/exportData.js
+msgid "Suhu"
+msgstr "Suhu"
+
+#: src/utils/alertMessages.js
+msgid "Kelelahan"
+msgstr "Kelelahan"
+
+#: src/utils/alertMessages.js
+msgid "Selisih Suhu Menetap"
+msgstr "Selisih Suhu Menetap"
+
+#: src/utils/alertMessages.js
+msgid "{peakText} kPa"
+msgstr "{peakText} kPa"
+
+#: src/utils/alertMessages.js
+msgid "Tekanan puncak {peakText} kPa ({statusText})"
+msgstr "Tekanan puncak {peakText} kPa ({statusText})"
+
+#: src/utils/alertMessages.js
+msgid "{highestText} °C"
+msgstr "{highestText} °C"
+
+#: src/utils/alertMessages.js
+msgid "Selisih suhu {deltaText} °C antar area — prediktor pre-ulkus"
+msgstr "Selisih suhu {deltaText} °C antar area — prediktor pre-ulkus"
+
+#: src/utils/alertMessages.js
+msgid "Suhu tertinggi {highestText} °C"
+msgstr "Suhu tertinggi {highestText} °C"
+
+#: src/utils/alertMessages.js
+msgid "{humidityText} % RH"
+msgstr "{humidityText} % RH"
+
+#: src/utils/alertMessages.js
+msgid "Kelembapan sepatu {humidityText} % RH"
+msgstr "Kelembapan sepatu {humidityText} % RH"
+
+#: src/utils/alertMessages.js
+msgid "Beban tinggi berkelanjutan {minutesText} menit"
+msgstr "Beban tinggi berkelanjutan {minutesText} menit"
+
+#: src/utils/alertMessages.js
+msgid "Distribusi tekanan bergeser ke metatarsal +{ppText}pp"
+msgstr "Distribusi tekanan bergeser ke metatarsal +{ppText}pp"
+
+#: src/utils/alertMessages.js
+msgid "Distribusi tekanan mulai bergeser ke metatarsal +{ppText}pp"
+msgstr "Distribusi tekanan mulai bergeser ke metatarsal +{ppText}pp"
+
+#: src/utils/alertMessages.js
+msgid "Suhu kaki naik {riseText} °C selama sesi (sinyal sekunder)"
+msgstr "Suhu kaki naik {riseText} °C selama sesi (sinyal sekunder)"
+
+#: src/utils/alertMessages.js
+msgid "Total {stepsText} langkah dalam sesi ini"
+msgstr "Total {stepsText} langkah dalam sesi ini"
+
+#: src/utils/alertMessages.js
+msgid "Indikasi kelelahan: {levelText}"
+msgstr "Indikasi kelelahan: {levelText}"
+
+#: src/utils/alertMessages.js
+msgid "{maxDeltaText} °C · {daysText} hari"
+msgstr "{maxDeltaText} °C · {daysText} hari"
+
+#: src/utils/alertMessages.js
+msgid "Selisih suhu antar area bertahan di atas {thresholdText} °C selama {daysText} hari berturut-turut (tertinggi {maxDeltaText} °C)."
+msgstr "Selisih suhu antar area bertahan di atas {thresholdText} °C selama {daysText} hari berturut-turut (tertinggi {maxDeltaText} °C)."
+
+#: src/utils/authErrors.js
+msgid "Format email tidak valid."
+msgstr "Format email tidak valid."
+
+#: src/utils/authErrors.js
+msgid "Akun ini telah dinonaktifkan."
+msgstr "Akun ini telah dinonaktifkan."
+
+#: src/utils/authErrors.js
+msgid "Email atau kata sandi salah."
+msgstr "Email atau kata sandi salah."
+
+#: src/utils/authErrors.js
+msgid "Email ini sudah terdaftar. Silakan masuk."
+msgstr "Email ini sudah terdaftar. Silakan masuk."
+
+#: src/utils/authErrors.js
+msgid "Login dengan Google dibatalkan."
+msgstr "Login dengan Google dibatalkan."
+
+#: src/utils/authErrors.js
+msgid "Gagal terhubung ke jaringan. Coba lagi."
+msgstr "Gagal terhubung ke jaringan. Coba lagi."
+
+#: src/utils/authErrors.js
+msgid "Terlalu banyak percobaan. Coba lagi beberapa saat lagi."
+msgstr "Terlalu banyak percobaan. Coba lagi beberapa saat lagi."
+
+#: src/utils/authErrors.js
+msgid "Terjadi kesalahan. Silakan coba lagi."
+msgstr "Terjadi kesalahan. Silakan coba lagi."
+
+#: src/utils/exportData.js
+msgid "Glykos — Laporan Monitoring Kaki Diabetes"
+msgstr "Glykos — Laporan Monitoring Kaki Diabetes"
+
+#: src/utils/exportData.js
+msgid "Diekspor"
+msgstr "Diekspor"
+
+#: src/utils/exportData.js
+msgid "Perangkat"
+msgstr "Perangkat"
+
+#: src/utils/exportData.js
+msgid "Parameter Saat Ini"
+msgstr "Parameter Saat Ini"
+
+#: src/utils/exportData.js
+msgid "Tekanan Puncak (kPa)"
+msgstr "Tekanan Puncak (kPa)"
+
+#: src/utils/exportData.js
+msgid "Lokasi Tekanan"
+msgstr "Lokasi Tekanan"
+
+#: src/utils/exportData.js
+msgid "Suhu Tertinggi (°C)"
+msgstr "Suhu Tertinggi (°C)"
+
+#: src/utils/exportData.js
+msgid "Lokasi Suhu"
+msgstr "Lokasi Suhu"
+
+#: src/utils/exportData.js
+msgid "Waktu Aktif (menit)"
+msgstr "Waktu Aktif (menit)"
+
+#: src/utils/exportData.js
+msgid "Histori"
+msgstr "Histori"
+
+#: src/utils/exportData.js
+msgid "Selisih Suhu (°C)"
+msgstr "Selisih Suhu (°C)"
+
+#: src/utils/exportData.js
+msgid "Glykos — Laporan Monitoring"
+msgstr "Glykos — Laporan Monitoring"
+
+#: src/utils/exportData.js
+msgid "Laporan Glykos"
+msgstr "Laporan Glykos"
+
+#: src/utils/exportData.js
+msgid "Suhu Tertinggi"
+msgstr "Suhu Tertinggi"
+
+#: src/utils/formatTime.js
+msgid "baru saja"
+msgstr "baru saja"
+
+#: src/utils/formatTime.js
+msgid "{minutes, plural, one {# menit lalu} other {# menit lalu}}"
+msgstr "{minutes, plural, one {# menit lalu} other {# menit lalu}}"
+
+#: src/utils/formatTime.js
+msgid "{hours, plural, one {# jam lalu} other {# jam lalu}}"
+msgstr "{hours, plural, one {# jam lalu} other {# jam lalu}}"
+
+#: src/utils/formatTime.js
+msgid "{days, plural, one {# hari lalu} other {# hari lalu}}"
+msgstr "{days, plural, one {# hari lalu} other {# hari lalu}}"
+
+#: src/utils/sensorContext.js
+msgid "aman"
+msgstr "aman"
+
+#: src/utils/sensorContext.js
+msgid "perlu perhatian"
+msgstr "perlu perhatian"
+
+#: src/utils/sensorContext.js
+msgid "berisiko"
+msgstr "berisiko"
+
+#: src/utils/sensorContext.js
+msgid "PERHATIAN: angka di bawah adalah DATA CONTOH, bukan pembacaan perangkat pengguna. Sebutkan hal ini kalau pengguna bertanya tentang kondisinya sendiri."
+msgstr "PERHATIAN: angka di bawah adalah DATA CONTOH, bukan pembacaan perangkat pengguna. Sebutkan hal ini kalau pengguna bertanya tentang kondisinya sendiri."
+
+#: src/utils/sensorContext.js
+msgid "KONDISI TERKINI (dari sepatu milik pengguna):"
+msgstr "KONDISI TERKINI (dari sepatu milik pengguna):"
+
+#: src/utils/sensorContext.js
+msgid "pembacaan langsung"
+msgstr "pembacaan langsung"
+
+#: src/utils/sensorContext.js
+msgid "pembacaan tersimpan terakhir"
+msgstr "pembacaan tersimpan terakhir"
+
+#: src/utils/sensorContext.js
+msgid "- Sumber data: {sourceText}"
+msgstr "- Sumber data: {sourceText}"
+
+#: src/utils/sensorContext.js
+msgid "tidak diketahui"
+msgstr "tidak diketahui"
+
+#. placeholder {0}: th.pressureSafe
+#. placeholder {1}: th.pressureRisk
+#: src/utils/sensorContext.js
+msgid "- Tekanan puncak: {peakText} kPa di {where} ({state}; aman < {0} kPa, risiko ulkus > {1} kPa)"
+msgstr "- Tekanan puncak: {peakText} kPa di {where} ({state}; aman < {0} kPa, risiko ulkus > {1} kPa)"
+
+#. placeholder {0}: th.tempMin
+#. placeholder {1}: th.tempMax
+#: src/utils/sensorContext.js
+msgid "- Suhu kulit tertinggi: {highestText} °C di {where} (rentang normal {0}–{1} °C)"
+msgstr "- Suhu kulit tertinggi: {highestText} °C di {where} (rentang normal {0}–{1} °C)"
+
+#. placeholder {0}: th.tempDelta
+#: src/utils/sensorContext.js
+msgid "- Selisih suhu antar area: {deltaText} °C (ambang perhatian {0} °C — selisih yang bertahan berhari-hari adalah prediktor pre-ulkus)"
+msgstr "- Selisih suhu antar area: {deltaText} °C (ambang perhatian {0} °C — selisih yang bertahan berhari-hari adalah prediktor pre-ulkus)"
+
+#. placeholder {0}: th.humidityMin
+#. placeholder {1}: th.humidityMax
+#. placeholder {2}: th.humidityRisk
+#: src/utils/sensorContext.js
+msgid "- Kelembapan dalam sepatu: {humidityText} % RH ({state}; ideal {0}–{1} %, risiko > {2} %)"
+msgstr "- Kelembapan dalam sepatu: {humidityText} % RH ({state}; ideal {0}–{1} %, risiko > {2} %)"
+
+#: src/utils/sensorContext.js
+msgid "- Aktivitas sesi ini: {stepsText} langkah, {minutesText} menit aktif"
+msgstr "- Aktivitas sesi ini: {stepsText} langkah, {minutesText} menit aktif"
+
+#: src/utils/sensorContext.js
+msgid "tinggi"
+msgstr "tinggi"
+
+#: src/utils/sensorContext.js
+msgid "sedang"
+msgstr "sedang"
+
+#: src/utils/sensorContext.js
+msgid "rendah"
+msgstr "rendah"
+
+#: src/utils/sensorContext.js
+msgid "- Indikasi kelelahan kaki: {levelText}"
+msgstr "- Indikasi kelelahan kaki: {levelText}"
+
+#: src/utils/sensorContext.js
+msgid "RANGKUMAN {rangeText} HARI TERAKHIR ({recordedText} hari tercatat):"
+msgstr "RANGKUMAN {rangeText} HARI TERAKHIR ({recordedText} hari tercatat):"
+
+#: src/utils/sensorContext.js
+msgid "- Tekanan puncak: rata-rata {avgPressure} kPa, tertinggi {maxPressure} kPa"
+msgstr "- Tekanan puncak: rata-rata {avgPressure} kPa, tertinggi {maxPressure} kPa"
+
+#. placeholder {0}: th.tempDelta
+#: src/utils/sensorContext.js
+msgid "- Selisih suhu: rata-rata {avgDelta} °C, {overText} dari {recordedText} hari di atas ambang {0} °C"
+msgstr "- Selisih suhu: rata-rata {avgDelta} °C, {overText} dari {recordedText} hari di atas ambang {0} °C"
+
+#: src/utils/sensorContext.js
+msgid "- Kelembapan: rata-rata {avgHumidity} % RH"
+msgstr "- Kelembapan: rata-rata {avgHumidity} % RH"
+
+#: src/utils/sensorContext.js
+msgid "- Total langkah tercatat: {totalStepsText}"
+msgstr "- Total langkah tercatat: {totalStepsText}"
+
+#: src/utils/sensorContext.js
+msgid "POLA YANG SEDANG BERJALAN: selisih suhu di atas ambang selama {daysText} hari berturut-turut (tertinggi {maxDeltaText} °C) — status \"{levelText}\"."
+msgstr "POLA YANG SEDANG BERJALAN: selisih suhu di atas ambang selama {daysText} hari berturut-turut (tertinggi {maxDeltaText} °C) — status \"{levelText}\"."
+
+#: src/utils/temperatureTrend.js
+msgid "Perlu Tindakan"
+msgstr "Perlu Tindakan"
+
+#: src/utils/temperatureTrend.js
+msgid "Selisih suhu antar area kaki dalam batas normal."
+msgstr "Selisih suhu antar area kaki dalam batas normal."
+
+#: src/utils/temperatureTrend.js
+msgid "Selisih suhu antar area bertahan di atas {thresholdText} °C selama {daysText} hari berturut-turut (tertinggi {deltaText} °C)."
+msgstr "Selisih suhu antar area bertahan di atas {thresholdText} °C selama {daysText} hari berturut-turut (tertinggi {deltaText} °C)."
+
+#: src/utils/temperatureTrend.js
+msgid "Selisih suhu antar area mencapai {deltaText} °C hari ini, di atas ambang {thresholdText} °C."
+msgstr "Selisih suhu antar area mencapai {deltaText} °C hari ini, di atas ambang {thresholdText} °C."

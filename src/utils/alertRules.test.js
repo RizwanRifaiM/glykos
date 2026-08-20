@@ -29,7 +29,13 @@ describe('evaluateMetrics', () => {
     )
     const suhu = items.find((item) => item.metric === 'temperature')
     expect(suhu.status).toBe('warning')
-    expect(suhu.message).toContain('pre-ulkus')
+    // evaluateMetrics tidak lagi menghasilkan kalimat — hanya angka & status.
+    // `deltaExceeded` inilah yang membedakan "suhu tertingginya yang memicu"
+    // dari "SELISIHNYA yang memicu", dan yang dipakai alertMessages.js untuk
+    // memilih kalimat pre-ulkus. Kalimatnya sendiri diuji di
+    // alertMessages.test.js.
+    expect(suhu.values.deltaExceeded).toBe(true)
+    expect(suhu.values.delta).toBe(2.4)
   })
 
   it('menaikkan status tekanan di atas ambang risiko ulkus', () => {

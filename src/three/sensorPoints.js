@@ -8,6 +8,7 @@
 // membuat hero dan section "Cara Kerja" memperagakan pembacaan yang berbeda
 // pada perangkat yang sama.
 import { getPressureStatus, LOCATION_LABELS } from '../constants/thresholds'
+import { formatDecimal } from '../utils/locale'
 import { pressurePulse } from '../utils/pressureScale'
 
 // Nilai contoh, seluruhnya di rentang aman (<200 kPa menurut
@@ -39,8 +40,32 @@ export const SENSOR_ALONG = { heel: 0.14, metatarsal: 0.64, toe: 0.88 }
 // jadi penempatannya di scene tinggal mengikuti indeks.
 export const SENSOR_ORDER = ['toe', 'metatarsal', 'heel']
 
-export function sensorLabelHtml(area, kpa) {
-  return `<b>${kpa.toFixed(1)}</b> kPa<i>${LOCATION_LABELS[area]}</i>`
+// Label melayang di atas titik sensor pada scene 3D.
+//
+// `i18n` dioper dari komponen yang membuat scene-nya (ShoeViewer,
+// DeviceExplodedViewer). Label ini hidup di dalam elemen HTML yang ditempel di
+// atas kanvas, jadi ia teks antarmuka biasa — bukan bagian dari WebGL — dan
+// harus ikut bahasa seperti label lainnya.
+//
+// Angkanya lewat formatDecimal, bukan toFixed(1): titik desimal keras akan
+// menulis "236.7 kPa" di sebelah kartu yang menulis "236,7 kPa".
+export function sensorLabelHtml(i18n, area, kpa) {
+  const value = formatDecimal(kpa)
+  const label = escapeHtml(i18n._(LOCATION_LABELS[area]))
+  // Markup, bukan teks — kata satu-satunya di dalamnya sudah diterjemahkan.
+  // eslint-disable-next-line lingui/no-unlocalized-strings
+  return `<b>${escapeHtml(value)}</b> kPa<i>${label}</i>`
+}
+
+// Nama area berasal dari konstanta kita sendiri, jadi tidak ada masukan bebas
+// di sini — tapi label ini ditempel ke DOM lewat innerHTML, dan satu-satunya
+// cara memastikan itu tetap aman ketika sumbernya berubah adalah tidak pernah
+// mengandalkan asal-usulnya.
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
 }
 
 // `radius` dalam satuan lokal scene pemanggil — hero dan tampilan urai

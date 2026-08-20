@@ -1,3 +1,6 @@
+import { msg } from '@lingui/core/macro'
+import { Trans } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react'
 import { IconThermometer } from './icons'
 import { describeTemperatureTrend, TREND_LEVEL_LABELS } from '../utils/temperatureTrend'
 
@@ -5,15 +8,19 @@ import { describeTemperatureTrend, TREND_LEVEL_LABELS } from '../utils/temperatu
 // yang lazim dan satu ajakan memeriksakan diri — BUKAN dosis, bukan diagnosis,
 // dan tidak pernah menyuruh berhenti berobat. Aturan yang memunculkannya
 // (selisih bertahan berhari-hari) ada di utils/temperatureTrend.js.
+//
+// Deskriptor `msg` supaya isi saran ikut bahasa aktif. Ini bagian yang paling
+// tidak boleh tertinggal bahasa: saran tindak lanjut yang tidak dimengerti
+// pembacanya sama saja dengan tidak ada.
 const GUIDANCE = {
   warning: [
-    'Periksa kaki secara visual hari ini — cari kemerahan, lecet, atau kulit yang terasa lebih hangat.',
-    'Pakai insole lagi besok supaya polanya bisa dipastikan, bukan sekadar satu hari yang panas.',
+    msg`Periksa kaki secara visual hari ini — cari kemerahan, lecet, atau kulit yang terasa lebih hangat.`,
+    msg`Pakai sepatu Glykos lagi besok supaya polanya bisa dipastikan, bukan sekadar satu hari yang panas.`,
   ],
   danger: [
-    'Kurangi beban pada kaki tersebut: batasi berdiri dan berjalan lama selama beberapa hari.',
-    'Periksa kaki dua kali sehari — kemerahan, lecet, atau luka sekecil apa pun.',
-    'Hubungi tenaga kesehatan bila selisih ini bertahan, atau bila ada luka, nanah, atau demam.',
+    msg`Kurangi beban pada kaki tersebut: batasi berdiri dan berjalan lama selama beberapa hari.`,
+    msg`Periksa kaki dua kali sehari — kemerahan, lecet, atau luka sekecil apa pun.`,
+    msg`Hubungi tenaga kesehatan bila selisih ini bertahan, atau bila ada luka, nanah, atau demam.`,
   ],
 }
 
@@ -21,6 +28,8 @@ const GUIDANCE = {
 // ambang. Pada tingkat `safe` komponen ini tidak merender apa pun — spanduk
 // yang selalu ada akan berhenti dibaca justru saat isinya penting.
 export default function TemperatureTrendBanner({ trend }) {
+  const { i18n } = useLingui()
+
   if (!trend || trend.level === 'safe') return null
 
   const steps = GUIDANCE[trend.level] ?? []
@@ -41,31 +50,40 @@ export default function TemperatureTrendBanner({ trend }) {
 
       <div className="trend-banner__body">
         <div className="trend-banner__heading">
-          <h2>Selisih Suhu Antar Area</h2>
+          <h2>
+            <Trans>Selisih Suhu Antar Area</Trans>
+          </h2>
           <span className={`status-pill status-pill--${trend.level}`}>
-            {TREND_LEVEL_LABELS[trend.level]}
+            {i18n._(TREND_LEVEL_LABELS[trend.level])}
           </span>
         </div>
 
-        <p className="trend-banner__message">{describeTemperatureTrend(trend)}</p>
+        <p className="trend-banner__message">{describeTemperatureTrend(i18n, trend)}</p>
 
         {period && (
           <p className="trend-banner__period">
-            Hari yang terpantau: <strong>{period}</strong>
+            <Trans>
+              Hari yang terpantau: <strong>{period}</strong>
+            </Trans>
           </p>
         )}
 
         <ul className="trend-banner__steps">
-          {steps.map((step) => (
-            <li key={step}>{step}</li>
+          {/* Kunci pakai indeks: isi daftar sekarang berupa deskriptor pesan
+              (objek), dan memakai teks terjemahannya sebagai kunci akan
+              membongkar-pasang seluruh daftar tiap kali bahasa berganti. */}
+          {steps.map((step, index) => (
+            <li key={index}>{i18n._(step)}</li>
           ))}
         </ul>
 
         {/* Batas yang tidak boleh hilang dari layar: ini pemantauan, bukan
             diagnosis. Ambangnya heuristik, dan sensornya bisa salah baca. */}
         <p className="trend-banner__disclaimer">
-          Indikator pemantauan, bukan diagnosis. Keputusan penanganan tetap ada pada tenaga
-          kesehatan Anda.
+          <Trans>
+            Indikator pemantauan, bukan diagnosis. Keputusan penanganan tetap ada pada tenaga
+            kesehatan Anda.
+          </Trans>
         </p>
       </div>
     </section>
