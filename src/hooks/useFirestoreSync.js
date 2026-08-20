@@ -121,13 +121,19 @@ export function useFirestoreSync(uid, deviceId, bleReading, bleActive, steps = 0
     const sessionId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
     let cancelled = false
 
-    async function sync() {
+    // `force` melewati penjaga `cancelled`.
+    //
+    // Dipakai oleh penyimpanan terakhir saat sesi berakhir: pada saat itu
+    // effect-nya memang sudah dibongkar, tapi justru penulisan itulah yang
+    // paling tidak boleh dilewatkan. Firestore SDK mengantre tulisan secara
+    // lokal, jadi memanggilnya tanpa menunggu tetap sampai.
+    async function sync({ force = false } = {}) {
       const snapshot = pickSnapshot(
         latestReading.current,
         latestSteps.current,
         latestActiveMinutes.current,
       )
-      if (!snapshot || cancelled) return
+      if (!snapshot || (cancelled && !force)) return
       try {
         await setDoc(liveDoc(uid, deviceId), {
           ...snapshot,
@@ -146,10 +152,43 @@ export function useFirestoreSync(uid, deviceId, bleReading, bleActive, steps = 0
     }
 
     sync() // tulis segera saat konek, jangan tunggu interval pertama
-    const intervalId = setInterval(sync, SYNC_INTERVAL_MS)
+    // Dibungkus arrow, bukan `setInterval(sync, …)` langsung: setInterval
+    // mengoper id timer sebagai argumen pertama, dan argumen pertama sync()
+    // adalah objek opsi. Saat ini tidak merusak apa-apa (angka yang
+    // di-destructure menghasilkan force=false), tapi itu kebetulan, bukan
+    // desain.
+    const intervalId = setInterval(() => sync(), SYNC_INTERVAL_MS)
+    // Simpan sekali lagi begitu halaman disembunyikan.
+    //
+    // Di ponsel, berpindah aplikasi atau mematikan layar membekukan halaman —
+    // dan halaman inilah satu-satunya jalur data perangkat. Tanpa ini, langkah
+    // sejak penulisan terakhir hilang begitu saja saat pengguna membuka
+    // aplikasi lain sebentar.
+    //
+    // Hanya pada 'hidden', bukan setiap perubahan: kembali terlihat tidak
+    // menghasilkan data baru yang perlu disimpan.
+    function handleVisibility() {
+      if (document.visibilityState === 'hidden') sync({ force: true })
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+
     return () => {
-      cancelled = true
       clearInterval(intervalId)
+      document.removeEventListener('visibilitychange', handleVisibility)
+
+      // PENYIMPANAN TERAKHIR SAAT SESI BERAKHIR.
+      //
+      // Tanpa ini, seluruh langkah sejak penulisan terakhir hilang — dan untuk
+      // sesi yang lebih pendek dari SYNC_INTERVAL_MS, itu berarti SELURUH
+      // langkah sesi itu. Penulisan pertama saat menyambung selalu berisi nol
+      // langkah (belum ada yang terhitung), jadi sesi 45 detik dulu tidak
+      // meninggalkan jejak sama sekali.
+      //
+      // Ref masih memegang nilai lama di sini: React menjalankan seluruh
+      // cleanup sebelum badan effect, jadi `latestSteps.current` belum sempat
+      // diturunkan ke nol oleh useStepCounter yang mereset sesi.
+      sync({ force: true })
+      cancelled = true
     }
   }, [uid, deviceId, bleActive])
 
