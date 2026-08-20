@@ -64,7 +64,7 @@ describe('StepCounterSession', () => {
   it('mengosongkan hasil saat tidak ada data akselerometer', () => {
     walk(session, 3)
     session.update({ accel: { x: null, y: null, z: null } }, true)
-    expect(session.getSnapshot()).toEqual({ steps: 0, wearMinutes: 0, sessionActive: false })
+    expect(session.getSnapshot()).toEqual({ steps: 0, sessionActive: false })
   })
 
   it('tetap netral terhadap orientasi pemasangan perangkat', () => {
@@ -79,50 +79,5 @@ describe('StepCounterSession', () => {
       miring.update(readingAt(0.3), true)
     }
     expect(miring.getSnapshot().steps).toBe(4)
-  })
-})
-
-describe('lama pemakaian', () => {
-  let session
-
-  beforeEach(() => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date(2026, 7, 13, 8, 0, 0))
-    session = new StepCounterSession()
-    session.update(readingAt(1.0), true)
-  })
-
-  afterEach(() => {
-    vi.useRealTimers()
-  })
-
-  // `wearMinutes` mengukur LAMA PERANGKAT TERHUBUNG, bukan lama kaki bergerak.
-  // Itu ukuran kepatuhan pemakaian — pada alas kaki diabetik justru itu yang
-  // berguna dilihat dokter — jadi diam pun tetap terhitung.
-  it('menumpuk selama perangkat terhubung, meski kakinya diam', () => {
-    for (let i = 0; i < 60; i++) {
-      vi.advanceTimersByTime(1000)
-      session.update(readingAt(1.0), true)
-    }
-    expect(session.getSnapshot().wearMinutes).toBeCloseTo(1, 1)
-  })
-
-  it('dihitung sejak sampel pertama sesi, bukan sejak langkah pertama', () => {
-    vi.advanceTimersByTime(5 * 60 * 1000)
-    session.update(readingAt(1.0), true)
-    expect(session.getSnapshot().wearMinutes).toBeCloseTo(5, 1)
-  })
-
-  it('kembali ke nol saat sesi baru dimulai', () => {
-    vi.advanceTimersByTime(10 * 60 * 1000)
-    session.update(readingAt(1.0), true)
-    expect(session.getSnapshot().wearMinutes).toBeGreaterThan(9)
-
-    // Perangkat terputus lalu tersambung lagi: sesi baru, hitungan dari nol.
-    // Total HARIAN-nya tetap utuh karena dijumlahkan antar sesi di
-    // utils/dailyRollup.js, bukan di sini.
-    session.update(readingAt(1.0), false)
-    session.update(readingAt(1.0), true)
-    expect(session.getSnapshot().wearMinutes).toBeLessThan(0.1)
   })
 })

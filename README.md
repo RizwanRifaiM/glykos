@@ -257,6 +257,15 @@ yang sudah sekali menimbulkan bug di proyek ini (lihat prop `id` di
 `SensorFootMap.jsx`). `useSensorData` tetap membaca `activeMinutes` sebagai
 cadangan untuk dokumen yang sempat ditulis dengan nama lama.
 
+Angkanya diukur di `hooks/useWearTime.js`, **bukan** di penghitung langkah.
+Sebelumnya ia menumpang di `StepCounterSession`, yang keluar ke keadaan kosong
+begitu tidak ada data akselerometer — sementara lama perangkat terhubung tidak
+ada hubungannya dengan sensor gerak. Akibatnya angkanya jatuh ke nol pada dua
+keadaan yang wajar: firmware yang tidak mengirim AX/AY/AZ (kontrak BLE memang
+menyebutnya opsional), dan setiap kali sumber data jatuh ke Firestore — yaitu
+setiap halaman dimuat ulang, karena `parseSensorReading` tidak menghasilkan
+field `accel` sama sekali.
+
 ### Data disimpan juga saat sesi berakhir
 
 Sinkronisasi berjalan tiap 60 detik, jadi tanpa penulisan penutup setiap sesi

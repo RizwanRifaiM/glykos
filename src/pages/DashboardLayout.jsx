@@ -26,6 +26,7 @@ import { useStepCounter } from '../hooks/useStepCounter'
 import { useFirestoreSync } from '../hooks/useFirestoreSync'
 import { useTemperatureTrendAlert } from '../hooks/useTemperatureTrendAlert'
 import { useWakeLock } from '../hooks/useWakeLock'
+import { useWearTime } from '../hooks/useWearTime'
 import { useDayKey } from '../hooks/useDayKey'
 import { evaluateTemperatureTrend } from '../utils/temperatureTrend'
 import { resolveReadingSource, todayActivity } from '../utils/dailyReading'
@@ -211,6 +212,12 @@ export default function DashboardLayout() {
   // menampilkannya lewat jalur yang sama seperti data Firestore.
   const stepCounter = useStepCounter(deviceId, rawData, isLive)
 
+  // Lama perangkat terhubung diukur dari KONEKSINYA, bukan dari penghitung
+  // langkah. Lihat useWearTime.js untuk alasannya — ringkasnya, penghitung
+  // langkah kosong tanpa data akselerometer, sementara lama pemakaian tetap
+  // berjalan.
+  const sessionWearMinutes = useWearTime(bleActive)
+
   // Layar ditahan menyala HANYA selama BLE benar-benar tersambung — layar mati
   // membekukan halaman, dan halaman inilah satu-satunya jalur data perangkat.
   // Lihat useWakeLock.js.
@@ -226,7 +233,7 @@ export default function DashboardLayout() {
     ble.reading,
     bleActive,
     stepCounter.steps,
-    stepCounter.wearMinutes,
+    sessionWearMinutes,
   )
 
   // AKTIVITAS DITAMPILKAN SEBAGAI TOTAL HARI INI, bukan total sesi berjalan.
@@ -246,7 +253,7 @@ export default function DashboardLayout() {
         rollupSteps,
         rollupWearMinutes,
         sessionSteps: stepCounter.steps,
-        sessionWearMinutes: stepCounter.wearMinutes,
+        sessionWearMinutes,
         syncedSteps,
         syncedWearMinutes,
       }),
@@ -254,7 +261,7 @@ export default function DashboardLayout() {
       rollupSteps,
       rollupWearMinutes,
       stepCounter.steps,
-      stepCounter.wearMinutes,
+      sessionWearMinutes,
       syncedSteps,
       syncedWearMinutes,
     ],

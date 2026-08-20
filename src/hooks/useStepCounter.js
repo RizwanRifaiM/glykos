@@ -7,8 +7,17 @@ const FALL_THRESHOLD_G = -0.12
 const MIN_STEP_INTERVAL_MS = 350 // jeda minimum antar langkah (refractory period)
 const BASELINE_ALPHA = 0.05 // laju adaptasi baseline gravitasi (EMA, per sampel)
 
-const EMPTY_RESULT = { steps: 0, wearMinutes: 0, sessionActive: false }
+const EMPTY_RESULT = { steps: 0, sessionActive: false }
 
+// LAMA PEMAKAIAN TIDAK DIHITUNG DI SINI. Kelas ini keluar ke keadaan kosong
+// begitu tidak ada data akselerometer (lihat guard `hasAccel` di update()), dan
+// itu benar untuk hitungan langkah — tapi lama perangkat terhubung tidak ada
+// hubungannya dengan sensor gerak. Menitipkannya di sini membuat angkanya
+// jatuh ke nol setiap kali firmware tidak mengirim AX/AY/AZ, dan setiap kali
+// sumber data jatuh ke Firestore (yang memang tidak punya field `accel`) —
+// yaitu setiap halaman dimuat ulang. Sekarang ada di hooks/useWearTime.js,
+// yang satu-satunya masukannya adalah "apakah perangkat sedang terhubung".
+//
 // State impuratif satu "sesi pemakaian" disimpan DI LUAR React (pola sama
 // seperti BleSensor di services/ble.js & FatigueSession di
 // useFatigueMonitor.js) karena bergantung pada Date.now() dan akumulasi
@@ -26,7 +35,6 @@ export class StepCounterSession {
     this.state = 'idle' // 'idle' | 'armed'
     this.steps = 0
     this.lastStepAt = null
-    this.sessionStartedAt = null
     this.wasLive = false
     this.snapshot = EMPTY_RESULT
   }
@@ -65,7 +73,6 @@ export class StepCounterSession {
     }
 
     const now = Date.now()
-    if (!this.sessionStartedAt) this.sessionStartedAt = now
 
     const magnitude = Math.sqrt(accel.x * accel.x + accel.y * accel.y + accel.z * accel.z)
 
@@ -92,19 +99,6 @@ export class StepCounterSession {
 
     this.snapshot = {
       steps: this.steps,
-      // LAMA PERANGKAT TERHUBUNG pada sesi ini, dalam menit.
-      //
-      // Dinamai `wearMinutes`, bukan `activeMinutes`, karena itulah yang
-      // benar-benar diukurnya: jam berjalan sejak sesi dimulai, tanpa
-      // memandang apakah kakinya bergerak. Nama lamanya menjanjikan "waktu
-      // aktif" dan sempat membuat kartu menampilkan 480 menit untuk seseorang
-      // yang duduk seharian dengan sepatu terpasang.
-      //
-      // Nama yang menyiratkan arti berbeda dari isinya adalah jebakan yang
-      // sudah sekali menimbulkan bug di proyek ini (lihat catatan prop `id` di
-      // components/SensorFootMap.jsx), jadi kali ini namanya ikut diperbaiki
-      // bersama artinya — bukan hanya komentarnya.
-      wearMinutes: (now - this.sessionStartedAt) / 60000,
       sessionActive: true,
     }
     this._notify()
