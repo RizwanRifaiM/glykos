@@ -27,10 +27,17 @@ export const SUSTAINED_DAYS = 2
 
 // Deskriptor `msg`, diselesaikan pemanggil dengan i18n._(). Lihat alasannya di
 // constants/thresholds.js.
-export const TREND_LEVEL_LABELS = {
+const TREND_LEVEL_LABELS = {
   safe: msg`Normal`,
   warning: msg`Perlu Perhatian`,
   danger: msg`Perlu Tindakan`,
+}
+
+// Tingkat tren sebagai TEKS. Petanya sengaja TIDAK diekspor: komponen yang
+// memegang deskriptor mentah adalah cara paling mudah menghasilkan React error
+// #31 di build produksi — lihat catatan di eslint.config.js.
+export function trendLevelLabel(i18n, level) {
+  return i18n._(TREND_LEVEL_LABELS[level] ?? TREND_LEVEL_LABELS.safe)
 }
 
 // Satu hari dianggap TERCATAT hanya bila ada pembacaan suhu di hari itu.

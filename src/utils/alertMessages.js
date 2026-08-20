@@ -63,6 +63,15 @@ export function locationLabel(i18n, location) {
   return descriptor ? i18n._(descriptor) : (location ?? null)
 }
 
+// Tingkat kelelahan sebagai TEKS.
+//
+// Diekspor sebagai fungsi supaya komponen tidak perlu menyentuh peta
+// deskriptornya sendiri — lihat catatan "PETA DESKRIPTOR TIDAK BOLEH KELUAR
+// DARI utils/" di eslint.config.js.
+export function fatigueLabel(i18n, level) {
+  return i18n._(FATIGUE_LABELS[level] ?? FATIGUE_LABELS.safe)
+}
+
 function describePressure(i18n, item) {
   const peakText = formatDecimal(Number(item.values?.peak) || 0, 1, i18n.locale)
   const statusText = i18n._(getPressureLabelMsg(item.status))
@@ -131,7 +140,7 @@ export function describeFatigueReasons(i18n, reasons) {
 }
 
 function describeFatigue(i18n, item) {
-  const levelText = i18n._(FATIGUE_LABELS[item.status] ?? FATIGUE_LABELS.safe)
+  const levelText = fatigueLabel(i18n, item.status)
   const reasons = describeFatigueReasons(i18n, item.values?.reasons)
 
   return {

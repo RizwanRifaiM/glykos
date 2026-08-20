@@ -7,7 +7,8 @@
 // halaman yang sama. Dua daftar angka terpisah untuk sensor yang sama pernah
 // membuat hero dan section "Cara Kerja" memperagakan pembacaan yang berbeda
 // pada perangkat yang sama.
-import { getPressureStatus, LOCATION_LABELS } from '../constants/thresholds'
+import { getPressureStatus } from '../constants/thresholds'
+import { locationLabel } from '../utils/alertMessages'
 import { formatDecimal } from '../utils/locale'
 import { pressurePulse } from '../utils/pressureScale'
 
@@ -51,7 +52,7 @@ export const SENSOR_ORDER = ['toe', 'metatarsal', 'heel']
 // menulis "236.7 kPa" di sebelah kartu yang menulis "236,7 kPa".
 export function sensorLabelHtml(i18n, area, kpa) {
   const value = formatDecimal(kpa)
-  const label = escapeHtml(i18n._(LOCATION_LABELS[area]))
+  const label = escapeHtml(locationLabel(i18n, area))
   // Markup, bukan teks — kata satu-satunya di dalamnya sudah diterjemahkan.
   // eslint-disable-next-line lingui/no-unlocalized-strings
   return `<b>${escapeHtml(value)}</b> kPa<i>${label}</i>`

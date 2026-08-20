@@ -27,7 +27,7 @@ import { msg, t } from '@lingui/core/macro'
 import { evaluateMetrics } from './alertRules'
 import { locationLabel, thresholdText } from './alertMessages'
 import { TEMP_DELTA_WARNING } from '../constants/thresholds'
-import { TREND_LEVEL_LABELS } from './temperatureTrend'
+import { trendLevelLabel } from './temperatureTrend'
 import { formatDecimal, formatNumber } from './locale'
 
 const STATUS_TEXT = {
@@ -175,7 +175,7 @@ export function buildSensorContext(
   if (trend && trend.level !== 'safe') {
     const daysText = formatNumber(trend.streakDays, { locale })
     const maxDeltaText = formatDecimal(trend.maxDelta, 1, locale)
-    const levelText = i18n._(TREND_LEVEL_LABELS[trend.level])
+    const levelText = trendLevelLabel(i18n, trend.level)
     lines.push('')
     lines.push(
       t(i18n)`POLA YANG SEDANG BERJALAN: selisih suhu di atas ambang selama ${daysText} hari berturut-turut (tertinggi ${maxDeltaText} °C) — status "${levelText}".`,

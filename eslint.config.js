@@ -28,6 +28,46 @@ export default defineConfig([
   // membuka halamannya dalam bahasa Inggris dan menyadari sebagian kalimat
   // masih Indonesia — ketahuan setelah rilis, satu per satu. Dengan rule ini,
   // teks yang terlewat menggagalkan `npm run lint`.
+  // PETA DESKRIPTOR TIDAK BOLEH KELUAR DARI utils/
+  //
+  // `no-unlocalized-strings` di bawah menandai teks LITERAL yang belum
+  // dibungkus. Ia TIDAK menandai kesalahan sebaliknya: deskriptor pesan
+  // (`msg`…`` -> objek {id, message}) yang dirender langsung sebagai anak React.
+  //
+  // Kesalahan itu sudah pernah terjadi sekali, di SensorFootMap.jsx, dan
+  // bentuknya paling buruk: berkasnya LULUS lint, lulus uji, lulus build — lalu
+  // di produksi melempar React error #31 dan memutihkan halaman. Lebih buruk
+  // lagi, di build produksi Lingui membuang `message` dari deskriptor, jadi
+  // pesan galatnya hanya menyebut "object with keys {id}" tanpa petunjuk asalnya.
+  //
+  // Aturan ini menutup jalurnya di hulu: peta deskriptor hanya boleh disentuh
+  // lapisan util, yang menyediakan resolver (`locationLabel`, `fatigueLabel`,
+  // `trendLevelLabel`). Komponen selalu menerima TEKS, tidak pernah objek.
+  {
+    files: ['src/components/**/*.{js,jsx}', 'src/pages/**/*.{js,jsx}', 'src/hooks/**/*.{js,jsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '../constants/thresholds',
+              importNames: ['LOCATION_LABELS'],
+              message:
+                'LOCATION_LABELS berisi deskriptor pesan, bukan teks — merendernya langsung menghasilkan React error #31. Pakai locationLabel(i18n, key) dari utils/alertMessages.js.',
+            },
+            {
+              name: '../constants/fatigue',
+              importNames: ['FATIGUE_LABELS'],
+              message:
+                'FATIGUE_LABELS berisi deskriptor pesan, bukan teks. Pakai fatigueLabel(i18n, level) dari utils/alertMessages.js.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   {
     files: ['src/**/*.{js,jsx}'],
     ignores: ['**/*.test.js'],

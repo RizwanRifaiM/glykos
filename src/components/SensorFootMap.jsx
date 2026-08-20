@@ -1,4 +1,7 @@
-import { getPressureStatus, getTemperatureStatus, LOCATION_LABELS } from '../constants/thresholds'
+import { useLingui } from '@lingui/react'
+import { getPressureStatus, getTemperatureStatus } from '../constants/thresholds'
+import { locationLabel } from '../utils/alertMessages'
+import { formatDecimal } from '../utils/locale'
 import { pressureDotRadius, pressurePulse } from '../utils/pressureScale'
 
 // Titik peta sensor tekanan (di atas siluet kaki) & suhu (di sisi luar, dengan
@@ -72,10 +75,19 @@ const STATUS_COLOR = {
 
 // Number.isFinite, bukan `typeof value !== 'number'`: NaN lolos dari cek typeof
 // dan berujung pada fill="rgb(NaN,...)" / teks "NaN kPa" di SVG.
-function PressureMarker({ id, anchor, value, pulseClass, index }) {
+// `label` diterima SUDAH BERUPA TEKS, bukan diturunkan di sini dari
+// LOCATION_LABELS.
+//
+// Peta itu sekarang berisi DESKRIPTOR pesan ({id, message}), bukan string —
+// dan merendernya langsung menghasilkan React error #31 ("Objects are not
+// valid as a React child"). Yang membuatnya lolos: `lingui/no-unlocalized-
+// strings` hanya menandai teks LITERAL yang belum dibungkus, bukan deskriptor
+// yang dirender mentah — jadi berkas ini lulus lint sambil tetap rusak.
+// Menerima teks jadi lewat prop membuat kesalahan yang sama tidak bisa
+// terulang di sini tanpa terlihat.
+function PressureMarker({ label, anchor, value, pulseClass, index }) {
   if (!Number.isFinite(value)) return null
   const color = STATUS_COLOR[getPressureStatus(value)]
-  const label = LOCATION_LABELS[id] ?? id
   const radius = pressureDotRadius(value)
   const { scale, durationSec } = pressurePulse(value)
 
@@ -110,7 +122,7 @@ function PressureMarker({ id, anchor, value, pulseClass, index }) {
         strokeWidth="2"
       />
       <text x={anchor.x} y={valueY} fontSize="12" fontWeight="800" fill="var(--ds-ink)" textAnchor="middle">
-        {value} kPa
+        {formatDecimal(value)} kPa
       </text>
       <text x={anchor.x} y={labelY} fontSize="10" fill="var(--ds-ink-3)" textAnchor="middle">
         {label}
@@ -119,7 +131,11 @@ function PressureMarker({ id, anchor, value, pulseClass, index }) {
   )
 }
 
-function TemperatureMarker({ id, anchor, value, footAnchor, pulseClass }) {
+// Prop-nya bernama `label`, bukan `id` seperti sebelumnya. Nama lama itu yang
+// membuat bug di atas mudah terlewat: yang dioper memang label tampilan, tapi
+// namanya menyiratkan identitas — jadi tidak ada yang curiga saat isinya
+// berubah jadi objek deskriptor.
+function TemperatureMarker({ label, anchor, value, footAnchor, pulseClass }) {
   if (!Number.isFinite(value)) return null
   const color = STATUS_COLOR[getTemperatureStatus(value)]
 
@@ -144,16 +160,21 @@ function TemperatureMarker({ id, anchor, value, footAnchor, pulseClass }) {
       />
       <rect x={anchor.x + 12} y={anchor.y - 17} width="112" height="34" rx="10" fill="var(--ds-surface)" stroke={color} strokeWidth="1.5" />
       <text x={anchor.x + 24} y={anchor.y - 3} fontSize="12" fontWeight="800" fill="var(--ds-ink)">
-        {value}°C
+        {formatDecimal(value)}°C
       </text>
       <text x={anchor.x + 24} y={anchor.y + 11} fontSize="9.5" fill="var(--ds-ink-3)">
-        {id}
+        {label}
       </text>
     </g>
   )
 }
 
 export default function SensorFootMap({ pressurePoints = {}, temperaturePoints = {} }) {
+  // Nama area diselesaikan DI SINI, satu tempat, lalu dioper sebagai teks.
+  // useLingui() sekaligus membuat peta ini digambar ulang saat bahasa berganti.
+  const { i18n } = useLingui()
+  const areaLabel = (key) => locationLabel(i18n, key)
+
   return (
     <svg
       viewBox="0 0 850 640"
@@ -170,14 +191,32 @@ export default function SensorFootMap({ pressurePoints = {}, temperaturePoints =
         />
       </g>
 
-      <PressureMarker id="toe" anchor={PRESSURE_ANCHORS.toe} value={pressurePoints.toe} pulseClass={PULSE_CLASS[0]} index={0} />
-      <PressureMarker id="metatarsal" anchor={PRESSURE_ANCHORS.metatarsal} value={pressurePoints.metatarsal} pulseClass={PULSE_CLASS[1]} index={1} />
-      <PressureMarker id="heel" anchor={PRESSURE_ANCHORS.heel} value={pressurePoints.heel} pulseClass={PULSE_CLASS[2]} index={2} />
+      <PressureMarker
+        label={areaLabel('toe')}
+        anchor={PRESSURE_ANCHORS.toe}
+        value={pressurePoints.toe}
+        pulseClass={PULSE_CLASS[0]}
+        index={0}
+      />
+      <PressureMarker
+        label={areaLabel('metatarsal')}
+        anchor={PRESSURE_ANCHORS.metatarsal}
+        value={pressurePoints.metatarsal}
+        pulseClass={PULSE_CLASS[1]}
+        index={1}
+      />
+      <PressureMarker
+        label={areaLabel('heel')}
+        anchor={PRESSURE_ANCHORS.heel}
+        value={pressurePoints.heel}
+        pulseClass={PULSE_CLASS[2]}
+        index={2}
+      />
 
       {TEMP_MARKERS.map(({ key, anchor, footAnchor }, index) => (
         <TemperatureMarker
           key={key}
-          id={LOCATION_LABELS[key] ?? key}
+          label={areaLabel(key)}
           anchor={anchor}
           value={temperaturePoints[key]}
           footAnchor={footAnchor}

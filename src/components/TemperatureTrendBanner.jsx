@@ -2,7 +2,7 @@ import { msg } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { useLingui } from '@lingui/react'
 import { IconThermometer } from './icons'
-import { describeTemperatureTrend, TREND_LEVEL_LABELS } from '../utils/temperatureTrend'
+import { describeTemperatureTrend, trendLevelLabel } from '../utils/temperatureTrend'
 
 // Saran tindak lanjut per tingkat. Sengaja berupa langkah perawatan mandiri
 // yang lazim dan satu ajakan memeriksakan diri — BUKAN dosis, bukan diagnosis,
@@ -54,7 +54,7 @@ export default function TemperatureTrendBanner({ trend }) {
             <Trans>Selisih Suhu Antar Area</Trans>
           </h2>
           <span className={`status-pill status-pill--${trend.level}`}>
-            {i18n._(TREND_LEVEL_LABELS[trend.level])}
+            {trendLevelLabel(i18n, trend.level)}
           </span>
         </div>
 

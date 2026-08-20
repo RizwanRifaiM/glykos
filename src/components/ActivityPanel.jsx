@@ -1,8 +1,7 @@
 import { Trans } from '@lingui/react/macro'
 import { useLingui } from '@lingui/react'
 import { IconActivity, IconClock } from './icons'
-import { FATIGUE_LABELS } from '../constants/fatigue'
-import { describeFatigueReasons } from '../utils/alertMessages'
+import { describeFatigueReasons, fatigueLabel } from '../utils/alertMessages'
 import { formatNumber } from '../utils/locale'
 
 function FatigueBlock({ fatigue }) {
@@ -22,7 +21,7 @@ function FatigueBlock({ fatigue }) {
   }
 
   const { level, sustainedMinutes, reasons } = fatigue
-  const label = i18n._(FATIGUE_LABELS[level] ?? FATIGUE_LABELS.safe)
+  const label = fatigueLabel(i18n, level)
 
   // `reasons` kini berupa kode + angka (lihat useFatigueMonitor.js); kalimatnya
   // dirakit di sini oleh fungsi yang SAMA dengan yang dipakai halaman

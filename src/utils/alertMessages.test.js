@@ -1,8 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import { i18n, setupI18n } from '@lingui/core'
 import { messages as enMessages } from '../locales/en/messages.po'
-import { describeAlert, describeStoredAlert, isStructuredAlert } from './alertMessages'
+import {
+  describeAlert,
+  describeStoredAlert,
+  fatigueLabel,
+  isStructuredAlert,
+  locationLabel,
+  metricLabel,
+} from './alertMessages'
 import { evaluateMetrics } from './alertRules'
+import { trendLevelLabel } from './temperatureTrend'
 
 // Instance TERPISAH berlocale Inggris, memakai KATALOG SUNGGUHAN yang dikirim
 // ke pengguna.
@@ -109,6 +117,45 @@ describe('describeAlert', () => {
       expect(view.label).toBeTruthy()
       expect(view.message).toBeTruthy()
     })
+  })
+})
+
+// Penjaga terhadap kelas bug yang sudah pernah terjadi sekali: deskriptor pesan
+// yang bocor ke komponen dan dirender mentah sebagai anak React (error #31).
+//
+// Bentuk kegagalannya paling buruk — lulus lint, lulus build, lalu memutihkan
+// halaman di produksi. eslint.config.js menutup jalur impornya; pengujian ini
+// menutup sisi keluarannya: resolver WAJIB mengembalikan teks, apa pun kuncinya,
+// termasuk kunci yang tidak dikenal.
+describe('resolver label selalu mengembalikan teks, bukan deskriptor', () => {
+  const areas = ['heel', 'metatarsal', 'toe', 'lateral']
+  const metrics = ['pressure', 'temperature', 'humidity', 'fatigue', 'temperatureTrend']
+  const levels = ['safe', 'warning', 'danger']
+
+  it.each(areas)('locationLabel(%s)', (area) => {
+    expect(typeof locationLabel(i18n, area)).toBe('string')
+  })
+
+  it.each(metrics)('metricLabel(%s)', (metric) => {
+    expect(typeof metricLabel(i18n, metric)).toBe('string')
+  })
+
+  it.each(levels)('fatigueLabel(%s)', (level) => {
+    expect(typeof fatigueLabel(i18n, level)).toBe('string')
+  })
+
+  it.each(levels)('trendLevelLabel(%s)', (level) => {
+    expect(typeof trendLevelLabel(i18n, level)).toBe('string')
+  })
+
+  it('tidak mengembalikan objek untuk kunci yang tidak dikenal', () => {
+    // Kunci asing datang dari catatan Firestore versi lama atau metrik baru —
+    // yang penting hasilnya tetap bisa dirender, bukan objek yang meledak.
+    expect(typeof metricLabel(i18n, 'metrikMasaDepan')).toBe('string')
+    expect(typeof fatigueLabel(i18n, 'levelMasaDepan')).toBe('string')
+    expect(typeof trendLevelLabel(i18n, 'levelMasaDepan')).toBe('string')
+    expect(locationLabel(i18n, 'areaMasaDepan')).toBe('areaMasaDepan')
+    expect(locationLabel(i18n, undefined)).toBeNull()
   })
 })
 
