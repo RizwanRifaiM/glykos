@@ -2,11 +2,41 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- viewport-fit=cover WAJIB untuk env(safe-area-inset-*).
+         Tanpa atribut ini seluruh inset selalu bernilai 0, sehingga padding
+         safe-area yang sudah ditulis di App.css (navigasi bawah) tidak
+         berpengaruh sama sekali — dan navigasi bawah tertimpa home indicator
+         saat aplikasinya dipasang di iPhone. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Warna bilah alamat & bilah status pada mode terpasang. -->
     <meta name="theme-color" content="#446a45" />
-    <link rel="apple-touch-icon" href="/icon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- iOS tidak membaca manifest untuk hal-hal berikut; semuanya harus lewat
+         meta tag miliknya sendiri.
+         `apple-mobile-web-app-capable` yang membuat aplikasi terpasang terbuka
+         TANPA bilah alamat Safari — tanpa ini, ikon di layar utama hanya
+         membuka tab biasa dan seluruh gunanya memasang jadi hilang.
+         `mobile-web-app-capable` adalah padanan standarnya untuk browser lain. -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+
+    <!-- `default`, BUKAN `black-translucent`. Yang terakhir menaruh konten di
+         bawah bilah status dengan teks putih — di atas latar krem aplikasi ini,
+         jam dan indikator baterai jadi tidak terbaca. -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <!-- Nama di bawah ikon layar utama iOS. Sengaja pendek: nama panjang
+         dipotong jadi "Glykos — Monitor…" dan kehilangan artinya. -->
+    <meta name="apple-mobile-web-app-title" content="Glykos" />
+    <meta name="application-name" content="Glykos" />
+
     <meta
       name="description"
       content="Glykos — dashboard pemantauan sepatu pintar untuk deteksi dini risiko ulkus diabetik."

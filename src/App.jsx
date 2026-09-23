@@ -4,6 +4,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import AppLoader from './components/AppLoader'
+import PwaLayer from './components/PwaLayer'
 import LandingPage from './pages/LandingPage'
 
 // Landing page dimuat langsung — itu halaman pertama yang dilihat pengunjung,
@@ -49,6 +50,12 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
+
+      {/* DI LUAR <Suspense>, dengan sengaja. Pemberitahuan offline dan tawaran
+          pembaruan justru paling dibutuhkan saat sebuah chunk halaman GAGAL
+          diunduh — kalau ia ikut di dalam batas Suspense yang sama, ia ikut
+          tertahan oleh kegagalan yang seharusnya ia jelaskan. */}
+      <PwaLayer />
     </AuthProvider>
   )
 }

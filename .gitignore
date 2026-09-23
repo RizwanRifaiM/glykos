@@ -30,3 +30,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Berkas sumber ikon (ekspor desain). Yang dipakai build ada di public/.
+icon glykos/

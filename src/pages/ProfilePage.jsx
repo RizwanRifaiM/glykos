@@ -8,6 +8,7 @@ import { profileDoc } from '../services/paths'
 import { useAuth } from '../contexts/auth-context'
 import Button from '../components/Button'
 import FaqAccordion from '../components/FaqAccordion'
+import AppInstallPanel from '../components/AppInstallPanel'
 import { IconBell } from '../components/icons'
 import PageHeader from '../components/PageHeader'
 import { SkeletonForm } from '../components/Skeleton'
@@ -238,6 +239,8 @@ export default function ProfilePage() {
           </Button>
         )}
       </section>
+
+      <AppInstallPanel />
 
       <section className="panel profile-panel">
         <h2 className="panel__title">

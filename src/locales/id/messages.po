@@ -77,6 +77,60 @@ msgstr "Waktu Pemakaian"
 msgid "Jumlah langkah adalah estimasi dari data gerak kaki, bisa terhitung lebih sedikit saat berjalan cepat atau berlari."
 msgstr "Jumlah langkah adalah estimasi dari data gerak kaki, bisa terhitung lebih sedikit saat berjalan cepat atau berlari."
 
+#: src/components/AppInstallPanel.jsx
+msgid "Aplikasi"
+msgstr "Aplikasi"
+
+#: src/components/AppInstallPanel.jsx
+msgid "Pasang Glykos ke layar utama supaya bisa dibuka sekali ketuk, tetap terbuka saat tidak ada internet, dan menerima peringatan seperti notifikasi aplikasi biasa."
+msgstr "Pasang Glykos ke layar utama supaya bisa dibuka sekali ketuk, tetap terbuka saat tidak ada internet, dan menerima peringatan seperti notifikasi aplikasi biasa."
+
+#: src/components/AppInstallPanel.jsx
+msgid "Terpasang — sedang berjalan sebagai aplikasi."
+msgstr "Terpasang — sedang berjalan sebagai aplikasi."
+
+#: src/components/AppInstallPanel.jsx
+msgid "Belum terpasang — sedang berjalan di dalam browser."
+msgstr "Belum terpasang — sedang berjalan di dalam browser."
+
+#: src/components/AppInstallPanel.jsx
+msgid "Pasang Aplikasi"
+msgstr "Pasang Aplikasi"
+
+#: src/components/AppInstallPanel.jsx
+#: src/components/InstallPrompt.jsx
+msgid "Ketuk tombol Bagikan di bilah bawah Safari."
+msgstr "Ketuk tombol Bagikan di bilah bawah Safari."
+
+#: src/components/AppInstallPanel.jsx
+#: src/components/InstallPrompt.jsx
+msgid "Pilih Tambahkan ke Layar Utama, lalu ketuk Tambah."
+msgstr "Pilih Tambahkan ke Layar Utama, lalu ketuk Tambah."
+
+#: src/components/AppInstallPanel.jsx
+msgid "Browser ini belum menawarkan pemasangan. Buka Glykos di Chrome atau Edge pada Android, atau Safari pada iPhone, untuk memasangnya ke layar utama."
+msgstr "Browser ini belum menawarkan pemasangan. Buka Glykos di Chrome atau Edge pada Android, atau Safari pada iPhone, untuk memasangnya ke layar utama."
+
+#: src/components/AppInstallPanel.jsx
+msgid "Versi baru sudah diunduh dan siap dipasang."
+msgstr "Versi baru sudah diunduh dan siap dipasang."
+
+#: src/components/AppInstallPanel.jsx
+msgid "Muat Ulang ke Versi Baru"
+msgstr "Muat Ulang ke Versi Baru"
+
+#: src/components/AppInstallPanel.jsx
+msgid "Memeriksa…"
+msgstr "Memeriksa…"
+
+#: src/components/AppInstallPanel.jsx
+msgid "Periksa Pembaruan"
+msgstr "Periksa Pembaruan"
+
+#: src/components/AppInstallPanel.jsx
+msgid "Sudah versi terbaru."
+msgstr "Sudah versi terbaru."
+
 #: src/components/AppLoader.jsx
 msgid "Menyiapkan dashboard…"
 msgstr "Menyiapkan dashboard…"
@@ -270,6 +324,30 @@ msgstr "Rata-rata Suhu Kulit — {rangeLabel}"
 msgid "Rata-rata Kelembapan — {rangeLabel}"
 msgstr "Rata-rata Kelembapan — {rangeLabel}"
 
+#: src/components/InstallPrompt.jsx
+msgid "Pasang Glykos di layar utama"
+msgstr "Pasang Glykos di layar utama"
+
+#: src/components/InstallPrompt.jsx
+msgid "Terbuka sekali ketuk, tetap bisa dibuka saat tidak ada internet, dan peringatan suhu masuk seperti notifikasi aplikasi biasa."
+msgstr "Terbuka sekali ketuk, tetap bisa dibuka saat tidak ada internet, dan peringatan suhu masuk seperti notifikasi aplikasi biasa."
+
+#: src/components/InstallPrompt.jsx
+msgid "Pasang"
+msgstr "Pasang"
+
+#: src/components/InstallPrompt.jsx
+msgid "Sembunyikan Cara"
+msgstr "Sembunyikan Cara"
+
+#: src/components/InstallPrompt.jsx
+msgid "Lihat Caranya"
+msgstr "Lihat Caranya"
+
+#: src/components/InstallPrompt.jsx
+msgid "Tutup ajakan memasang aplikasi"
+msgstr "Tutup ajakan memasang aplikasi"
+
 #: src/components/MetricCards.jsx
 #: src/components/StatusBanner.jsx
 #: src/constants/thresholds.js
@@ -372,6 +450,34 @@ msgstr "Modul sensor Bluetooth Glykos berputar pelan, dengan LED indikator pengi
 #: src/components/ProtectedRoute.jsx
 msgid "Memeriksa sesi…"
 msgstr "Memeriksa sesi…"
+
+#: src/components/PwaLayer.jsx
+msgid "Tidak ada internet"
+msgstr "Tidak ada internet"
+
+#: src/components/PwaLayer.jsx
+msgid "Data terakhir tetap ditampilkan dan sepatu tetap terbaca lewat Bluetooth. Penyimpanan ke server dilanjutkan otomatis saat koneksi kembali."
+msgstr "Data terakhir tetap ditampilkan dan sepatu tetap terbaca lewat Bluetooth. Penyimpanan ke server dilanjutkan otomatis saat koneksi kembali."
+
+#: src/components/PwaUpdateBanner.jsx
+msgid "Versi baru Glykos siap"
+msgstr "Versi baru Glykos siap"
+
+#: src/components/PwaUpdateBanner.jsx
+msgid "Pembaruan sudah diunduh dan akan aktif setelah aplikasi dimuat ulang. Sambungan Bluetooth ke sepatu akan terputus sebentar."
+msgstr "Pembaruan sudah diunduh dan akan aktif setelah aplikasi dimuat ulang. Sambungan Bluetooth ke sepatu akan terputus sebentar."
+
+#: src/components/PwaUpdateBanner.jsx
+msgid "Memuat ulang…"
+msgstr "Memuat ulang…"
+
+#: src/components/PwaUpdateBanner.jsx
+msgid "Muat Ulang"
+msgstr "Muat Ulang"
+
+#: src/components/PwaUpdateBanner.jsx
+msgid "Tutup pemberitahuan pembaruan"
+msgstr "Tutup pemberitahuan pembaruan"
 
 #: src/components/SensorInsoleViewer.jsx
 msgid "Insole Glykos dengan tiga titik tekanan pada tiga status berbeda: 150 kPa aman, 225 kPa perlu perhatian, dan 300 kPa risiko ulkus"

@@ -1,4 +1,5 @@
 {
+  "id": "/dashboard",
   "name": "Glykos — Monitoring Kaki Diabetes",
   "short_name": "Glykos",
   "description": "Pemantauan tekanan, suhu, dan kelembapan kaki dari sepatu pintar untuk deteksi dini risiko ulkus diabetik.",
@@ -7,22 +8,109 @@
   "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait",
   "background_color": "#f6f3e6",
   "theme_color": "#446a45",
-  "categories": ["health", "medical"],
+  "categories": [
+    "health",
+    "medical"
+  ],
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "prefer_related_applications": false,
   "icons": [
     {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-maskable.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide-id.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Halaman depan Glykos di layar lebar"
+    },
+    {
+      "src": "/screenshot-narrow-id.png",
+      "sizes": "500x950",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Halaman depan Glykos di ponsel"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ringkasan",
+      "short_name": "Ringkasan",
+      "description": "Kondisi kaki hari ini",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/shortcut-overview.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Riwayat",
+      "short_name": "Riwayat",
+      "description": "Tren tekanan, suhu, dan kelembapan",
+      "url": "/dashboard/history",
+      "icons": [
+        {
+          "src": "/shortcut-history.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Peringatan",
+      "short_name": "Peringatan",
+      "description": "Daftar peringatan yang belum ditinjau",
+      "url": "/dashboard/alerts",
+      "icons": [
+        {
+          "src": "/shortcut-alerts.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Chatbot",
+      "short_name": "Chatbot",
+      "description": "Tanya soal kondisi kaki Anda",
+      "url": "/dashboard/chatbot",
+      "icons": [
+        {
+          "src": "/shortcut-chatbot.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

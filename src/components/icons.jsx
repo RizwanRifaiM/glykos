@@ -277,3 +277,51 @@ export function IconSunDot(props) {
     </Icon>
   )
 }
+
+// Ikon Bagikan iOS — dipakai pada petunjuk pemasangan manual di iPhone/iPad,
+// yang tidak punya dialog pemasangan otomatis (lihat utils/pwa.js). Bentuknya
+// sengaja meniru ikon Bagikan milik Safari supaya petunjuknya bisa dicocokkan
+// dengan yang benar-benar terlihat di bilah browser.
+export function IconShare(props) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3v13" />
+      <path d="M8.5 6.5 12 3l3.5 3.5" />
+      <path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1" />
+    </Icon>
+  )
+}
+
+// "Tambahkan ke Layar Utama" — langkah kedua pada petunjuk iOS.
+export function IconSquarePlus(props) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="3" />
+      <path d="M12 8v8M8 12h8" />
+    </Icon>
+  )
+}
+
+// Aplikasi yang sudah terpasang di layar utama.
+export function IconAppWindow(props) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="4" width="18" height="16" rx="3" />
+      <path d="M3 9h18" />
+      <circle cx="6.5" cy="6.5" r="0.6" fill="currentColor" stroke="none" />
+      <circle cx="9" cy="6.5" r="0.6" fill="currentColor" stroke="none" />
+    </Icon>
+  )
+}
+
+// Panah unduh melingkar — pembaruan aplikasi yang siap dipasang. Dibedakan dari
+// IconDownload (ekspor berkas) supaya keduanya tidak tertukar arti di layar
+// yang sama.
+export function IconArrowDownCircle(props) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7.5v7M8.5 11 12 14.5 15.5 11" />
+    </Icon>
+  )
+}

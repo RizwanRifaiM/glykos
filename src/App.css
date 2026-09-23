@@ -2776,3 +2776,41 @@
     text-overflow: ellipsis;
   }
 }
+
+/* ==========================================================================
+   Safe area — hanya berpengaruh setelah viewport-fit=cover
+   --------------------------------------------------------------------------
+   `env(safe-area-inset-*)` SELALU bernilai 0 sampai index.html menyatakan
+   viewport-fit=cover. Padding bawah pada .app-bottom-nav sudah ditulis sejak
+   lama tapi tidak pernah aktif karena atribut itu belum ada; sekarang aktif.
+
+   Sisi kiri-kanan yang ditambahkan di sini adalah untuk LANSKAP: pada ponsel
+   bernotch, memutar layar memindahkan potongan itu ke samping, dan tanpa inset
+   horizontal ikon paling tepi pada navigasi bawah tertutup olehnya.
+
+   Semua memakai max(): saat inset bernilai 0 — yaitu di hampir semua layar —
+   nilainya sama persis dengan padding sebelumnya, jadi aturan ini tidak
+   mengubah apa pun di sana.
+   ========================================================================== */
+
+.app-topbar {
+  padding-left: max(var(--ds-5), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--ds-5), env(safe-area-inset-right, 0px));
+}
+
+.app-bottom-nav {
+  padding-left: max(4px, env(safe-area-inset-left, 0px));
+  padding-right: max(4px, env(safe-area-inset-right, 0px));
+}
+
+@media (max-width: 1023.98px) {
+  .app-topbar {
+    padding-left: max(var(--ds-4), env(safe-area-inset-left, 0px));
+    padding-right: max(var(--ds-4), env(safe-area-inset-right, 0px));
+  }
+
+  .app-main {
+    padding-left: max(var(--ds-4), env(safe-area-inset-left, 0px));
+    padding-right: max(var(--ds-4), env(safe-area-inset-right, 0px));
+  }
+}

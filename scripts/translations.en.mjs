@@ -649,4 +649,38 @@ export default {
   'Glykos — Laporan Monitoring': 'Glykos — Monitoring Report',
   'Laporan Glykos': 'Glykos Report',
   'Suhu Tertinggi': 'Highest Temperature',
+
+  // ---------------------------------------------------------------- PWA
+  Aplikasi: 'App',
+  'Pasang Glykos ke layar utama supaya bisa dibuka sekali ketuk, tetap terbuka saat tidak ada internet, dan menerima peringatan seperti notifikasi aplikasi biasa.':
+    'Install Glykos on your home screen so it opens in one tap, stays usable without an internet connection, and delivers alerts like any other app notification.',
+  'Terpasang — sedang berjalan sebagai aplikasi.': 'Installed — currently running as an app.',
+  'Belum terpasang — sedang berjalan di dalam browser.':
+    'Not installed — currently running inside the browser.',
+  'Pasang Aplikasi': 'Install App',
+  'Ketuk tombol Bagikan di bilah bawah Safari.': 'Tap the Share button in the Safari bottom bar.',
+  'Pilih Tambahkan ke Layar Utama, lalu ketuk Tambah.': 'Choose Add to Home Screen, then tap Add.',
+  'Browser ini belum menawarkan pemasangan. Buka Glykos di Chrome atau Edge pada Android, atau Safari pada iPhone, untuk memasangnya ke layar utama.':
+    'This browser has not offered installation yet. Open Glykos in Chrome or Edge on Android, or Safari on iPhone, to add it to your home screen.',
+  'Versi baru sudah diunduh dan siap dipasang.': 'A new version has been downloaded and is ready to install.',
+  'Muat Ulang ke Versi Baru': 'Reload Into the New Version',
+  'Memeriksa…': 'Checking…',
+  'Periksa Pembaruan': 'Check for Updates',
+  'Sudah versi terbaru.': 'Already on the latest version.',
+  'Pasang Glykos di layar utama': 'Install Glykos on your home screen',
+  'Terbuka sekali ketuk, tetap bisa dibuka saat tidak ada internet, dan peringatan suhu masuk seperti notifikasi aplikasi biasa.':
+    'Opens in one tap, still works without an internet connection, and temperature alerts arrive like any other app notification.',
+  Pasang: 'Install',
+  'Sembunyikan Cara': 'Hide Steps',
+  'Lihat Caranya': 'Show Me How',
+  'Tutup ajakan memasang aplikasi': 'Dismiss the install prompt',
+  'Tidak ada internet': 'No internet connection',
+  'Data terakhir tetap ditampilkan dan sepatu tetap terbaca lewat Bluetooth. Penyimpanan ke server dilanjutkan otomatis saat koneksi kembali.':
+    'The last readings stay on screen and the shoe is still read over Bluetooth. Saving to the server resumes automatically once the connection returns.',
+  'Versi baru Glykos siap': 'A new version of Glykos is ready',
+  'Pembaruan sudah diunduh dan akan aktif setelah aplikasi dimuat ulang. Sambungan Bluetooth ke sepatu akan terputus sebentar.':
+    'The update has been downloaded and takes effect once the app reloads. The Bluetooth connection to the shoe will drop briefly.',
+  'Memuat ulang…': 'Reloading…',
+  'Muat Ulang': 'Reload',
+  'Tutup pemberitahuan pembaruan': 'Dismiss the update notice',
 }
