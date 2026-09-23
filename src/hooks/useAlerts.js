@@ -130,7 +130,10 @@ export function useAlertMonitor(uid, deviceId, data, fatigue) {
         logAlert(uid, deviceId, item)
         if (shouldNotify) {
           const described = describeAlert(i18n, item)
-          notify(riskTitle(i18n, item.metric), described.message)
+          // `metric` menentukan tag notifikasinya (utils/notifications.js):
+          // peringatan tekanan dan suhu harus berdiri sendiri di shade HP, tidak
+          // saling menimpa.
+          notify(riskTitle(i18n, item.metric), described.message, { metric: item.metric })
         }
       }
 
