@@ -33,3 +33,6 @@ dist-ssr
 
 # Berkas sumber ikon (ekspor desain). Yang dipakai build ada di public/.
 icon glykos/
+
+# Foto asli anggota tim (~4 MB per berkas). Potongan yang dipakai build ada di public/team/.
+foto/

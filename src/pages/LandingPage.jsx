@@ -109,18 +109,19 @@ const THRESHOLDS = [
   },
 ]
 
-// `photo` kosong dulu — begitu foto anggota tersedia, isi dengan path
-// gambarnya (mis. '/team/arkanara.jpg') dan kartu otomatis menampilkan
-// foto tersebut menggantikan avatar inisial.
+// `photo` menunjuk ke public/team/ — potongan kepala-bahu 240×240 dari foto
+// seluruh badan aslinya (4000×6000, ~4 MB). Avatarnya hanya 76 px, jadi 240
+// sudah cukup tajam di layar 3× dan tiap berkas tinggal ~10 KB. Tanpa `photo`
+// kartu jatuh ke avatar inisial.
 // Nama orang dan singkatan jabatan (CEO/CFO/CTO/COO/CMO) TIDAK diterjemahkan:
 // keduanya sama di kedua bahasa, dan nama orang bukan teks yang boleh diubah
 // penerjemah.
 const TEAM = [
-  { name: 'Arkanara Romanza Andiwa', role: 'CEO', photo: null, accent: 'green' },
-  { name: 'Anya Parisya Rivendra', role: 'CFO', photo: null, accent: 'rose' },
-  { name: 'Khadijah Subagyo', role: 'CTO', photo: null, accent: 'green' },
-  { name: 'Radinka Danastria Ramadhanti Bima Puteri', role: 'COO', photo: null, accent: 'rose' },
-  { name: 'Raiqa Mazaya Fatin Muqofa', role: 'CMO', photo: null, accent: 'mixed' },
+  { name: 'Arkanara Romanza Andiwa', role: 'CEO', photo: '/team/arkanara.jpg', accent: 'green' },
+  { name: 'Anya Parisya Rivendra', role: 'CFO', photo: '/team/anya.jpg', accent: 'rose' },
+  { name: 'Khadijah Subagyo', role: 'CTO', photo: '/team/khadijah.jpg', accent: 'green' },
+  { name: 'Radinka Danastria Ramadhanti Bima Puteri', role: 'COO', photo: '/team/radinka.jpg', accent: 'rose' },
+  { name: 'Raiqa Mazaya Fatin Muqofa', role: 'CMO', photo: '/team/raiqa.jpg', accent: 'mixed' },
 ]
 
 function initials(name) {
