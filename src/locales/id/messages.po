@@ -1357,6 +1357,11 @@ msgid "Sepatu pintar untuk pemantauan kaki diabetes"
 msgstr "Sepatu pintar untuk pemantauan kaki diabetes"
 
 #: src/pages/LoginPage.jsx
+#: src/pages/RegisterPage.jsx
+msgid "Kembali ke Beranda"
+msgstr "Kembali ke Beranda"
+
+#: src/pages/LoginPage.jsx
 msgid "Masuk ke akun Anda"
 msgstr "Masuk ke akun Anda"
 

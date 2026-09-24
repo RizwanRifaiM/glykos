@@ -8,6 +8,7 @@ import Button from '../components/Button'
 import GoogleIcon from '../components/GoogleIcon'
 import BrandMark from '../components/BrandMark'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import { IconArrowLeft } from '../components/icons'
 import { getAuthErrorMsg } from '../utils/authErrors'
 import './Auth.css'
 
@@ -75,6 +76,11 @@ export default function RegisterPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
+        <Link to="/" className="auth-card__back">
+          <IconArrowLeft size={16} />
+          <Trans>Kembali ke Beranda</Trans>
+        </Link>
+
         <div className="auth-card__brand">
           <BrandMark size={36} />
           <h1>Glykos</h1>

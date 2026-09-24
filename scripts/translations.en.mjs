@@ -683,4 +683,5 @@ export default {
   'Memuat ulang…': 'Reloading…',
   'Muat Ulang': 'Reload',
   'Tutup pemberitahuan pembaruan': 'Dismiss the update notice',
+  'Kembali ke Beranda': 'Back to Home',
 }

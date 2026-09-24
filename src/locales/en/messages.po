@@ -1357,6 +1357,11 @@ msgid "Sepatu pintar untuk pemantauan kaki diabetes"
 msgstr "A smart shoe for diabetic foot monitoring"
 
 #: src/pages/LoginPage.jsx
+#: src/pages/RegisterPage.jsx
+msgid "Kembali ke Beranda"
+msgstr "Back to Home"
+
+#: src/pages/LoginPage.jsx
 msgid "Masuk ke akun Anda"
 msgstr "Sign in to your account"
 
