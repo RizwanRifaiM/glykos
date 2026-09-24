@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { onSnapshot } from 'firebase/firestore'
 import { liveDoc } from '../services/paths'
 import { toDateKey, toTimeKey } from '../utils/formatTime'
+import { STALE_AFTER_MS } from '../constants/timing'
 
 // Baru ada satu perangkat, dipasang di kaki KANAN. Struktur map dipertahankan
 // supaya perangkat kedua (kaki kiri) tinggal ditambahkan di sini tanpa
@@ -21,7 +22,9 @@ const DEVICES = {
 // begitu satu sesi BLE pernah terjadi, sehingga dashboard permanen menampilkan
 // badge "Live" berisi angka lama, dan monitor kelelahan/langkah ikut mengira
 // sesi masih berjalan.
-export const STALE_AFTER_MS = 120000
+// Nilainya di constants/timing.js; diekspor ulang dari sini karena pemakai
+// lama mengimpornya lewat modul ini.
+export { STALE_AFTER_MS }
 
 // Seberapa sering kesegaran dievaluasi ulang. Diperlukan karena saat perangkat
 // berhenti mengirim, TIDAK ADA snapshot baru yang datang — tanpa detak ini

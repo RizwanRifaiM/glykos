@@ -10,6 +10,8 @@ import {
   TEMP_RISE_SECONDARY_C,
   STEPS_WARNING,
   STEPS_DANGER,
+  FATIGUE_WARNING_POINTS,
+  FATIGUE_DANGER_POINTS,
 } from '../constants/fatigue'
 
 const EMPTY_RESULT = {
@@ -166,7 +168,12 @@ export class FatigueSession {
       reasons.push({ code: 'steps', steps: totalSteps })
     }
 
-    const level = points >= 4 ? 'danger' : points >= 2 ? 'warning' : 'safe'
+    const level =
+      points >= FATIGUE_DANGER_POINTS
+        ? 'danger'
+        : points >= FATIGUE_WARNING_POINTS
+          ? 'warning'
+          : 'safe'
 
     this.snapshot = {
       level,

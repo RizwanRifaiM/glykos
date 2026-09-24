@@ -1,0 +1,1065 @@
+<!doctype html>
+<!--
+  Referensi ambang batas pemantauan Glykos — halaman statis, TERPISAH dari
+  aplikasi (tidak ditautkan dari menu dashboard).
+
+  SETIAP ANGKA di halaman ini ditandai `data-const` (nama konstanta di kode)
+  dan `data-value` (nilainya). src/utils/thresholdsPage.test.js mencocokkan
+  keduanya dengan konstanta yang benar-benar dipakai program — ubah ambang di
+  kode tanpa memperbarui halaman ini, dan `npm test` gagal.
+
+  Teks tampil dalam dua bahasa: elemen ber-`lang="id"` / `lang="en"`
+  disembunyikan sesuai bahasa aktif, yang dibaca dari pilihan yang sama
+  dengan aplikasi (localStorage `glykos:locale`).
+-->
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ambang Batas Pemantauan — Glykos</title>
+    <meta
+      name="description"
+      content="Seluruh ambang batas yang dipakai Glykos untuk menilai tekanan, suhu, kelembapan, kelelahan, dan tingkat pemantauan kaki diabetes."
+    />
+    <meta name="theme-color" content="#446a45" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" href="/fonts/geist-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/geist-sans-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <style>
+      @font-face { font-family: 'Geist'; font-weight: 400; font-display: swap; src: url('/fonts/geist-sans-latin-400-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'Geist'; font-weight: 500; font-display: swap; src: url('/fonts/geist-sans-latin-500-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'Geist'; font-weight: 600; font-display: swap; src: url('/fonts/geist-sans-latin-600-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'Geist Mono'; font-weight: 400; font-display: swap; src: url('/fonts/geist-mono-latin-400-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'Geist Mono'; font-weight: 500; font-display: swap; src: url('/fonts/geist-mono-latin-500-normal.woff2') format('woff2'); }
+
+      /* Token yang sama dengan dashboard (App.css, --ds-*) dan palet merek
+         (index.css). Halaman ini berdiri sendiri, jadi nilainya disalin —
+         bukan diimpor — tapi angkanya harus tetap sama. */
+      :root {
+        --bg: #f6f3e6;
+        --surface: #ffffff;
+        --surface-2: #f1f5ef;
+        --line: #dde5db;
+        --line-strong: #c3d1c1;
+        --ink: #16241a;
+        --ink-2: #46614a;
+        --ink-3: #5c7460;
+        --accent: #446a45;
+        --accent-soft: rgba(68, 106, 69, 0.09);
+        --safe: #3f7a43;
+        --warn: #96600e;
+        --danger: #6e1936;
+        --safe-soft: rgba(63, 122, 67, 0.12);
+        --warn-soft: rgba(150, 96, 14, 0.12);
+        --danger-soft: rgba(110, 25, 54, 0.1);
+        --safe-zone: #9cc19e;
+        --warn-zone: #e2c188;
+        --danger-zone: #c98a9f;
+        --r-sm: 8px;
+        --r-md: 12px;
+        --r-lg: 16px;
+        --e-1: 0 1px 2px rgba(22, 36, 26, 0.05);
+        --mono: 'Geist Mono', ui-monospace, Consolas, monospace;
+        --shell: 1080px;
+        --gutter: clamp(16px, 4vw, 40px);
+        color-scheme: light;
+      }
+
+      :root[lang='id'] body [lang='en'],
+      :root[lang='en'] body [lang='id'] {
+        display: none !important;
+      }
+
+      * { box-sizing: border-box; }
+
+      html { scroll-behavior: smooth; }
+
+      body {
+        margin: 0;
+        font-family: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        font-size: 15px;
+        line-height: 1.55;
+        color: var(--ink);
+        font-variant-numeric: tabular-nums;
+        background:
+          radial-gradient(900px circle at 90% -10%, rgba(228, 174, 197, 0.26), transparent 58%),
+          radial-gradient(760px circle at -10% 12%, rgba(134, 167, 136, 0.22), transparent 58%),
+          var(--bg);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a { color: var(--accent); }
+
+      .shell {
+        width: 100%;
+        max-width: var(--shell);
+        margin: 0 auto;
+        padding: 0 var(--gutter);
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+        border-radius: 4px;
+      }
+
+      /* ---- Bilah atas ---- */
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: rgba(246, 243, 230, 0.86);
+        backdrop-filter: blur(12px) saturate(160%);
+        -webkit-backdrop-filter: blur(12px) saturate(160%);
+        border-bottom: 1px solid rgba(68, 106, 69, 0.12);
+      }
+
+      .topbar .shell {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        height: 60px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        color: var(--ink);
+        text-decoration: none;
+      }
+
+      .brand img { width: 28px; height: 28px; }
+
+      .topbar__spacer { flex: 1; }
+
+      .back {
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        color: var(--ink-2);
+      }
+
+      .back:hover { color: var(--ink); }
+
+      .lang {
+        display: inline-flex;
+        padding: 3px;
+        gap: 2px;
+        background: var(--surface-2);
+        border: 1px solid var(--line);
+        border-radius: 9px;
+      }
+
+      .lang button {
+        padding: 4px 10px;
+        font: 500 12px/1.4 var(--mono);
+        letter-spacing: 0.06em;
+        color: var(--ink-3);
+        background: none;
+        border: 0;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+
+      .lang button[aria-pressed='true'] {
+        color: var(--ink);
+        background: var(--surface);
+        box-shadow: 0 0 0 1px var(--line), var(--e-1);
+      }
+
+      /* ---- Pembuka ---- */
+
+      .hero { padding: clamp(40px, 7vw, 72px) 0 clamp(28px, 4vw, 40px); }
+
+      .eyebrow {
+        margin: 0 0 14px;
+        font: 500 12px/1 var(--mono);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 18ch;
+        font-size: clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
+        font-weight: 600;
+        line-height: 1.06;
+        letter-spacing: -0.03em;
+        text-wrap: balance;
+      }
+
+      .lede {
+        margin: 18px 0 0;
+        max-width: 62ch;
+        font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+        color: var(--ink-2);
+        text-wrap: pretty;
+      }
+
+      .hero__meta {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px 22px;
+        margin-top: 28px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(68, 106, 69, 0.14);
+        font-size: 13px;
+        color: var(--ink-3);
+      }
+
+      .legend { display: flex; flex-wrap: wrap; gap: 8px; }
+
+      .verified {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .verified::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--safe);
+        box-shadow: 0 0 0 3px var(--safe-soft);
+      }
+
+      /* ---- Status ---- */
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 9px;
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+        border-radius: 999px;
+      }
+
+      .pill::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+
+      .pill--safe { color: var(--safe); background: var(--safe-soft); }
+      .pill--warn { color: var(--warn); background: var(--warn-soft); }
+      .pill--danger { color: var(--danger); background: var(--danger-soft); }
+      .pill--neutral { color: var(--ink-2); background: var(--surface-2); }
+
+      /* ---- Daftar isi ---- */
+
+      .toc {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 0 0 8px;
+        padding: 0;
+        list-style: none;
+      }
+
+      .toc a {
+        display: inline-flex;
+        gap: 8px;
+        padding: 6px 12px;
+        font-size: 13px;
+        color: var(--ink-2);
+        text-decoration: none;
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        transition: background-color 150ms ease, color 150ms ease;
+      }
+
+      .toc a:hover { color: var(--ink); background: var(--surface); }
+
+      .toc span:first-child { font-family: var(--mono); color: var(--ink-3); }
+
+      /* ---- Bagian ---- */
+
+      main { padding-bottom: 56px; }
+
+      .section {
+        display: grid;
+        grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
+        gap: 32px;
+        padding: 40px 0;
+        border-top: 1px solid rgba(68, 106, 69, 0.14);
+        scroll-margin-top: 72px;
+      }
+
+      .section__num {
+        margin: 0 0 10px;
+        font: 500 12px/1 var(--mono);
+        letter-spacing: 0.14em;
+        color: var(--ink-3);
+      }
+
+      .section h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        line-height: 1.25;
+        letter-spacing: -0.015em;
+      }
+
+      .section__intro {
+        margin: 10px 0 0;
+        font-size: 14px;
+        color: var(--ink-3);
+        text-wrap: pretty;
+      }
+
+      .section__file {
+        display: inline-block;
+        margin-top: 14px;
+        font: 400 12px/1.4 var(--mono);
+        color: var(--ink-3);
+        word-break: break-all;
+      }
+
+      .stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+      .card {
+        display: flex;
+        flex-direction: column;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        box-shadow: var(--e-1);
+        overflow: hidden;
+      }
+
+      .card__head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 20px 0;
+      }
+
+      .card__title { margin: 0; font-size: 15px; font-weight: 600; }
+
+      .card__unit { font: 400 12px/1 var(--mono); color: var(--ink-3); }
+
+      .card__body { padding: 14px 20px 18px; }
+
+      /* margin-top: auto — pada kartu yang ditarik setinggi pasangannya di
+         .grid-2, catatan tetap menempel di dasar kartu. */
+      .card__note {
+        margin: auto 0 0;
+        padding: 12px 20px;
+        font-size: 13px;
+        color: var(--ink-3);
+        background: var(--surface-2);
+        border-top: 1px solid var(--line);
+      }
+
+      /* ---- Skala zona ---- */
+
+      .scale { position: relative; padding-bottom: 26px; }
+
+      .scale__bar {
+        display: flex;
+        height: 12px;
+        overflow: hidden;
+        border-radius: 999px;
+        gap: 2px;
+      }
+
+      .scale__bar span:first-child { border-radius: 999px 0 0 999px; }
+      .scale__bar span:last-child { border-radius: 0 999px 999px 0; }
+
+      .z--safe { background: var(--safe-zone); }
+      .z--warn { background: var(--warn-zone); }
+      .z--danger { background: var(--danger-zone); }
+
+      .tick {
+        position: absolute;
+        top: 16px;
+        transform: translateX(-50%);
+        font: 500 12px/1 var(--mono);
+        color: var(--ink-2);
+        white-space: nowrap;
+      }
+
+      .tick::before {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        width: 1px;
+        height: 16px;
+        background: var(--ink);
+        opacity: 0.35;
+      }
+
+      .tick--end { transform: none; }
+      .tick--end::before { display: none; }
+      .tick--right { right: 0; transform: none; }
+      .tick--right::before { display: none; }
+
+      /* ---- Tabel ---- */
+
+      .t { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+      .t th,
+      .t td {
+        padding: 11px 20px;
+        text-align: left;
+        vertical-align: top;
+        border-top: 1px solid var(--line);
+      }
+
+      .t thead th {
+        padding-top: 12px;
+        padding-bottom: 10px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--ink-3);
+        background: var(--surface-2);
+        border-top: 0;
+      }
+
+      .t td:first-child { color: var(--ink); font-weight: 500; }
+
+      /* Tabel status: kolom label selebar tetap, supaya kolom nilai lurus
+         antar kartu yang berbeda. */
+      .t--status td:first-child { width: 190px; }
+      .t td { color: var(--ink-2); }
+
+      .t b,
+      .v { font-weight: 600; color: var(--ink); }
+
+      .scroll { overflow-x: auto; }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .kv {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 16px 20px;
+      }
+
+      .kv dt { font-size: 12px; color: var(--ink-3); }
+      .kv dd { margin: 0; font-size: 1.375rem; font-weight: 600; letter-spacing: -0.01em; }
+      .kv dd small { font: 400 13px/1 var(--mono); color: var(--ink-3); margin-left: 4px; }
+
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        font: 500 11px/1.5 var(--mono);
+        letter-spacing: 0.04em;
+        border-radius: 4px;
+      }
+
+      .badge--research { color: var(--safe); background: var(--safe-soft); }
+      .badge--heuristic { color: var(--warn); background: var(--warn-soft); }
+
+      .sources { margin: 0; padding-left: 20px; font-size: 14px; color: var(--ink-2); }
+      .sources li + li { margin-top: 6px; }
+
+      footer {
+        padding: 28px 0 48px;
+        font-size: 13px;
+        color: var(--ink-3);
+        border-top: 1px solid rgba(68, 106, 69, 0.14);
+      }
+
+      footer p { max-width: 70ch; margin: 0 0 8px; }
+
+      @media (max-width: 820px) {
+        .section { grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 32px 0; }
+        .grid-2 { grid-template-columns: minmax(0, 1fr); }
+        .back { display: none; }
+      }
+
+      @media (max-width: 520px) {
+        .t th,
+        .t td { padding: 10px 14px; }
+        .card__head { padding: 14px 14px 0; }
+        .card__body { padding: 12px 14px 16px; }
+        .card__note { padding: 12px 14px; }
+        .t--status td:first-child { width: auto; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+      }
+
+      @media print {
+        .topbar, .toc, .lang { display: none; }
+        body { background: #fff; }
+        .card { box-shadow: none; break-inside: avoid; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="shell">
+        <a class="brand" href="/">
+          <img src="/brand-mark.png" alt="" width="28" height="28" />
+          Glykos
+        </a>
+        <span class="topbar__spacer"></span>
+        <a class="back" href="/">
+          <span lang="id">← Kembali ke beranda</span><span lang="en">← Back to home</span>
+        </a>
+        <div class="lang" role="group" aria-label="Bahasa / Language">
+          <button type="button" data-set-lang="id" aria-pressed="true">ID</button>
+          <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">
+          <span lang="id">Referensi teknis</span><span lang="en">Technical reference</span>
+        </p>
+        <h1>
+          <span lang="id">Ambang batas pemantauan</span><span lang="en">Monitoring thresholds</span>
+        </h1>
+        <p class="lede">
+          <span lang="id">
+            Semua angka yang dipakai Glykos untuk menilai kondisi kaki — kapan sebuah pembacaan
+            dianggap aman, perlu perhatian, atau berisiko, dan kapan pengguna diingatkan.
+          </span>
+          <span lang="en">
+            Every number Glykos uses to assess the foot — when a reading counts as safe, needs
+            attention, or is at risk, and when the user is reminded.
+          </span>
+        </p>
+        <div class="hero__meta">
+          <span class="verified">
+            <span lang="id">Setiap angka diperiksa otomatis terhadap kode program</span>
+            <span lang="en">Every number is automatically checked against the program code</span>
+          </span>
+          <span class="legend">
+            <span class="pill pill--safe"><span lang="id">Aman</span><span lang="en">Safe</span></span>
+            <span class="pill pill--warn"><span lang="id">Perlu perhatian</span><span lang="en">Needs attention</span></span>
+            <span class="pill pill--danger"><span lang="id">Risiko</span><span lang="en">Risk</span></span>
+          </span>
+        </div>
+      </section>
+
+      <nav aria-label="Isi / Contents">
+        <ol class="toc">
+          <li><a href="#sensor"><span>01</span><span lang="id">Sensor</span><span lang="en">Sensors</span></a></li>
+          <li><a href="#kenaikan"><span>02</span><span lang="id">Kenaikan suhu</span><span lang="en">Temperature rise</span></a></li>
+          <li><a href="#tren"><span>03</span><span lang="id">Selisih menetap</span><span lang="en">Persistent difference</span></a></li>
+          <li><a href="#kelelahan"><span>04</span><span lang="id">Kelelahan</span><span lang="en">Fatigue</span></a></li>
+          <li><a href="#profil"><span>05</span><span lang="id">Tingkat pemantauan</span><span lang="en">Monitoring level</span></a></li>
+          <li><a href="#peringatan"><span>06</span><span lang="id">Peringatan</span><span lang="en">Alerts</span></a></li>
+          <li><a href="#waktu"><span>07</span><span lang="id">Waktu &amp; data</span><span lang="en">Timing &amp; data</span></a></li>
+          <li><a href="#dasar"><span>08</span><span lang="id">Dasar angka</span><span lang="en">Evidence</span></a></li>
+        </ol>
+      </nav>
+
+      <!-- 01 — SENSOR -->
+      <section class="section" id="sensor">
+        <div>
+          <p class="section__num">01</p>
+          <h2><span lang="id">Pembacaan sensor</span><span lang="en">Sensor readings</span></h2>
+          <p class="section__intro">
+            <span lang="id">Dinilai pada setiap paket dari sepatu, sekitar tiga kali per detik.</span>
+            <span lang="en">Assessed on every packet from the shoe, about three times per second.</span>
+          </p>
+          <code class="section__file">src/constants/thresholds.js</code>
+        </div>
+        <div class="stack">
+          <article class="card">
+            <div class="card__head">
+              <h3 class="card__title"><span lang="id">Tekanan puncak</span><span lang="en">Peak pressure</span></h3>
+              <span class="card__unit">kPa</span>
+            </div>
+            <div class="card__body">
+              <div class="scale" aria-hidden="true">
+                <div class="scale__bar">
+                  <span class="z--safe" style="flex: 200"></span>
+                  <span class="z--warn" style="flex: 50"></span>
+                  <span class="z--danger" style="flex: 50"></span>
+                </div>
+                <span class="tick tick--end" style="left: 0">0</span>
+                <span class="tick" style="left: 66.667%" data-const="PRESSURE_THRESHOLDS.safe" data-value="200" data-min="0" data-max="300">200</span>
+                <span class="tick" style="left: 83.333%" data-const="PRESSURE_THRESHOLDS.warning" data-value="250" data-min="0" data-max="300">250</span>
+                <span class="tick tick--right">300</span>
+              </div>
+            </div>
+            <table class="t t--status">
+              <tbody>
+                <tr><td><span class="pill pill--safe"><span lang="id">Aman</span><span lang="en">Safe</span></span></td><td>&lt; <b class="v" data-const="PRESSURE_THRESHOLDS.safe" data-value="200">200</b> kPa</td></tr>
+                <tr><td><span class="pill pill--warn"><span lang="id">Perlu perhatian</span><span lang="en">Needs attention</span></span></td><td><b class="v" data-const="PRESSURE_THRESHOLDS.safe" data-value="200">200</b>–<b class="v" data-const="PRESSURE_THRESHOLDS.warning" data-value="250">250</b> kPa</td></tr>
+                <tr><td><span class="pill pill--danger"><span lang="id">Risiko ulkus</span><span lang="en">Ulcer risk</span></span></td><td>&gt; <b class="v" data-const="PRESSURE_THRESHOLDS.warning" data-value="250">250</b> kPa</td></tr>
+              </tbody>
+            </table>
+          </article>
+
+          <article class="card">
+            <div class="card__head">
+              <h3 class="card__title"><span lang="id">Kelembapan di permukaan kulit</span><span lang="en">Humidity at the skin surface</span></h3>
+              <span class="card__unit">% RH</span>
+            </div>
+            <div class="card__body">
+              <div class="scale" aria-hidden="true">
+                <div class="scale__bar">
+                  <span class="z--warn" style="flex: 40"></span>
+                  <span class="z--safe" style="flex: 20"></span>
+                  <span class="z--warn" style="flex: 10"></span>
+                  <span class="z--danger" style="flex: 30"></span>
+                </div>
+                <span class="tick tick--end" style="left: 0">0</span>
+                <span class="tick" style="left: 40%" data-const="HUMIDITY_RANGE.min" data-value="40" data-min="0" data-max="100">40</span>
+                <span class="tick" style="left: 60%" data-const="HUMIDITY_RANGE.max" data-value="60" data-min="0" data-max="100">60</span>
+                <span class="tick" style="left: 70%" data-const="HUMIDITY_RISK" data-value="70" data-min="0" data-max="100">70</span>
+                <span class="tick tick--right">100</span>
+              </div>
+            </div>
+            <table class="t t--status">
+              <tbody>
+                <tr><td><span class="pill pill--safe"><span lang="id">Aman</span><span lang="en">Safe</span></span></td><td><b class="v" data-const="HUMIDITY_RANGE.min" data-value="40">40</b>–<b class="v" data-const="HUMIDITY_RANGE.max" data-value="60">60</b> %</td></tr>
+                <tr><td><span class="pill pill--warn"><span lang="id">Perlu perhatian</span><span lang="en">Needs attention</span></span></td><td><span lang="id">di bawah</span><span lang="en">below</span> <b class="v" data-const="HUMIDITY_RANGE.min" data-value="40">40</b> %, <span lang="id">atau</span><span lang="en">or</span> <b class="v" data-const="HUMIDITY_RANGE.max" data-value="60">60</b>–<b class="v" data-const="HUMIDITY_RISK" data-value="70">70</b> %</td></tr>
+                <tr><td><span class="pill pill--danger"><span lang="id">Risiko</span><span lang="en">Risk</span></span></td><td>&gt; <b class="v" data-const="HUMIDITY_RISK" data-value="70">70</b> %</td></tr>
+              </tbody>
+            </table>
+            <p class="card__note">
+              <span lang="id">Dinilai pada RH di permukaan kulit terdingin (dikoreksi dengan suhu udara, rumus Magnus), bukan angka mentah sensor. Tanpa suhu udara, penilaian memakai angka mentah.</span>
+              <span lang="en">Assessed as RH at the coolest skin surface (corrected with air temperature, Magnus formula), not the raw sensor value. Without air temperature, the raw value is used.</span>
+            </p>
+          </article>
+
+          <div class="grid-2">
+            <article class="card">
+              <div class="card__head">
+                <h3 class="card__title"><span lang="id">Suhu kulit tertinggi</span><span lang="en">Highest skin temperature</span></h3>
+                <span class="card__unit">°C</span>
+              </div>
+              <table class="t t--status">
+                <tbody>
+                  <tr><td><span class="pill pill--safe"><span lang="id">Aman</span><span lang="en">Safe</span></span></td><td><b class="v" data-const="TEMP_RANGE.min" data-value="28">28</b>–<b class="v" data-const="TEMP_RANGE.max" data-value="33">33</b> °C</td></tr>
+                  <tr><td><span class="pill pill--warn"><span lang="id">Perlu perhatian</span><span lang="en">Needs attention</span></span></td><td>&gt; <b class="v" data-const="TEMP_RANGE.max" data-value="33">33</b> °C</td></tr>
+                </tbody>
+              </table>
+              <p class="card__note">
+                <span lang="id">Di bawah 28 °C tidak memicu peringatan.</span>
+                <span lang="en">Below 28 °C does not trigger an alert.</span>
+              </p>
+            </article>
+
+            <article class="card">
+              <div class="card__head">
+                <h3 class="card__title"><span lang="id">Selisih suhu antar area</span><span lang="en">Temperature difference between areas</span></h3>
+                <span class="card__unit">°C</span>
+              </div>
+              <table class="t t--status">
+                <tbody>
+                  <tr><td><span class="pill pill--safe"><span lang="id">Aman</span><span lang="en">Safe</span></span></td><td>&lt; <b class="v" data-const="TEMP_DELTA_WARNING" data-value="2.2" data-digits="1">2,2</b> °C</td></tr>
+                  <tr><td><span class="pill pill--warn"><span lang="id">Perlu perhatian</span><span lang="en">Needs attention</span></span></td><td>≥ <b class="v" data-const="TEMP_DELTA_WARNING" data-value="2.2" data-digits="1">2,2</b> °C</td></tr>
+                </tbody>
+              </table>
+              <p class="card__note">
+                <span lang="id">Nilai 0 berarti sensor belum mengirim data — tidak dinilai.</span>
+                <span lang="en">A value of 0 means the sensor has not sent data yet — it is not assessed.</span>
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- 02 — KENAIKAN SUHU -->
+      <section class="section" id="kenaikan">
+        <div>
+          <p class="section__num">02</p>
+          <h2><span lang="id">Kenaikan suhu sejak awal sesi</span><span lang="en">Temperature rise since session start</span></h2>
+          <p class="section__intro">
+            <span lang="id">Yang dicari bukan kaki yang panas, melainkan panas yang terpusat di satu titik — pola yang mendahului ulkus.</span>
+            <span lang="en">What matters is not a warm foot, but warmth concentrated at one spot — the pattern that precedes an ulcer.</span>
+          </p>
+          <code class="section__file">src/utils/temperatureRise.js</code>
+        </div>
+        <div class="stack">
+          <article class="card">
+            <div class="card__head">
+              <h3 class="card__title"><span lang="id">Kenaikan tertinggi</span><span lang="en">Largest rise</span></h3>
+              <span class="card__unit">°C</span>
+            </div>
+            <div class="card__body">
+              <div class="scale" aria-hidden="true">
+                <div class="scale__bar">
+                  <span class="z--safe" style="flex: 1"></span>
+                  <span class="z--warn" style="flex: 1.2"></span>
+                  <span class="z--danger" style="flex: 0.8"></span>
+                </div>
+                <span class="tick tick--end" style="left: 0">0</span>
+                <span class="tick" style="left: 33.333%" data-const="RISE_ATTENTION" data-value="1" data-min="0" data-max="3">1,0</span>
+                <span class="tick" style="left: 73.333%" data-const="RISE_ALERT" data-value="2.2" data-min="0" data-max="3">2,2</span>
+                <span class="tick tick--right">3,0</span>
+              </div>
+            </div>
+            <table class="t t--status">
+              <tbody>
+                <tr><td><span class="pill pill--safe"><span lang="id">Aman</span><span lang="en">Safe</span></span></td><td>&lt; <b class="v" data-const="RISE_ATTENTION" data-value="1" data-digits="1">1,0</b> °C</td></tr>
+                <tr><td><span class="pill pill--warn"><span lang="id">Perlu perhatian</span><span lang="en">Needs attention</span></span></td><td><b class="v" data-const="RISE_ATTENTION" data-value="1" data-digits="1">1,0</b> – &lt; <b class="v" data-const="RISE_ALERT" data-value="2.2" data-digits="1">2,2</b> °C</td></tr>
+                <tr><td><span class="pill pill--danger"><span lang="id">Risiko</span><span lang="en">Risk</span></span></td><td>≥ <b class="v" data-const="RISE_ALERT" data-value="2.2" data-digits="1">2,2</b> °C</td></tr>
+              </tbody>
+            </table>
+          </article>
+
+          <div class="grid-2">
+            <article class="card">
+              <dl class="kv">
+                <dt><span lang="id">Acuan awal sesi</span><span lang="en">Session baseline</span></dt>
+                <dd><b class="v" data-const="BASELINE_SAMPLES" data-value="10">10</b><small><span lang="id">sampel pertama</span><span lang="en">first samples</span></small></dd>
+              </dl>
+              <p class="card__note">
+                <span lang="id">Dirata-ratakan supaya derau sensor tidak menentukan acuan seluruh sesi.</span>
+                <span lang="en">Averaged so sensor noise does not set the baseline for the whole session.</span>
+              </p>
+            </article>
+            <article class="card">
+              <dl class="kv">
+                <dt><span lang="id">Dianggap "naik merata"</span><span lang="en">Counts as "uniform rise"</span></dt>
+                <dd>&lt; <b class="v" data-const="RISE_ATTENTION" data-value="1" data-digits="1">1,0</b><small>°C</small></dd>
+              </dl>
+              <p class="card__note">
+                <span lang="id">Semua titik naik dan selisih antar kenaikannya di bawah angka ini → diturunkan ke Aman (pola menyeluruh, bukan peradangan setempat).</span>
+                <span lang="en">All points rose and the spread between rises is below this → lowered to Safe (a systemic pattern, not local inflammation).</span>
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- 03 — TREN -->
+      <section class="section" id="tren">
+        <div>
+          <p class="section__num">03</p>
+          <h2><span lang="id">Selisih suhu yang menetap</span><span lang="en">Persistent temperature difference</span></h2>
+          <p class="section__intro">
+            <span lang="id">Dihitung dari rangkuman harian. Hari tanpa pemakaian memutus rangkaian.</span>
+            <span lang="en">Calculated from daily summaries. A day without use breaks the streak.</span>
+          </p>
+          <code class="section__file">src/utils/temperatureTrend.js</code>
+        </div>
+        <article class="card">
+          <table class="t">
+            <thead>
+              <tr><th><span lang="id">Status</span><span lang="en">Status</span></th><th><span lang="id">Kondisi</span><span lang="en">Condition</span></th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="pill pill--warn"><span lang="id">Perlu perhatian</span><span lang="en">Needs attention</span></span></td><td><span lang="id">Selisih ≥</span><span lang="en">Difference ≥</span> <b class="v" data-const="TEMP_DELTA_WARNING" data-value="2.2" data-digits="1">2,2</b> °C <span lang="id">selama 1 hari</span><span lang="en">for 1 day</span></td></tr>
+              <tr><td><span class="pill pill--danger"><span lang="id">Perlu tindakan</span><span lang="en">Action needed</span></span></td><td><span lang="id">Selisih ≥</span><span lang="en">Difference ≥</span> <b class="v" data-const="TEMP_DELTA_WARNING" data-value="2.2" data-digits="1">2,2</b> °C <span lang="id">selama</span><span lang="en">for</span> <b class="v" data-const="SUSTAINED_DAYS" data-value="2">2</b> <span lang="id">hari berturut-turut — memicu notifikasi dan saran mengurangi beban</span><span lang="en">consecutive days — triggers a notification and advice to reduce load</span></td></tr>
+            </tbody>
+          </table>
+        </article>
+      </section>
+
+      <!-- 04 — KELELAHAN -->
+      <section class="section" id="kelelahan">
+        <div>
+          <p class="section__num">04</p>
+          <h2><span lang="id">Indikasi kelelahan</span><span lang="en">Fatigue indication</span></h2>
+          <p class="section__intro">
+            <span lang="id">Sistem poin: tiap faktor menyumbang 1–2 poin, lalu dijumlahkan.</span>
+            <span lang="en">A points system: each factor adds 1–2 points, then they are summed.</span>
+          </p>
+          <code class="section__file">src/constants/fatigue.js</code>
+        </div>
+        <div class="stack">
+          <article class="card scroll">
+            <table class="t">
+              <thead>
+                <tr><th><span lang="id">Faktor</span><span lang="en">Factor</span></th><th>+1</th><th>+2</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span lang="id">Beban tinggi terus-menerus (&gt; <b class="v" data-const="PRESSURE_THRESHOLDS.safe" data-value="200">200</b> kPa)</span><span lang="en">Sustained high load (&gt; <b class="v" data-const="PRESSURE_THRESHOLDS.safe" data-value="200">200</b> kPa)</span></td>
+                  <td>≥ <b class="v" data-const="SUSTAINED_WARNING_MIN" data-value="15">15</b> <span lang="id">menit</span><span lang="en">min</span></td>
+                  <td>≥ <b class="v" data-const="SUSTAINED_DANGER_MIN" data-value="30">30</b> <span lang="id">menit</span><span lang="en">min</span></td>
+                </tr>
+                <tr>
+                  <td><span lang="id">Tekanan bergeser ke metatarsal</span><span lang="en">Pressure shifting to the forefoot</span></td>
+                  <td>≥ <b class="v" data-const="REDISTRIBUTION_WARNING_PP" data-value="8">8</b> <span lang="id">poin %</span><span lang="en">pp</span></td>
+                  <td>≥ <b class="v" data-const="REDISTRIBUTION_DANGER_PP" data-value="15">15</b> <span lang="id">poin %</span><span lang="en">pp</span></td>
+                </tr>
+                <tr>
+                  <td><span lang="id">Kenaikan suhu (sinyal sekunder, hanya saat beban tinggi)</span><span lang="en">Temperature rise (secondary signal, only under high load)</span></td>
+                  <td>≥ <b class="v" data-const="TEMP_RISE_SECONDARY_C" data-value="1.5" data-digits="1">1,5</b> °C</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <td><span lang="id">Total langkah per sesi</span><span lang="en">Total steps per session</span></td>
+                  <td>≥ <b class="v" data-const="STEPS_WARNING" data-value="800">800</b></td>
+                  <td>≥ <b class="v" data-const="STEPS_DANGER" data-value="1500">1.500</b></td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="card__note">
+              <span lang="id">Jeda singkat sampai</span><span lang="en">Short pauses of up to</span>
+              <b class="v" data-const="SUSTAINED_GAP_GRACE_SEC" data-value="90">90</b>
+              <span lang="id">detik tidak memutus hitungan beban terus-menerus.</span><span lang="en">seconds do not reset the sustained-load count.</span>
+            </p>
+          </article>
+          <div class="grid-2">
+            <article class="card">
+              <dl class="kv">
+                <dt><span class="pill pill--warn"><span lang="id">Perlu perhatian</span><span lang="en">Needs attention</span></span></dt>
+                <dd>≥ <b class="v" data-const="FATIGUE_WARNING_POINTS" data-value="2">2</b><small><span lang="id">poin</span><span lang="en">points</span></small></dd>
+              </dl>
+            </article>
+            <article class="card">
+              <dl class="kv">
+                <dt><span class="pill pill--danger"><span lang="id">Risiko</span><span lang="en">Risk</span></span></dt>
+                <dd>≥ <b class="v" data-const="FATIGUE_DANGER_POINTS" data-value="4">4</b><small><span lang="id">poin</span><span lang="en">points</span></small></dd>
+              </dl>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- 05 — PROFIL -->
+      <section class="section" id="profil">
+        <div>
+          <p class="section__num">05</p>
+          <h2><span lang="id">Tingkat pemantauan dari profil</span><span lang="en">Monitoring level from the profile</span></h2>
+          <p class="section__intro">
+            <span lang="id">Data yang diisi di Profil hanya boleh memperketat pemantauan, tidak pernah melonggarkan. Data kosong, tidak sah, atau kedaluwarsa kembali ke Standar.</span>
+            <span lang="en">Profile data may only tighten monitoring, never loosen it. Empty, invalid, or out-of-date data falls back to Standard.</span>
+          </p>
+          <code class="section__file">src/utils/riskProfile.js</code>
+        </div>
+        <div class="stack">
+          <article class="card scroll">
+            <table class="t">
+              <thead>
+                <tr><th><span lang="id">Tingkat</span><span lang="en">Level</span></th><th><span lang="id">Syarat</span><span lang="en">Condition</span></th></tr>
+              </thead>
+              <tbody>
+                <tr><td><span class="pill pill--safe"><span lang="id">Standar</span><span lang="en">Standard</span></span></td><td><span lang="id">Tidak ada faktor pemberat</span><span lang="en">No aggravating factor</span></td></tr>
+                <tr><td><span class="pill pill--warn"><span lang="id">Meningkat</span><span lang="en">Elevated</span></span></td><td><span lang="id">Satu dari: HbA1c ≥</span><span lang="en">One of: HbA1c ≥</span> <b class="v" data-const="HBA1C_ELEVATED" data-value="8">8</b> %, LDL ≥ <b class="v" data-const="LDL_ELEVATED" data-value="100">100</b> mg/dL, <span lang="id">neuropati</span><span lang="en">neuropathy</span></td></tr>
+                <tr><td><span class="pill pill--danger"><span lang="id">Tinggi</span><span lang="en">High</span></span></td><td><span lang="id">Pernah ulkus/amputasi, <b>atau</b> HbA1c ≥</span><span lang="en">Previous ulcer/amputation, <b>or</b> HbA1c ≥</span> <b class="v" data-const="HBA1C_HIGH" data-value="10">10</b> %, <span lang="id"><b>atau</b> dua faktor pemberat</span><span lang="en"><b>or</b> two aggravating factors</span></td></tr>
+              </tbody>
+            </table>
+          </article>
+          <article class="card scroll">
+            <table class="t">
+              <thead>
+                <tr><th><span lang="id">Hasil lab</span><span lang="en">Lab result</span></th><th><span lang="id">Rentang wajar</span><span lang="en">Plausible range</span></th><th><span lang="id">Berlaku</span><span lang="en">Valid for</span></th></tr>
+              </thead>
+              <tbody>
+                <tr><td>HbA1c</td><td><b class="v" data-const="HBA1C_RANGE.min" data-value="4">4</b>–<b class="v" data-const="HBA1C_RANGE.max" data-value="20">20</b> %</td><td><b class="v" data-const="HBA1C_VALID_DAYS" data-value="183">183</b> <span lang="id">hari (± 6 bulan)</span><span lang="en">days (≈ 6 months)</span></td></tr>
+                <tr><td>LDL</td><td><b class="v" data-const="LDL_RANGE.min" data-value="20">20</b>–<b class="v" data-const="LDL_RANGE.max" data-value="400">400</b> mg/dL</td><td><b class="v" data-const="LDL_VALID_DAYS" data-value="365">365</b> <span lang="id">hari (12 bulan)</span><span lang="en">days (12 months)</span></td></tr>
+              </tbody>
+            </table>
+            <p class="card__note">
+              <span lang="id">Nilai di luar rentang wajar dianggap salah ketik dan tidak dipakai. Riwayat ulkus dan neuropati tidak kedaluwarsa.</span>
+              <span lang="en">Values outside the plausible range are treated as typos and ignored. Ulcer history and neuropathy do not expire.</span>
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- 06 — PERINGATAN -->
+      <section class="section" id="peringatan">
+        <div>
+          <p class="section__num">06</p>
+          <h2><span lang="id">Peringatan &amp; notifikasi</span><span lang="en">Alerts &amp; notifications</span></h2>
+          <p class="section__intro">
+            <span lang="id">Semua status non-aman selalu dicatat. Tingkat pemantauan hanya mengatur kapan HP ikut berbunyi dan seberapa sering — angka ambang sensor tidak berubah.</span>
+            <span lang="en">Every non-safe status is always recorded. The monitoring level only controls when the phone sounds and how often — sensor thresholds do not change.</span>
+          </p>
+          <code class="section__file">src/utils/alertRules.js</code>
+        </div>
+        <article class="card scroll">
+          <table class="t">
+            <thead>
+              <tr><th></th><th><span lang="id">Standar</span><span lang="en">Standard</span></th><th><span lang="id">Meningkat</span><span lang="en">Elevated</span></th><th><span lang="id">Tinggi</span><span lang="en">High</span></th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span lang="id">Notifikasi berbunyi sejak</span><span lang="en">Notification sounds from</span></td>
+                <td><span lang="id">Risiko</span><span lang="en">Risk</span></td>
+                <td><span lang="id">Perlu perhatian</span><span lang="en">Needs attention</span></td>
+                <td><span lang="id">Perlu perhatian</span><span lang="en">Needs attention</span></td>
+              </tr>
+              <tr>
+                <td><span lang="id">Jeda antar peringatan per metrik</span><span lang="en">Gap between alerts per metric</span></td>
+                <td><b class="v" data-const="ALERT_COOLDOWN_MS" data-value="1800000" data-scale="60000">30</b> <span lang="id">menit</span><span lang="en">min</span></td>
+                <td><b class="v" data-const="ALERT_COOLDOWN_MS" data-value="1800000" data-scale="60000">30</b> <span lang="id">menit</span><span lang="en">min</span></td>
+                <td><b class="v" data-const="HIGH_RISK_COOLDOWN_MS" data-value="900000" data-scale="60000">15</b> <span lang="id">menit</span><span lang="en">min</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="card__note">
+            <span lang="id">Kondisi yang memburuk (Perlu perhatian → Risiko) selalu langsung dicatat, tanpa menunggu jeda.</span>
+            <span lang="en">A worsening condition (Needs attention → Risk) is always recorded immediately, without waiting for the gap.</span>
+          </p>
+        </article>
+      </section>
+
+      <!-- 07 — WAKTU -->
+      <section class="section" id="waktu">
+        <div>
+          <p class="section__num">07</p>
+          <h2><span lang="id">Waktu &amp; data</span><span lang="en">Timing &amp; data</span></h2>
+          <p class="section__intro">
+            <span lang="id">Seberapa sering data dibaca, disimpan, dan kapan dianggap basi.</span>
+            <span lang="en">How often data is read and saved, and when it counts as stale.</span>
+          </p>
+        </div>
+        <article class="card scroll">
+          <table class="t">
+            <tbody>
+              <tr><td><span lang="id">Paket dari sepatu</span><span lang="en">Packets from the shoe</span></td><td><span lang="id">± 300 ms (± 3 per detik) — ditentukan firmware</span><span lang="en">≈ 300 ms (≈ 3 per second) — set by the firmware</span></td></tr>
+              <tr><td><span lang="id">Penyimpanan ke server</span><span lang="en">Saving to the server</span></td><td><span lang="id">setiap</span><span lang="en">every</span> <b class="v" data-const="SYNC_INTERVAL_MS" data-value="60000" data-scale="1000">60</b> <span lang="id">detik, ditambah saat tersambung dan saat sesi berakhir</span><span lang="en">seconds, plus on connect and when the session ends</span></td></tr>
+              <tr><td><span lang="id">Data dianggap basi</span><span lang="en">Data counts as stale</span></td><td><span lang="id">tanpa pembaruan lebih dari</span><span lang="en">no update for more than</span> <b class="v" data-const="STALE_AFTER_MS" data-value="120000" data-scale="60000">2</b> <span lang="id">menit</span><span lang="en">min</span></td></tr>
+              <tr><td><span lang="id">Angka kartu dashboard direset</span><span lang="en">Dashboard card values reset</span></td><td><span lang="id">pukul 00:00 waktu perangkat</span><span lang="en">at 00:00 device time</span></td></tr>
+            </tbody>
+          </table>
+        </article>
+      </section>
+
+      <!-- 08 — DASAR -->
+      <section class="section" id="dasar">
+        <div>
+          <p class="section__num">08</p>
+          <h2><span lang="id">Dasar angka</span><span lang="en">Where the numbers come from</span></h2>
+          <p class="section__intro">
+            <span lang="id">Yang bertanda heuristik belum divalidasi tenaga kesehatan untuk produk ini.</span>
+            <span lang="en">Items marked heuristic have not yet been validated by healthcare professionals for this product.</span>
+          </p>
+        </div>
+        <div class="stack">
+          <article class="card scroll">
+            <table class="t">
+              <thead>
+                <tr><th><span lang="id">Ambang</span><span lang="en">Threshold</span></th><th><span lang="id">Dasar</span><span lang="en">Basis</span></th></tr>
+              </thead>
+              <tbody>
+                <tr><td><span lang="id">Tekanan 200 kPa</span><span lang="en">Pressure 200 kPa</span></td><td><span class="badge badge--research"><span lang="id">PENELITIAN</span><span lang="en">RESEARCH</span></span> <span lang="id">Target tekanan dalam sepatu pada pasien pasca-ulkus</span><span lang="en">In-shoe pressure target for post-ulcer patients</span></td></tr>
+                <tr><td><span lang="id">Selisih suhu 2,2 °C, 2 hari</span><span lang="en">Temperature difference 2.2 °C, 2 days</span></td><td><span class="badge badge--research"><span lang="id">PENELITIAN</span><span lang="en">RESEARCH</span></span> IWGDF 2023</td></tr>
+                <tr><td>HbA1c ≥ 8 % / ≥ 10 %</td><td><span class="badge badge--research"><span lang="id">PENELITIAN</span><span lang="en">RESEARCH</span></span> <span lang="id">UK Biobank — risiko ulkus ~2× / ~4,5×</span><span lang="en">UK Biobank — ulcer risk ~2× / ~4.5×</span></td></tr>
+                <tr><td>LDL ≥ 100 mg/dL</td><td><span class="badge badge--research"><span lang="id">PEDOMAN</span><span lang="en">GUIDELINE</span></span> PERKENI 2021</td></tr>
+                <tr><td><span lang="id">Masa berlaku HbA1c</span><span lang="en">HbA1c validity</span></td><td><span class="badge badge--research"><span lang="id">PEDOMAN</span><span lang="en">GUIDELINE</span></span> ADA Standards of Care 2026</td></tr>
+                <tr><td><span lang="id">Kelembapan, kenaikan suhu 1,0 °C</span><span lang="en">Humidity, 1.0 °C temperature rise</span></td><td><span class="badge badge--heuristic"><span lang="id">HEURISTIK</span><span lang="en">HEURISTIC</span></span></td></tr>
+                <tr><td><span lang="id">Semua ambang kelelahan</span><span lang="en">All fatigue thresholds</span></td><td><span class="badge badge--heuristic"><span lang="id">HEURISTIK</span><span lang="en">HEURISTIC</span></span> <span lang="id">Arah pergeseran tekanan didukung studi sEMG; angkanya heuristik</span><span lang="en">Direction of pressure shift supported by an sEMG study; the numbers are heuristic</span></td></tr>
+                <tr><td><span lang="id">Jeda peringatan 30 / 15 menit</span><span lang="en">Alert gaps 30 / 15 min</span></td><td><span class="badge badge--heuristic"><span lang="id">HEURISTIK</span><span lang="en">HEURISTIC</span></span></td></tr>
+              </tbody>
+            </table>
+          </article>
+          <article class="card">
+            <div class="card__body">
+              <ol class="sources">
+                <li><a href="https://iwgdfguidelines.org/wp-content/uploads/2023/07/IWGDF-2023-02-Prevention-Guideline.pdf" rel="noopener">IWGDF 2023 — Guidelines on the prevention of foot ulcers in persons with diabetes</a></li>
+                <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10882031/" rel="noopener">Plantar pressure thresholds as a strategy to prevent diabetic foot ulcers — systematic review</a></li>
+                <li><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11972128/" rel="noopener">HbA1c and the risk of lower limb ulcers among diabetic patients (UK Biobank)</a></li>
+                <li><a href="https://pbperkeni.or.id/wp-content/uploads/2021/11/22-10-21-Website-Pedoman-Pengelolaan-dan-Pencegahan-DMT2-Ebook.pdf" rel="noopener">PERKENI 2021 — Pedoman pengelolaan dan pencegahan DM tipe 2</a></li>
+                <li><a href="https://diabetesjournals.org/care/article/49/Supplement_1/S132/163927/6-Glycemic-Goals-Hypoglycemia-and-Hyperglycemic" rel="noopener">ADA Standards of Care in Diabetes—2026: Glycemic goals</a></li>
+              </ol>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="shell">
+        <p>
+          <span lang="id">Glykos adalah alat pemantauan, bukan alat diagnosis. Keputusan penanganan tetap ada pada tenaga kesehatan.</span>
+          <span lang="en">Glykos is a monitoring tool, not a diagnostic device. Treatment decisions remain with healthcare professionals.</span>
+        </p>
+        <p><a href="/"><span lang="id">Kembali ke beranda Glykos</span><span lang="en">Back to the Glykos home page</span></a></p>
+      </div>
+    </footer>
+
+    <script>
+      // Bahasa: pilihan yang sama dengan aplikasi (src/i18n.js), lalu bahasa
+      // browser, lalu Indonesia.
+      ;(function () {
+        var KEY = 'glykos:locale'
+        var TITLES = {
+          id: 'Ambang Batas Pemantauan — Glykos',
+          en: 'Monitoring Thresholds — Glykos',
+        }
+        var DESCRIPTIONS = {
+          id: 'Seluruh ambang batas yang dipakai Glykos untuk menilai tekanan, suhu, kelembapan, kelelahan, dan tingkat pemantauan kaki diabetes.',
+          en: 'Every threshold Glykos uses to assess pressure, temperature, humidity, fatigue, and the monitoring level for the diabetic foot.',
+        }
+
+        function detect() {
+          try {
+            var stored = localStorage.getItem(KEY)
+            if (stored === 'id' || stored === 'en') return stored
+          } catch (e) {}
+          var langs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language]
+          for (var i = 0; i < langs.length; i++) {
+            var code = String(langs[i] || '').toLowerCase().slice(0, 2)
+            if (code === 'id' || code === 'en') return code
+          }
+          return 'id'
+        }
+
+        // Angka ditulis ulang sesuai bahasa: "2,2" / "2.2", "1.500" / "1,500".
+        // data-scale mengubah satuan tampilan (mis. milidetik → menit).
+        function formatNumbers(lang) {
+          var fmt = function (digits) {
+            return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'id-ID', {
+              minimumFractionDigits: digits,
+              maximumFractionDigits: digits,
+            })
+          }
+          var nodes = document.querySelectorAll('.v[data-value]')
+          for (var i = 0; i < nodes.length; i++) {
+            var el = nodes[i]
+            var value = Number(el.getAttribute('data-value')) / Number(el.getAttribute('data-scale') || 1)
+            el.textContent = fmt(Number(el.getAttribute('data-digits') || 0)).format(value)
+          }
+          var ticks = document.querySelectorAll('.tick')
+          for (var j = 0; j < ticks.length; j++) {
+            var t = ticks[j]
+            var raw = t.getAttribute('data-raw') || t.textContent.replace(',', '.')
+            t.setAttribute('data-raw', raw)
+            var digits = raw.indexOf('.') >= 0 ? 1 : 0
+            t.textContent = fmt(digits).format(Number(raw))
+          }
+        }
+
+        function apply(lang, persist) {
+          document.documentElement.lang = lang
+          document.title = TITLES[lang]
+          var meta = document.querySelector('meta[name="description"]')
+          if (meta) meta.setAttribute('content', DESCRIPTIONS[lang])
+          var buttons = document.querySelectorAll('[data-set-lang]')
+          for (var i = 0; i < buttons.length; i++) {
+            buttons[i].setAttribute('aria-pressed', String(buttons[i].getAttribute('data-set-lang') === lang))
+          }
+          formatNumbers(lang)
+          if (persist) {
+            try { localStorage.setItem(KEY, lang) } catch (e) {}
+          }
+        }
+
+        document.addEventListener('click', function (event) {
+          var button = event.target.closest('[data-set-lang]')
+          if (button) apply(button.getAttribute('data-set-lang'), true)
+        })
+
+        apply(detect(), false)
+      })()
+    </script>
+  </body>
+</html>

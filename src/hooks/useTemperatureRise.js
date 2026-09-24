@@ -20,7 +20,7 @@ import { evaluateTemperatureRise } from '../utils/temperatureRise'
 
 // Berapa sampel yang dirata-ratakan untuk membentuk acuan.
 // ~3,3 paket/detik, jadi 10 sampel ≈ 3 detik.
-const BASELINE_SAMPLES = 10
+export const BASELINE_SAMPLES = 10
 
 const EMPTY_SNAPSHOT = { baseline: null, sampleCount: 0 }
 

@@ -146,15 +146,22 @@ self.addEventListener('fetch', (event) => {
 // menyajikan HTML dari cache lebih dulu berisiko mengunci pengguna pada versi
 // lama. Cache di sini murni jaring pengaman saat offline.
 async function handleNavigate(event) {
+  // Hanya rute SPA yang menghasilkan index.html. Halaman HTML statis lain di
+  // public/ (mis. /ambang-batas.html) TIDAK boleh ikut disimpan sebagai shell:
+  // tanpa penjaga ini, sekali membuka halaman itu membuat aplikasi yang
+  // dibuka offline berikutnya menampilkan halaman tersebut, bukan aplikasinya.
+  const { pathname } = new URL(event.request.url)
+  const isShellRoute = pathname === SHELL_URL || !/\.[a-z0-9]+$/i.test(pathname)
+
   try {
     const preloaded = await event.preloadResponse
     if (preloaded) {
-      void putShell(preloaded.clone())
+      if (isShellRoute) void putShell(preloaded.clone())
       return preloaded
     }
 
     const response = await fetch(event.request)
-    void putShell(response.clone())
+    if (isShellRoute) void putShell(response.clone())
     return response
   } catch {
     // Offline. Shell hasil precache sudah cukup: router ada di sisi klien,

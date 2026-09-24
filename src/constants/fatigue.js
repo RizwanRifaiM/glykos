@@ -30,6 +30,12 @@ export const TEMP_RISE_SECONDARY_C = 1.5 // sinyal sekunder, bobot kecil
 export const STEPS_WARNING = 800 // total langkah dalam satu sesi pemakaian
 export const STEPS_DANGER = 1500
 
+// Skor gabungan: tiap faktor menyumbang 1–2 poin (lihat useFatigueMonitor.js).
+// Satu faktor kuat saja (2 poin) sudah "perhatian"; butuh dua faktor kuat —
+// atau beberapa yang lebih ringan — untuk "risiko".
+export const FATIGUE_WARNING_POINTS = 2
+export const FATIGUE_DANGER_POINTS = 4
+
 // Deskriptor `msg`, diselesaikan pemanggil dengan i18n._(). Lihat alasannya di
 // constants/thresholds.js.
 export const FATIGUE_LABELS = {
