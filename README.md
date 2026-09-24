@@ -37,6 +37,7 @@ ESP32 ──BLE (Nordic UART, CSV)──> services/ble.js ──> useBleSensor (
                                   /history/{id}   catatan mentah, append-only
                                   /daily/{tanggal} rangkuman → halaman Riwayat
                                   /alerts/{id}    peringatan
+   users/{uid}/labs/{id}                           riwayat hasil lab (dari Profil)
 ```
 
 Halaman Riwayat membaca **rangkuman harian**, bukan koleksi mentah — 30 hari berarti
@@ -55,6 +56,8 @@ Bagian itu harus cocok persis dengan firmware.
 | `src/services/firebase.js` / `firestore.js` | Auth dan Firestore sengaja dipisah demi ukuran bundle |
 | `src/hooks/` | Sumber data & logika sesi (BLE, sinkronisasi, langkah, kelelahan, peringatan) |
 | `src/constants/thresholds.js` | Ambang tekanan/suhu/kelembapan yang dipakai seluruh UI |
+| `src/utils/labResults.js` | Hasil lab: formulir ↔ Firestore, riwayat append-only |
+| `src/utils/riskProfile.js` | Tingkat pemantauan dari profil kesehatan (HbA1c, LDL, ulkus, neuropati) |
 | `src/utils/temperatureTrend.js` | Aturan selisih suhu yang bertahan antar hari (lihat di bawah) |
 | `src/utils/sensorContext.js` | Ringkasan sensor yang dikirim ke chatbot — sekaligus batas privasinya |
 | `src/i18n.js` | Bahasa aktif: deteksi, pergantian, penyimpanan pilihan |
@@ -127,6 +130,113 @@ bernilai di sistem ini. Ada **dua aturan** yang berbeda, dan keduanya perlu:
 Yang kedua yang memicu saran mengurangi beban. Hari tanpa pemakaian tidak
 menjembatani rangkaian — tanpa pembacaan, tidak ada dasar menyebut selisihnya
 bertahan.
+
+## Tingkat pemantauan dari profil kesehatan
+
+Data yang diisi manual di halaman Profil — **HbA1c**, **kolesterol LDL**,
+**riwayat ulkus/amputasi**, dan **neuropati** — menentukan tingkat pemantauan
+pasien. Aturannya di `utils/riskProfile.js` (fungsi murni, diuji).
+
+| Tingkat | Syarat |
+|---|---|
+| Standar | Tidak ada faktor pemberat — **juga** saat data kosong, tidak sah, atau kedaluwarsa |
+| Meningkat | Satu dari: HbA1c ≥ 8 %, LDL ≥ 100 mg/dL, neuropati |
+| Tinggi | Pernah ulkus/amputasi, **atau** HbA1c ≥ 10 %, **atau** dua faktor pemberat |
+
+### Yang diubah: kapan diingatkan, bukan angka ambangnya
+
+| | Standar | Meningkat | Tinggi |
+|---|---|---|---|
+| Notifikasi berbunyi sejak | Risiko | Perlu Perhatian | Perlu Perhatian |
+| Jeda antar peringatan | 30 menit | 30 menit | 15 menit |
+
+Angka ambang sensor (tekanan 200 kPa, selisih suhu 2,2 °C, dst.) **sama untuk
+semua tingkat**. Keduanya sudah berasal dari penelitian pada kelompok berisiko:
+200 kPa dari pasien yang pernah ulkus dan neuropati, 2,2 °C direkomendasikan
+IWGDF 2023 untuk risiko sedang–tinggi. Tidak ada dasar penelitian untuk
+memperketatnya lagi, dan ambang karangan hanya menghasilkan peringatan palsu.
+Semua status non-aman tetap **dicatat** di tingkat mana pun — yang berubah
+hanya apakah HP ikut berbunyi.
+
+### Arah gagalnya selalu ke Standar
+
+Data manual hanya boleh memperketat, tidak pernah melonggarkan. Nilai di luar
+rentang wajar (HbA1c 4–20 %, LDL 20–400 mg/dL), tanpa tanggal pemeriksaan,
+atau lebih tua dari masa berlakunya **tidak dipakai**, dan Ringkasan
+menampilkan pengingat untuk memperbaruinya.
+
+| Hasil lab | Berlaku | Dasar |
+|---|---|---|
+| HbA1c | 6 bulan | ADA 2026: diperiksa tiap 3 bulan bila belum di target, minimal 2× setahun bila sudah |
+| LDL | 12 bulan | Pemeriksaan lipid lazimnya tahunan |
+
+Riwayat ulkus dan neuropati tidak kedaluwarsa.
+
+### Dasar angkanya
+
+- HbA1c ≥ 8 %: risiko ulkus ~2× dibanding 6–7 %; > 10 %: ~4,5× (UK Biobank,
+  23.434 pasien, ~13 tahun).
+- LDL ≥ 100 mg/dL: di atas target PERKENI 2021; terkait penyakit arteri
+  perifer dan amputasi.
+- Riwayat ulkus: IWGDF kategori 3 — risiko kambuh sampai 40 % setahun setelah
+  sembuh.
+- Neuropati: pilar utama stratifikasi IWGDF.
+
+HbA1c dan LDL adalah **penanda** risiko, bukan pengukur kondisi kaki — karena
+itu satu di antaranya hanya menaikkan ke Meningkat. Batas-batas ini diambil
+dari penelitian, tapi **belum divalidasi oleh tenaga kesehatan** untuk produk
+ini.
+
+### Tingkatnya tersimpan di setiap peringatan
+
+Kalimat peringatan dirakit saat dibaca, jadi tingkat risiko ikut disimpan
+sebagai field `risk` (`tier` + faktor beserta angkanya). Tanpa itu,
+peringatan bulan lalu akan dijelaskan dengan profil hari ini. Yang dinilai
+adalah profil **tersimpan**, bukan isian formulir yang belum disimpan.
+
+Data profil ini **tidak** dikirim ke chatbot — batas privasi di
+`utils/sensorContext.js` tetap berlaku.
+
+### Riwayat hasil lab
+
+Hasil lab disimpan di dua tempat dengan peran berbeda:
+
+| Lokasi | Isi | Sifat |
+|---|---|---|
+| `users/{uid}` | Nilai **terakhir** — dibaca `riskProfile.js` | Ditimpa tiap simpan |
+| `users/{uid}/labs/{id}` | Satu dokumen per hasil pemeriksaan | **Append-only** |
+
+Keduanya ditulis dalam **satu batch** (`ProfilePage.jsx`), jadi tersimpan
+bersama atau tidak sama sekali. Catatan riwayat hanya ditambahkan bila nilai
+atau tanggal pemeriksaannya berubah — menyimpan profil untuk mengganti kontak
+darurat tidak menambah apa pun (`utils/labResults.js`).
+
+Letaknya di bawah pengguna, bukan perangkat: HbA1c milik pasien, tidak berubah
+karena sepatunya diganti.
+
+Salah ketik tidak dihapus. Nilai yang dikoreksi untuk tanggal pemeriksaan yang
+sama tersimpan sebagai catatan **baru**; halaman Riwayat menampilkan yang
+terbaru dengan penanda "dikoreksi", dan catatan lamanya tetap ada.
+
+Halaman Riwayat menampilkannya di panel tersendiri, **tidak** dibatasi rentang
+7/30 hari — hasil lab datang tiap 3–12 bulan, jadi di rentang itu hampir
+selalu kosong.
+
+### Validasi di firestore.rules
+
+Sejak data ini menentukan tingkat pemantauan, aturan akses memeriksa **isinya**,
+bukan hanya pemiliknya:
+
+- Profil: HbA1c 4–20, LDL 20–400 (angka, bukan teks), tanggal `YYYY-MM-DD`,
+  riwayat ulkus & neuropati hanya nilai yang dikenal.
+- Riwayat lab: kunci dibatasi persis (`type`, `value`, `unit`, `testedAt`,
+  `createdAt`), satuan harus cocok dengan jenisnya, `createdAt` wajib waktu
+  server; `update` dan `delete` ditolak.
+
+Rentangnya **harus sama** dengan `HBA1C_RANGE`/`LDL_RANGE` di
+`utils/riskProfile.js`. Satu yang belum diperiksa aturan: tanggal pemeriksaan
+di masa depan — aplikasi menolaknya dan `riskProfile.js` mengabaikannya, tapi
+aturan Firestore tidak membandingkan tanggal.
 
 ## Notifikasi & wake lock
 

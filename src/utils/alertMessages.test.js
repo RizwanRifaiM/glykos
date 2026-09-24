@@ -3,6 +3,9 @@ import { i18n, setupI18n } from '@lingui/core'
 import { messages as enMessages } from '../locales/en/messages.po'
 import {
   describeAlert,
+  describeLabReminder,
+  describeRiskNote,
+  riskTierLabel,
   describeStoredAlert,
   fatigueLabel,
   isStructuredAlert,
@@ -205,5 +208,45 @@ describe('describeStoredAlert', () => {
     // kosong pada halaman peringatan.
     expect(view.label).toBe('metrikMasaDepan')
     expect(view.message).toBeNull()
+  })
+})
+
+describe('catatan tingkat pemantauan', () => {
+  const pressure = { metric: 'pressure', status: 'warning', location: 'heel', values: { peak: 220 } }
+
+  it('tidak menambah apa pun pada Standar maupun catatan lama tanpa `risk`', () => {
+    expect(describeAlert(i18n, pressure).riskNote).toBeNull()
+    expect(describeRiskNote(i18n, { tier: 'standard', factors: [] })).toBeNull()
+  })
+
+  it('menyebut alasan beserta angka dan bulan pemeriksaannya', () => {
+    const note = describeAlert(i18n, {
+      ...pressure,
+      risk: { tier: 'elevated', factors: [{ code: 'hba1c', value: 8.4, date: '2026-06-10' }] },
+    }).riskNote
+    expect(note).toContain('8,4')
+    expect(note).toContain('2026')
+  })
+
+  it('Tinggi menambahkan ajakan ke tenaga kesehatan', () => {
+    const elevated = describeRiskNote(i18n, { tier: 'elevated', factors: [{ code: 'neuropathy' }] })
+    const high = describeRiskNote(i18n, { tier: 'high', factors: [{ code: 'neuropathy' }] })
+    expect(high.length).toBeGreaterThan(elevated.length)
+    expect(high.startsWith(elevated)).toBe(true)
+  })
+
+  it('ikut bahasa aktif, dengan angka yang sama', () => {
+    const risk = { tier: 'high', factors: [{ code: 'ldl', value: 130, date: '2026-06-10' }] }
+    const id = describeRiskNote(i18n, risk)
+    const inggris = describeRiskNote(en, risk)
+    expect(inggris).not.toBe(id)
+    expect(inggris).toContain('130')
+    expect(riskTierLabel(en, 'high')).not.toBe(riskTierLabel(i18n, 'high'))
+  })
+
+  it('pengingat kedaluwarsa menyebut umurnya dalam bulan', () => {
+    const text = describeLabReminder(i18n, { code: 'hba1c', status: 'stale', ageDays: 213 })
+    expect(text).toContain('HbA1c')
+    expect(text).toContain('6')
   })
 })

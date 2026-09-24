@@ -7,6 +7,7 @@
 //   users/{uid}/devices/{deviceId}/history/{id}     -> log mentah per menit
 //   users/{uid}/devices/{deviceId}/daily/{tanggal}  -> rangkuman harian
 //   users/{uid}/devices/{deviceId}/alerts/{id}      -> peringatan
+//   users/{uid}/labs/{id}                           -> riwayat hasil lab (HbA1c, LDL)
 //
 // Sebelumnya path-nya `devices/{deviceId}/...` di tingkat atas dengan deviceId
 // yang di-hardcode, sehingga setiap akun membaca dan MENIMPA data yang sama —
@@ -39,4 +40,11 @@ export function dailyDoc(uid, deviceId, dateKey) {
 
 export function alertsCollection(uid, deviceId) {
   return collection(db, 'users', uid, 'devices', deviceId, 'alerts')
+}
+
+// Riwayat hasil laboratorium — milik PASIEN, bukan perangkat, jadi letaknya
+// langsung di bawah dokumen pengguna. HbA1c tidak berubah karena sepatunya
+// diganti. Append-only; lihat utils/labResults.js dan firestore.rules.
+export function labsCollection(uid) {
+  return collection(db, 'users', uid, 'labs')
 }

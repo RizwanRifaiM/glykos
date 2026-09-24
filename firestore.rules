@@ -37,12 +37,86 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == uid;
     }
 
+    // ---------------------------------------------------------------------
+    // VALIDASI DATA KESEHATAN
+    //
+    // Sampai sini aturan hanya memeriksa SIAPA yang menulis. Sejak HbA1c,
+    // LDL, riwayat ulkus, dan neuropati menentukan tingkat pemantauan
+    // (src/utils/riskProfile.js), ISINYA juga diperiksa: formulir di
+    // aplikasi sudah menolak nilai aneh, tapi formulir bukan satu-satunya
+    // jalan menulis ke Firestore.
+    //
+    // Rentang di bawah HARUS sama dengan HBA1C_RANGE / LDL_RANGE di
+    // src/utils/riskProfile.js. Kalau berbeda, aplikasi menerima nilai yang
+    // lalu ditolak di sini — dan batch penyimpanan profil gagal seluruhnya.
+    // ---------------------------------------------------------------------
+
+    function isDateKey(value) {
+      return value is string && value.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    // Kosong ('' atau null) selalu boleh: field yang tidak diisi.
+    function isBlank(value) {
+      return value == null || value == '';
+    }
+
+    function optionalNumberIn(value, lo, hi) {
+      return isBlank(value) || (value is number && value >= lo && value <= hi);
+    }
+
+    function optionalDateKey(value) {
+      return isBlank(value) || isDateKey(value);
+    }
+
+    // Field lain di profil (tipe diabetes, kontak darurat, catatan) sengaja
+    // tidak dibatasi — mereka tidak dibaca sistem, dan membatasi kunci
+    // dokumen akan menolak profil lama yang menyimpan field tambahan.
+    function validProfile(data) {
+      return optionalNumberIn(data.get('hba1c', null), 4, 20)
+        && optionalNumberIn(data.get('ldl', null), 20, 400)
+        && optionalDateKey(data.get('hba1cDate', null))
+        && optionalDateKey(data.get('ldlDate', null))
+        && data.get('ulcerHistory', '') in [null, '', 'yes', 'no']
+        && data.get('neuropathy', '') in [null, '', 'yes', 'no', 'unknown'];
+    }
+
+    // Satu hasil lab di riwayat. Kuncinya DIBATASI persis — catatan medis
+    // tidak boleh membawa field yang tidak dikenal siapa pun.
+    //
+    // `createdAt == request.time` memaksa waktu server: urutan koreksi
+    // (catatan mana yang lebih baru untuk tanggal pemeriksaan yang sama)
+    // bergantung padanya, jadi jam perangkat tidak boleh menentukannya.
+    function validLabEntry(data) {
+      return data.keys().hasOnly(['type', 'value', 'unit', 'testedAt', 'createdAt'])
+        && data.keys().hasAll(['type', 'value', 'unit', 'testedAt', 'createdAt'])
+        && data.value is number
+        && isDateKey(data.testedAt)
+        && data.createdAt == request.time
+        && (
+          (data.type == 'hba1c' && data.unit == '%' && data.value >= 4 && data.value <= 20)
+          || (data.type == 'ldl' && data.unit == 'mg/dL' && data.value >= 20 && data.value <= 400)
+        );
+    }
+
     // Profil pasien: users/{uid} — ditulis ProfilePage.jsx
     match /users/{uid} {
       allow read: if isOwner(uid);
       // Hanya create/update; penghapusan akun ditangani di luar klien.
-      allow create, update: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validProfile(request.resource.data);
       allow delete: if false;
+
+      // labs/{id} — riwayat hasil lab (HbA1c, LDL). APPEND-ONLY, alasan yang
+      // sama dengan `alerts`: hasil pemeriksaan adalah catatan medis. Salah
+      // ketik diperbaiki dengan catatan BARU untuk tanggal yang sama; yang
+      // lama tetap ada (lihat summariseLabHistory di src/utils/labResults.js).
+      //
+      // Letaknya di bawah pengguna, bukan perangkat: HbA1c milik pasien dan
+      // tidak berubah karena sepatunya diganti.
+      match /labs/{labId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && validLabEntry(request.resource.data);
+        allow update, delete: if false;
+      }
 
       // Dokumen perangkatnya sendiri tidak pernah dibaca maupun ditulis klien
       // (tidak ada `deviceDoc` di services/paths.js) — ia hanya induk implisit

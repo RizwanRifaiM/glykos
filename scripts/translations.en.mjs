@@ -468,30 +468,19 @@ export default {
   'Glykos — Notifikasi Uji': 'Glykos — Test Notification',
   'Notifikasi berhasil dikirim. Peringatan sungguhan akan tampil seperti ini.':
     'Notification sent successfully. Real alerts will look like this.',
-  'Profil Pasien': 'Patient Profile',
-  'Perangkat terpasang: {deviceName}': 'Device in use: {deviceName}',
-  'Tipe Diabetes': 'Diabetes Type',
   'Pilih tipe': 'Select a type',
-  'HbA1c Terakhir (%)': 'Latest HbA1c (%)',
   'mis. 7.2': 'e.g. 7.2',
-  'Riwayat Luka / Ulkus': 'Wound / Ulcer History',
   'Catatan riwayat luka kaki, operasi, atau amputasi sebelumnya':
     'Notes on previous foot wounds, surgery, or amputation',
-  'Kontak Darurat': 'Emergency Contact',
   'Nama & nomor telepon': 'Name & phone number',
   'Menyimpan…': 'Saving…',
-  'Simpan Profil': 'Save Profile',
   'Tersimpan {savedTime}': 'Saved at {savedTime}',
-  'Notifikasi Peringatan': 'Alert Notifications',
   'Izinkan notifikasi browser untuk mendapat peringatan instan saat status berubah menjadi Risiko.':
     'Allow browser notifications to get an instant alert when a status changes to Risk.',
   'Browser ini tidak mendukung notifikasi.': 'This browser does not support notifications.',
   'Notifikasi aktif di browser ini.': 'Notifications are enabled in this browser.',
-  'Kirim Notifikasi Uji': 'Send Test Notification',
   'Notifikasi diblokir. Aktifkan lewat pengaturan izin situs pada browser Anda.':
     'Notifications are blocked. Enable them through your browser’s site permission settings.',
-  'Aktifkan Notifikasi': 'Enable Notifications',
-  'Bantuan & Pertanyaan Umum': 'Help & Frequently Asked Questions',
   'Masalah yang sering dialami pengguna seputar koneksi perangkat dan fitur aplikasi.':
     'Problems users commonly run into with device connectivity and app features.',
 
@@ -684,4 +673,107 @@ export default {
   'Muat Ulang': 'Reload',
   'Tutup pemberitahuan pembaruan': 'Dismiss the update notice',
   'Kembali ke Beranda': 'Back to Home',
+  'Data kesehatan perlu diperbarui': 'Health data needs updating',
+  'Buka Profil': 'Open Profile',
+  'Yang memperketat pemantauan': 'What tightens monitoring',
+  'Belum ada faktor yang memperketat pemantauan. Tingkat ini dipakai juga saat data kesehatan kosong atau kedaluwarsa.':
+    'No factors are tightening monitoring yet. This level is also used when health data is empty or out of date.',
+  'Perlu dilengkapi': 'Needs completing',
+  'Angka ambang sensor tidak berubah — yang disesuaikan hanya kapan dan seberapa sering Anda diingatkan. Ini penyesuaian pemantauan, bukan diagnosis.':
+    'Sensor thresholds do not change — only when and how often you are reminded is adjusted. This is a monitoring adjustment, not a diagnosis.',
+  'Ya, pernah': 'Yes, I have',
+  'Tidak pernah': 'Never',
+  'Ya': 'Yes',
+  'Tidak': 'No',
+  'Target umum penderita diabetes: di bawah 7 %':
+    'General target for people with diabetes: below 7 %',
+  'mis. 110': 'e.g. 110',
+  'Target umum penderita diabetes: di bawah 100 mg/dL':
+    'General target for people with diabetes: below 100 mg/dL',
+  'Standar': 'Standard',
+  'Meningkat': 'Elevated',
+  'Notifikasi berbunyi sejak status Perlu Perhatian, dan kondisi yang bertahan diingatkan lagi setiap 15 menit.':
+    'Notifications sound from the Needs Attention status, and ongoing conditions are repeated every 15 minutes.',
+  'Notifikasi berbunyi sejak status Perlu Perhatian, bukan hanya saat Risiko.':
+    'Notifications sound from the Needs Attention status, not only at Risk.',
+  'Notifikasi berbunyi saat status Risiko; kondisi yang bertahan diingatkan lagi setiap 30 menit.':
+    'Notifications sound at the Risk status; ongoing conditions are repeated every 30 minutes.',
+  'riwayat ulkus': 'ulcer history',
+  'neuropati': 'neuropathy',
+  'HbA1c {valueText} % ({month})': 'HbA1c {valueText} % ({month})',
+  'HbA1c {valueText} %': 'HbA1c {valueText} %',
+  'LDL {valueText} mg/dL ({month})': 'LDL {valueText} mg/dL ({month})',
+  'LDL {valueText} mg/dL': 'LDL {valueText} mg/dL',
+  'Pemantauan diperketat: {reasons}.': 'Monitoring tightened: {reasons}.',
+  'Pemantauan diperketat sesuai profil kesehatan Anda.':
+    'Monitoring tightened based on your health profile.',
+  'Bila kondisi ini berulang, konsultasikan dengan tenaga kesehatan.':
+    'If this keeps happening, consult a healthcare professional.',
+  '{lab} belum diisi.': '{lab} has not been entered.',
+  'Nilai {lab} di luar rentang wajar ({minText}–{maxText} {unit}) — periksa kembali angkanya.':
+    'The {lab} value is outside the plausible range ({minText}–{maxText} {unit}) — please check the number.',
+  'Tanggal pemeriksaan {lab} belum diisi — nilainya belum dipakai.':
+    'The {lab} test date is missing — the value is not being used yet.',
+  '{lab} terakhir diperiksa {monthsText} bulan lalu — perbarui supaya pemantauan sesuai kondisi Anda sekarang.':
+    '{lab} was last tested {monthsText} months ago — update it so monitoring matches your current condition.',
+  'Belum ada hasil {labName} tercatat.': 'No {labName} results recorded yet.',
+  'Tanggal Pemeriksaan': 'Test Date',
+  'Nilai': 'Value',
+  'Perubahan': 'Change',
+  'Nilai untuk tanggal ini pernah dikoreksi. Catatan sebelumnya tetap tersimpan.':
+    'The value for this date was corrected. The earlier record is still kept.',
+  'dikoreksi': 'corrected',
+  'Riwayat Hasil Lab': 'Lab Result History',
+  'Setiap hasil HbA1c dan LDL yang disimpan di Profil, dari yang terbaru. Tidak dibatasi rentang 7/30 hari.':
+    'Every HbA1c and LDL result saved in your Profile, newest first. Not limited to the 7/30-day range.',
+  'Tambah Hasil Baru': 'Add a New Result',
+  'Isi di Profil': 'Enter in Profile',
+  'Angka bertanda adalah nilai yang memperketat pemantauan (HbA1c ≥ 8 %, LDL ≥ 100 mg/dL). Riwayat ini tidak bisa diubah atau dihapus — koreksi tersimpan sebagai catatan baru.':
+    'Highlighted values are the ones that tighten monitoring (HbA1c ≥ 8 %, LDL ≥ 100 mg/dL). This history cannot be edited or deleted — corrections are saved as new records.',
+  'Profil gagal disimpan. Periksa isian dan koneksi internet, lalu coba lagi.':
+    'Your profile could not be saved. Check the entries and your internet connection, then try again.',
+  'Tingkat pemantauan': 'Monitoring level',
+  'Tidak tahu': 'Not sure',
+  'Data kesehatan, tingkat pemantauan, dan pengaturan aplikasi':
+    'Health data, monitoring level, and app settings',
+  'Ringkasan profil': 'Profile summary',
+  'Tipe diabetes': 'Diabetes type',
+  'Pemantauan': 'Monitoring',
+  'Data pasien': 'Patient details',
+  'Dipakai untuk konteks laporan dan saat keadaan darurat.':
+    'Used as context for reports and in an emergency.',
+  'Kontak darurat': 'Emergency contact',
+  'Hasil laboratorium': 'Lab results',
+  'Nilai terakhir menentukan tingkat pemantauan. Setiap hasil baru juga tercatat di halaman Riwayat.':
+    'The latest values set your monitoring level. Every new result is also recorded on the History page.',
+  'HbA1c': 'HbA1c',
+  'Tanggal pemeriksaan': 'Test date',
+  'Kolesterol LDL': 'LDL cholesterol',
+  'Riwayat kaki': 'Foot history',
+  'Riwayat ulkus dan neuropati adalah faktor risiko terkuat untuk luka kaki baru.':
+    'Ulcer history and neuropathy are the strongest risk factors for a new foot wound.',
+  'Pernah ulkus atau amputasi kaki?': 'Ever had a foot ulcer or amputation?',
+  'Neuropati, dinyatakan dokter?': 'Neuropathy, diagnosed by a doctor?',
+  'Berkurangnya rasa pada telapak kaki, misalnya dari pemeriksaan monofilamen. Pilih Tidak tahu bila belum pernah diperiksa.':
+    'Reduced feeling in the soles of the feet, e.g. found by a monofilament test. Choose Not sure if you have never been tested.',
+  'Catatan riwayat luka': 'Wound history notes',
+  'opsional': 'optional',
+  'Ada perubahan yang belum disimpan': 'You have unsaved changes',
+  'Semua perubahan sudah tersimpan': 'All changes saved',
+  'Batalkan': 'Discard',
+  'Simpan perubahan': 'Save changes',
+  'Notifikasi peringatan': 'Alert notifications',
+  'Kirim notifikasi uji': 'Send a test notification',
+  'Aktifkan notifikasi': 'Enable notifications',
+  'Bantuan & pertanyaan umum': 'Help & FAQ',
+  'Berlaku · bulan ini': 'Valid · this month',
+  'Berlaku · {monthsText} bln lalu': 'Valid · {monthsText} mo ago',
+  'Kedaluwarsa': 'Out of date',
+  'Perlu tanggal': 'Needs a date',
+  'Di luar rentang': 'Out of range',
+  'Tubuh tidak memproduksi insulin; biasanya butuh suntik insulin':
+    'The body does not make insulin; usually needs insulin injections',
+  'Tubuh tidak memakai insulin dengan efektif; tipe paling umum':
+    'The body does not use insulin effectively; the most common type',
+  'Muncul selama kehamilan': 'Develops during pregnancy',
 }

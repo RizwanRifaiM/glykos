@@ -2513,14 +2513,217 @@
   opacity: 0.6;
 }
 
-/* Profile page */
+/* ==========================================================================
+   Profile page
+
+   Pola halaman pengaturan: identitas di atas, formulir berkelompok di kolom
+   utama, dan ringkasan yang BEREAKSI terhadap formulir (tingkat pemantauan,
+   notifikasi) di kolom samping yang menempel. Semua memakai token --ds-*.
+   ========================================================================== */
+
+/* ---- Identitas ---- */
+
+.profile-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ds-5);
+  padding: var(--ds-6);
+  background:
+    radial-gradient(120% 140% at 0% 0%, var(--ds-accent-soft) 0%, transparent 55%),
+    var(--ds-surface);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-r-lg);
+  box-shadow: var(--ds-e-1);
+}
+
+/* Persegi membulat, bukan lingkaran — lingkaran inisial adalah bentuk
+   bawaan setiap template; ini sekaligus menyamai radius kartu. */
+.profile-hero__avatar {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: var(--ds-accent);
+  color: var(--ds-accent-ink);
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+}
+
+.profile-hero__identity {
+  min-width: 0;
+}
+
+.profile-hero__name {
+  margin: 0;
+  font-size: clamp(1.125rem, 1.05rem + 0.35vw, 1.375rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--ds-ink);
+  overflow-wrap: anywhere;
+}
+
+.profile-hero__email {
+  margin: 2px 0 0;
+  font-size: var(--ds-t-sm);
+  color: var(--ds-ink-3);
+  overflow-wrap: anywhere;
+}
+
+.profile-hero__facts {
+  display: flex;
+  margin: 0;
+}
+
+.profile-hero__facts > div {
+  padding: 2px var(--ds-5);
+  border-left: 1px solid var(--ds-line);
+}
+
+.profile-hero__facts > div:last-child {
+  padding-right: 0;
+}
+
+.profile-hero__facts dt {
+  font-size: var(--ds-t-xs);
+  font-weight: 500;
+  color: var(--ds-ink-3);
+}
+
+.profile-hero__facts dd {
+  margin: 4px 0 0;
+  font-size: var(--ds-t-body);
+  font-weight: 600;
+  color: var(--ds-ink);
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .profile-hero {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: var(--ds-5);
+  }
+
+  .profile-hero__facts {
+    grid-column: 1 / -1;
+    flex-wrap: wrap;
+    row-gap: var(--ds-3);
+    padding-top: var(--ds-4);
+    border-top: 1px solid var(--ds-line);
+  }
+
+  .profile-hero__facts > div:first-child {
+    padding-left: 0;
+    border-left: none;
+  }
+}
+
+/* ---- Tata letak dua kolom ---- */
+
+.profile-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+  gap: var(--ds-6);
+  align-items: start;
+}
+
+.profile-layout__main {
+  min-width: 0;
+}
+
+/* Kolom samping menempel: tingkat pemantauan tetap terlihat saat mengisi
+   hasil lab di bawah — itulah yang berubah karena isian tersebut. */
+.profile-layout__aside {
+  position: sticky;
+  top: calc(var(--topbar-height) + var(--ds-6));
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-5);
+}
+
+.profile-layout__aside .panel {
+  padding: var(--ds-5);
+}
+
+/* Judul panel samping sejajar dengan judul kartu pengaturan di kolom utama
+   — dua kolom yang dibaca berdampingan harus berbicara dengan skala sama. */
+.profile-layout__aside .panel__title {
+  font-size: var(--ds-t-h3);
+}
+
+@media (max-width: 1100px) {
+  .profile-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profile-layout__aside {
+    position: static;
+  }
+}
+
+/* ---- Kartu pengaturan ---- */
 
 .profile-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px 20px;
-  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-5);
 }
+
+.settings-card {
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-r-lg);
+  box-shadow: var(--ds-e-1);
+}
+
+.settings-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-3);
+  padding: var(--ds-5) var(--ds-6);
+  border-bottom: 1px solid var(--ds-line);
+}
+
+.settings-card__icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--ds-r-md);
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+}
+
+.settings-card__title {
+  margin: 0;
+  font-size: var(--ds-t-h3);
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ds-ink);
+}
+
+.settings-card__description {
+  margin: 2px 0 0;
+  max-width: 62ch;
+  font-size: var(--ds-t-sm);
+  line-height: 1.5;
+  color: var(--ds-ink-3);
+  text-wrap: pretty;
+}
+
+.settings-card__body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-5);
+  padding: var(--ds-6);
+}
+
+/* ---- Isian ---- */
 
 .profile-field--full {
   grid-column: 1 / -1;
@@ -2530,42 +2733,758 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--navy);
+  min-width: 0;
+  font-size: var(--ds-t-sm);
+  font-weight: 500;
+  color: var(--ds-ink-2);
+}
+
+.profile-field > span:first-child {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.profile-field__optional {
+  font-size: var(--ds-t-xs);
+  font-style: normal;
+  font-weight: 400;
+  color: var(--ds-ink-3);
 }
 
 .profile-field input,
 .profile-field select,
 .profile-field textarea {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: var(--ds-t-body);
   font-weight: 400;
-  padding: 10px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--navy);
+  color: var(--ds-ink);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-line-strong);
+  border-radius: var(--ds-r-sm);
+  transition:
+    border-color var(--ds-dur-1) var(--ds-ease),
+    box-shadow var(--ds-dur-1) var(--ds-ease);
+}
+
+.profile-field textarea {
+  height: auto;
+  min-height: 88px;
+  padding: 10px 12px;
+  line-height: 1.5;
   resize: vertical;
 }
 
-.profile-field input:focus,
-.profile-field select:focus,
-.profile-field textarea:focus {
-  outline: none;
-  border-color: var(--blue);
+.profile-field input::placeholder,
+.profile-field textarea::placeholder {
+  color: #93a591;
 }
+
+.profile-field input:hover,
+.profile-field select:hover,
+.profile-field textarea:hover {
+  border-color: #a7b9a5;
+}
+
+/* Lebih spesifik dari cincin fokus umum `.app-shell :focus-visible`: pada
+   isian, cincin lembut + garis aksen lebih lazim daripada cincin ganda. */
+.app-shell .profile-field input:focus-visible,
+.app-shell .profile-field select:focus-visible,
+.app-shell .profile-field textarea:focus-visible {
+  outline: none;
+  border-color: var(--ds-accent);
+  border-radius: var(--ds-r-sm);
+  box-shadow: 0 0 0 3px rgba(68, 106, 69, 0.18);
+}
+
+/* Hanya setelah disentuh — kolom kosong yang wajib tidak langsung merah
+   saat halaman dibuka. */
+.profile-field input:user-invalid {
+  border-color: var(--ds-danger);
+}
+
+.profile-field__hint {
+  margin: 0;
+  font-size: var(--ds-t-xs);
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--ds-ink-3);
+}
+
+/* Satuan DI DALAM kolom (8,4 %), bukan di label: satuan adalah bagian
+   dari nilai, dan letaknya di situ yang biasa dilihat di formulir medis. */
+.input-affix {
+  position: relative;
+  display: flex;
+}
+
+.profile-field .input-affix input {
+  padding-right: 64px;
+}
+
+.input-affix__unit {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  font-family: var(--mono);
+  font-size: var(--ds-t-sm);
+  color: var(--ds-ink-3);
+  pointer-events: none;
+}
+
+/* ---- Hasil lab ---- */
+
+.lab-field {
+  padding: var(--ds-4) var(--ds-5) var(--ds-5);
+  background: var(--ds-surface-2);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-r-md);
+}
+
+.lab-field__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-3);
+  margin-bottom: var(--ds-3);
+}
+
+.lab-field__name {
+  margin: 0;
+  font-size: var(--ds-t-h3);
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+
+.lab-field__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  font-size: var(--ds-t-xs);
+  font-weight: 500;
+  border-radius: var(--ds-r-pill);
+  white-space: nowrap;
+}
+
+.lab-field__status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.lab-field__status--ok {
+  color: var(--ds-safe);
+  background: var(--ds-safe-soft);
+}
+
+.lab-field__status--warn {
+  color: var(--ds-warn);
+  background: var(--ds-warn-soft);
+}
+
+.lab-field__inputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-4);
+}
+
+.lab-field .profile-field__hint {
+  margin-top: var(--ds-3);
+}
+
+/* ---- Menu pilihan (components/SelectMenu.jsx) ---- */
+
+.profile-field > label:first-child {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.select-menu {
+  position: relative;
+}
+
+.select-menu__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-2);
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  font-family: inherit;
+  font-size: var(--ds-t-body);
+  font-weight: 400;
+  text-align: left;
+  color: var(--ds-ink);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-line-strong);
+  border-radius: var(--ds-r-sm);
+  cursor: pointer;
+  transition:
+    border-color var(--ds-dur-1) var(--ds-ease),
+    box-shadow var(--ds-dur-1) var(--ds-ease);
+}
+
+.select-menu__trigger:hover {
+  border-color: #a7b9a5;
+}
+
+.app-shell .select-menu__trigger:focus-visible,
+.select-menu--open .select-menu__trigger {
+  outline: none;
+  border-color: var(--ds-accent);
+  border-radius: var(--ds-r-sm);
+  box-shadow: 0 0 0 3px rgba(68, 106, 69, 0.18);
+}
+
+.select-menu__value,
+.select-menu__placeholder {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.select-menu__placeholder {
+  color: #93a591;
+}
+
+.select-menu__chevron {
+  flex-shrink: 0;
+  color: var(--ds-ink-3);
+  transition: transform var(--ds-dur-2) var(--ds-ease);
+}
+
+.select-menu--open .select-menu__chevron {
+  transform: rotate(180deg);
+}
+
+.select-menu__list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  max-height: 300px;
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  list-style: none;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-r-md);
+  box-shadow: var(--ds-e-3);
+  transform-origin: top center;
+  animation: select-menu-in var(--ds-dur-2) var(--ds-ease);
+}
+
+.select-menu__list[hidden] {
+  display: none;
+}
+
+@keyframes select-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+.select-menu__option {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-3);
+  padding: 9px 10px;
+  border-radius: var(--ds-r-sm);
+  cursor: pointer;
+  transition: background-color var(--ds-dur-1) var(--ds-ease);
+}
+
+.select-menu__option--active {
+  background: var(--ds-surface-2);
+}
+
+.select-menu__option-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.select-menu__option-label {
+  font-size: var(--ds-t-body);
+  font-weight: 500;
+  color: var(--ds-ink);
+}
+
+.select-menu__option-description {
+  font-size: var(--ds-t-xs);
+  line-height: 1.4;
+  color: var(--ds-ink-3);
+}
+
+.select-menu__check {
+  flex-shrink: 0;
+  color: var(--ds-accent);
+  visibility: hidden;
+}
+
+.select-menu__option--selected .select-menu__option-label {
+  font-weight: 600;
+}
+
+.select-menu__option--selected .select-menu__check {
+  visibility: visible;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .select-menu__list {
+    animation: none;
+  }
+
+  .select-menu__chevron {
+    transition: none;
+  }
+}
+
+/* ---- Pilihan bersegmen (components/SegmentedControl.jsx) ---- */
+
+.segmented {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.segmented__legend {
+  padding: 0;
+  margin-bottom: 6px;
+  font-size: var(--ds-t-sm);
+  font-weight: 500;
+  color: var(--ds-ink-2);
+}
+
+.segmented__track {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  background: var(--ds-surface-2);
+  border: 1px solid var(--ds-line);
+  border-radius: 10px;
+}
+
+.segmented__option {
+  position: relative;
+  display: flex;
+  flex: 1;
+}
+
+.segmented__option input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.segmented__option span {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: var(--ds-t-sm);
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: center;
+  color: var(--ds-ink-3);
+  border-radius: 7px;
+  transition:
+    background-color var(--ds-dur-1) var(--ds-ease),
+    color var(--ds-dur-1) var(--ds-ease),
+    box-shadow var(--ds-dur-1) var(--ds-ease);
+}
+
+.segmented__option:hover span {
+  color: var(--ds-ink);
+}
+
+.segmented__option--active span {
+  color: var(--ds-ink);
+  background: var(--ds-surface);
+  box-shadow: 0 0 0 1px var(--ds-line), var(--ds-e-1);
+}
+
+.segmented__option input:focus-visible + span {
+  box-shadow: 0 0 0 2px var(--ds-accent);
+}
+
+/* ---- Bilah simpan ---- */
+
+.profile-savebar {
+  position: sticky;
+  bottom: var(--ds-4);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-4);
+  padding: var(--ds-3) var(--ds-3) var(--ds-3) var(--ds-5);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-r-lg);
+  box-shadow: var(--ds-e-1);
+  transition:
+    box-shadow var(--ds-dur-2) var(--ds-ease),
+    border-color var(--ds-dur-2) var(--ds-ease);
+}
+
+.profile-savebar--dirty {
+  border-color: var(--ds-line-strong);
+  box-shadow: var(--ds-e-3);
+}
+
+.profile-savebar__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--ds-t-sm);
+  color: var(--ds-ink-3);
+}
+
+.profile-savebar--dirty .profile-savebar__status {
+  color: var(--ds-ink);
+  font-weight: 500;
+}
+
+.profile-savebar--dirty .profile-savebar__status::before {
+  content: '';
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ds-warn);
+}
+
+.profile-savebar__actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--ds-2);
+}
+
+.profile-savebar .glykos-btn {
+  padding: 10px 18px;
+}
+
+/* Di bawah 1024px ada bilah navigasi bawah yang juga menempel di dasar
+   layar — bilah simpan duduk tepat di atasnya, bukan tertutup olehnya. */
+@media (max-width: 1023px) {
+  .profile-savebar {
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 640px) {
+  .settings-card__header,
+  .settings-card__body {
+    padding: var(--ds-4);
+  }
+
+  .settings-card__body,
+  .lab-field__inputs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lab-field {
+    padding: var(--ds-4);
+  }
+
+  .profile-savebar {
+    flex-wrap: wrap;
+    padding: var(--ds-3);
+  }
+
+  .profile-savebar__actions {
+    width: 100%;
+  }
+
+  .profile-savebar__actions .glykos-btn {
+    flex: 1;
+  }
+}
+
+/* ---- Kolom samping ---- */
 
 .profile-form__actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 14px;
+  gap: var(--ds-3);
 }
 
 .profile-form__saved {
-  font-size: 13px;
-  color: var(--blue);
+  font-size: var(--ds-t-sm);
+  font-weight: 500;
+  color: var(--ds-ink-3);
+}
+
+.profile-form__error {
+  font-size: var(--ds-t-sm);
+  font-weight: 500;
+  color: var(--ds-danger);
+}
+
+.profile-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 var(--ds-3);
+  font-size: var(--ds-t-sm);
+  line-height: 1.5;
+  color: var(--ds-ink-2);
+}
+
+.profile-note--ok {
+  color: var(--ds-safe);
+  font-weight: 500;
+}
+
+/* Tingkat pemantauan (components/RiskProfilePanel.jsx) */
+
+.tier-meter {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  margin: var(--ds-3) 0 var(--ds-4);
+  padding: 0;
+  list-style: none;
+}
+
+.tier-meter__step {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: var(--ds-t-xs);
+  color: var(--ds-ink-3);
+}
+
+.tier-meter__step::before {
+  content: '';
+  height: 6px;
+  border-radius: var(--ds-r-pill);
+  background: var(--ds-line);
+}
+
+.risk-panel--standard .tier-meter__step--reached::before {
+  background: var(--ds-safe);
+}
+
+.risk-panel--elevated .tier-meter__step--reached::before {
+  background: var(--ds-warn);
+}
+
+.risk-panel--high .tier-meter__step--reached::before {
+  background: var(--ds-danger);
+}
+
+.tier-meter__step--current {
   font-weight: 600;
+  color: var(--ds-ink);
+}
+
+.risk-panel__effect {
+  margin: 0 0 var(--ds-4);
+  font-size: var(--ds-t-sm);
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--ds-ink);
+  text-wrap: pretty;
+}
+
+.risk-panel__block {
+  margin-bottom: var(--ds-4);
+}
+
+.risk-panel__block h3,
+.risk-panel__callout h3 {
+  margin: 0 0 var(--ds-2);
+  font-size: var(--ds-t-xs);
+  font-weight: 600;
+  color: var(--ds-ink-2);
+}
+
+.risk-panel__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.risk-panel__chips li {
+  padding: 4px 10px;
+  font-size: var(--ds-t-xs);
+  font-weight: 500;
+  color: var(--ds-ink);
+  background: var(--ds-surface-2);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-r-pill);
+}
+
+.risk-panel__empty {
+  margin: 0 0 var(--ds-4);
+  font-size: var(--ds-t-sm);
+  line-height: 1.5;
+  color: var(--ds-ink-3);
+}
+
+.risk-panel__callout {
+  margin-bottom: var(--ds-4);
+  padding: var(--ds-3) var(--ds-4);
+  background: var(--ds-warn-soft);
+  border-radius: var(--ds-r-md);
+}
+
+.risk-panel__callout h3 {
+  color: var(--ds-warn);
+}
+
+.risk-panel__callout ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--ds-t-sm);
+  line-height: 1.5;
+  color: var(--ds-ink-2);
+}
+
+.risk-panel__disclaimer {
+  margin: 0;
+  padding-top: var(--ds-3);
+  font-size: var(--ds-t-xs);
+  line-height: 1.5;
+  color: var(--ds-ink-3);
+  border-top: 1px solid var(--ds-line);
+}
+
+/* Pengingat hasil lab di Ringkasan (components/LabReminderBanner.jsx).
+   Sengaja lebih tenang dari spanduk tren suhu: ini ajakan memperbarui data,
+   bukan tanda bahaya pada kaki. */
+
+.lab-reminder {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+}
+
+.lab-reminder__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: rgba(129, 162, 131, 0.2);
+  color: var(--navy);
+}
+
+.lab-reminder__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.lab-reminder__body strong {
+  display: block;
+  font-size: 14px;
+  color: var(--navy);
+}
+
+.lab-reminder__body p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--blue);
+}
+
+.lab-reminder .glykos-btn {
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+@media (max-width: 640px) {
+  .lab-reminder {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* Riwayat hasil lab (components/LabHistoryPanel.jsx) */
+
+.lab-history__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.lab-history__title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.lab-history__title span {
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.lab-history__empty {
+  margin: 0;
+  padding: 18px 16px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+.lab-history__corrected {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.lab-history__note {
+  margin: 16px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+@media (max-width: 760px) {
+  .lab-history__grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* FAQ accordion */
@@ -2718,8 +3637,7 @@
 
 @media (max-width: 640px) {
   .point-grid,
-  .temp-compare,
-  .profile-form {
+  .temp-compare {
     grid-template-columns: 1fr;
   }
 

@@ -15,6 +15,7 @@ import {
   buildDemoHistory,
   buildDemoReading,
   DEMO_ALERTS,
+  DEMO_LABS,
   DEMO_FATIGUE,
 } from '../constants/demoData'
 import { emptyReading, useSensorData } from '../hooks/useSensorData'
@@ -25,6 +26,8 @@ import { useFatigueMonitor } from '../hooks/useFatigueMonitor'
 import { useStepCounter } from '../hooks/useStepCounter'
 import { useFirestoreSync } from '../hooks/useFirestoreSync'
 import { useTemperatureTrendAlert } from '../hooks/useTemperatureTrendAlert'
+import { useRiskProfile } from '../hooks/useRiskProfile'
+import { useLabHistory } from '../hooks/useLabHistory'
 import { useWakeLock } from '../hooks/useWakeLock'
 import { useWearTime } from '../hooks/useWearTime'
 import { useTemperatureRise } from '../hooks/useTemperatureRise'
@@ -143,6 +146,7 @@ export default function DashboardLayout() {
     historyRange,
   )
   const { alerts: realAlerts, isLoading: realAlertsLoading } = useAlerts(uid, deviceId)
+  const { labs: realLabs, isLoading: realLabsLoading } = useLabHistory(uid)
 
   // Saat perangkat BLE terhubung dan sudah mengirim paket, datanya jadi sumber
   // live yang meng-override data Firestore/cadangan.
@@ -297,7 +301,12 @@ export default function DashboardLayout() {
   // warning/danger. Di mode demo `null` dioper supaya hook-nya no-op —
   // tanpa ini, angka contoh akan mencatat peringatan palsu ke basis data
   // sungguhan dan muncul lagi nanti sebagai riwayat asli.
-  useAlertMonitor(uid, deviceId, demoMode ? null : liveData, liveFatigue)
+  //
+  // Tingkat risiko dari profil (HbA1c, LDL, riwayat ulkus, neuropati) hanya
+  // mengatur kapan notifikasi berbunyi dan berapa lama jedanya — angka ambang
+  // sensornya tetap. Lihat utils/riskProfile.js.
+  const riskProfile = useRiskProfile(uid, todayKey)
+  useAlertMonitor(uid, deviceId, demoMode ? null : liveData, liveFatigue, riskProfile)
 
   // Penggantian data demo dilakukan SETELAH semua hook di atas, supaya jalur
   // data sungguhan (termasuk penulisan Firestore) tidak terpengaruh sama sekali.
@@ -307,6 +316,8 @@ export default function DashboardLayout() {
   const historyLoading = demoMode ? false : realHistoryLoading
   const alerts = demoMode ? DEMO_ALERTS : realAlerts
   const alertsLoading = demoMode ? false : realAlertsLoading
+  const labs = demoMode ? DEMO_LABS : realLabs
+  const labsLoading = demoMode ? false : realLabsLoading
 
   // Aturan "selisih suhu bertahan berhari-hari" dihitung dari rangkuman
   // HARIAN, bukan pembacaan live — jadi sumbernya `history`, bukan `data`.
@@ -458,6 +469,12 @@ export default function DashboardLayout() {
                 alertsLoading,
                 fatigue,
                 temperatureTrend,
+                // Tingkat pemantauan & pengingat hasil lab — dibaca Ringkasan
+                // dan Profil. `null` selama profil belum terbaca.
+                riskProfile,
+                // Riwayat hasil lab (HbA1c, LDL) untuk halaman Riwayat.
+                labs,
+                labsLoading,
                 // Dibutuhkan ChatbotPage: angka contoh harus ditandai sebagai
                 // contoh sebelum dikirim ke model, bukan disajikan sebagai
                 // kondisi kaki pengguna. Lihat utils/sensorContext.js.

@@ -220,3 +220,29 @@ export const DEMO_ALERTS = [
   },
   { id: 'demo-10', metric: 'pressure', status: 'warning', location: 'heel', values: { peak: 214 }, createdAt: daysAgo(18, 8) },
 ]
+
+// Riwayat hasil lab contoh (halaman Riwayat). Tanggal pemeriksaannya dihitung
+// mundur dari hari ini supaya contoh ini tidak pernah terlihat "kedaluwarsa".
+// Polanya sengaja menceritakan sesuatu: HbA1c yang turun pelan setelah
+// pengobatan disesuaikan, dan satu koreksi salah ketik.
+const monthsAgoKey = (m) => {
+  const date = new Date()
+  date.setMonth(date.getMonth() - m, 12)
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
+function buildDemoLabs() {
+  return [
+    { id: 'lab-1', type: 'hba1c', value: 9.3, unit: '%', testedAt: monthsAgoKey(10), createdAt: 1 },
+    { id: 'lab-2', type: 'hba1c', value: 8.8, unit: '%', testedAt: monthsAgoKey(7), createdAt: 2 },
+    { id: 'lab-3', type: 'hba1c', value: 81, unit: '%', testedAt: monthsAgoKey(4), createdAt: 3 },
+    { id: 'lab-4', type: 'hba1c', value: 8.1, unit: '%', testedAt: monthsAgoKey(4), createdAt: 4 },
+    { id: 'lab-5', type: 'hba1c', value: 7.6, unit: '%', testedAt: monthsAgoKey(1), createdAt: 5 },
+    { id: 'lab-6', type: 'ldl', value: 142, unit: 'mg/dL', testedAt: monthsAgoKey(11), createdAt: 6 },
+    { id: 'lab-7', type: 'ldl', value: 118, unit: 'mg/dL', testedAt: monthsAgoKey(2), createdAt: 7 },
+  ]
+}
+
+// Dihitung sekali saat modul dimuat, sama seperti DEMO_ALERTS.
+export const DEMO_LABS = buildDemoLabs()

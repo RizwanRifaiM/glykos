@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { ALERT_COOLDOWN_MS, decideAlert, evaluateMetrics } from './alertRules'
+import {
+  ALERT_COOLDOWN_MS,
+  alertPolicy,
+  decideAlert,
+  evaluateMetrics,
+  HIGH_RISK_COOLDOWN_MS,
+} from './alertRules'
 
 const reading = (overrides = {}) => ({
   pressure: { peak: 100, location: 'metatarsal', points: {} },
@@ -169,5 +175,52 @@ describe('decideAlert — jeda per metrik', () => {
     // Nilainya bagian dari perilaku yang disepakati, bukan detail bebas ubah:
     // sesi 2–3 jam berarti paling banyak 4–6 peringatan per metrik.
     expect(ALERT_COOLDOWN_MS).toBe(menit(30))
+  })
+})
+
+describe('decideAlert — tingkat pemantauan pasien', () => {
+  const now = 1_000_000
+  const menit = (n) => n * 60 * 1000
+
+  it('Standar hanya membunyikan notifikasi pada danger', () => {
+    const hasil = decideAlert(undefined, 'warning', now, alertPolicy('standard'))
+    expect(hasil.shouldLog).toBe(true)
+    expect(hasil.shouldNotify).toBe(false)
+  })
+
+  it('Meningkat & Tinggi sudah berbunyi sejak warning', () => {
+    for (const tier of ['elevated', 'high']) {
+      const hasil = decideAlert(undefined, 'warning', now, alertPolicy(tier))
+      expect(hasil.shouldNotify).toBe(true)
+    }
+  })
+
+  it('Tinggi mengulang kondisi yang bertahan setelah 15 menit, bukan 30', () => {
+    const policy = alertPolicy('high')
+    const awal = decideAlert(undefined, 'warning', now, policy)
+    expect(decideAlert(awal.entry, 'warning', now + menit(14), policy).shouldLog).toBe(false)
+    const ulang = decideAlert(awal.entry, 'warning', now + HIGH_RISK_COOLDOWN_MS, policy)
+    expect(ulang.shouldLog).toBe(true)
+    expect(ulang.shouldNotify).toBe(true)
+    expect(HIGH_RISK_COOLDOWN_MS).toBe(menit(15))
+  })
+
+  it('Meningkat tetap memakai jeda 30 menit', () => {
+    expect(alertPolicy('elevated').cooldownMs).toBe(ALERT_COOLDOWN_MS)
+  })
+
+  it('tingkat yang tidak dikenal jatuh ke Standar', () => {
+    expect(alertPolicy('entah')).toEqual(alertPolicy('standard'))
+    expect(alertPolicy(undefined)).toEqual(alertPolicy('standard'))
+  })
+
+  it('tingkat risiko tidak pernah mengubah STATUS pembacaan', () => {
+    // Yang disesuaikan hanya notifikasi & jeda. Angka ambang sensor tetap —
+    // tekanan 190 kPa tetap aman untuk pasien mana pun.
+    const items = evaluateMetrics(reading({ pressure: { peak: 190, location: 'heel', points: {} } }))
+    expect(items.find((item) => item.metric === 'pressure').status).toBe('safe')
+    const hasil = decideAlert(undefined, 'safe', now, alertPolicy('high'))
+    expect(hasil.shouldLog).toBe(false)
+    expect(hasil.shouldNotify).toBe(false)
   })
 })

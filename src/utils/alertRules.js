@@ -49,6 +49,33 @@ export const STATUS_RANK = { safe: 0, warning: 1, danger: 2 }
 // pada aplikasi pemantauan sama merugikannya dengan tidak ada notifikasi.
 export const ALERT_COOLDOWN_MS = 30 * 60 * 1000
 
+// Jeda untuk pasien berisiko TINGGI (utils/riskProfile.js): kondisi yang
+// bertahan diingatkan dua kali lebih sering. Tidak lebih pendek dari ini —
+// 15 menit masih memberi waktu untuk benar-benar duduk dan mengurangi beban
+// sebelum HP berbunyi lagi.
+export const HIGH_RISK_COOLDOWN_MS = 15 * 60 * 1000
+
+// Cara peringatan diperlakukan per tingkat risiko pasien.
+//
+//   notifyFrom — status TERENDAH yang membunyikan notifikasi. Semua status
+//                non-aman tetap DICATAT di tingkat mana pun; yang berubah
+//                hanya apakah HP ikut berbunyi.
+//   cooldownMs — jeda sebelum metrik yang sama boleh memicu lagi.
+//
+// Angka ambang sensor SENGAJA tidak ada di sini — lihat alasannya di kepala
+// utils/riskProfile.js.
+const ALERT_POLICIES = {
+  standard: { notifyFrom: 'danger', cooldownMs: ALERT_COOLDOWN_MS },
+  elevated: { notifyFrom: 'warning', cooldownMs: ALERT_COOLDOWN_MS },
+  high: { notifyFrom: 'warning', cooldownMs: HIGH_RISK_COOLDOWN_MS },
+}
+
+// Tingkat yang tidak dikenal jatuh ke Standar — arah gagal yang sama dengan
+// data profil yang tidak sah.
+export function alertPolicy(tier) {
+  return ALERT_POLICIES[tier] ?? ALERT_POLICIES.standard
+}
+
 export function evaluateMetrics(data) {
   const peak = data.pressure?.peak ?? 0
   const pressureStatus = getPressureStatus(peak)
@@ -163,8 +190,12 @@ export function evaluateMetrics(data) {
 // Dua aturan:
 //   1. Hanya transisi ke status baru yang dicatat (bukan tiap pembacaan).
 //   2. Status yang sama pada metrik yang sama tidak boleh dicatat ulang
-//      sebelum ALERT_COOLDOWN_MS lewat, sekalipun sempat kembali ke `safe`.
-export function decideAlert(prevEntry, status, now, cooldownMs = ALERT_COOLDOWN_MS) {
+//      sebelum jeda lewat, sekalipun sempat kembali ke `safe`.
+//
+// `policy` berasal dari tingkat risiko pasien (alertPolicy di atas); tanpanya
+// berlaku kebijakan Standar.
+export function decideAlert(prevEntry, status, now, policy = alertPolicy('standard')) {
+  const { cooldownMs, notifyFrom } = policy
   const currRank = STATUS_RANK[status] ?? 0
   // Dibandingkan dengan status yang TERAKHIR TERCATAT, bukan dengan status
   // pembacaan sebelumnya. Itu bedanya dengan versi lama, dan itu yang menutup
@@ -212,7 +243,10 @@ export function decideAlert(prevEntry, status, now, cooldownMs = ALERT_COOLDOWN_
     // karena tag notifikasinya per metrik dan `renotify` aktif (lihat
     // utils/notifications.js); tanpa keduanya, notifikasi kedua hanya menimpa
     // yang pertama dalam diam.
-    shouldNotify: status === 'danger',
+    //
+    // Batas bawahnya ditentukan tingkat risiko: Standar hanya berbunyi pada
+    // danger, Meningkat/Tinggi sudah berbunyi sejak warning.
+    shouldNotify: currRank >= (STATUS_RANK[notifyFrom] ?? STATUS_RANK.danger),
     entry: { status, loggedStatus: status, loggedAt: now },
   }
 }
