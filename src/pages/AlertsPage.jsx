@@ -124,7 +124,7 @@ export default function AlertsPage() {
         subtitle={t(i18n)`Dipicu saat tekanan, suhu, atau kelembapan memasuki status Perhatian/Risiko`}
       />
 
-      <section className="metrics-grid">
+      <section className="metrics-grid metrics-grid--stats">
         <article className="metric-card metric-card--safe">
           <div className="metric-card__header">
             <span className="metric-card__icon" aria-hidden="true">

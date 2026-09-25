@@ -3489,6 +3489,13 @@
   gap: 20px;
 }
 
+/* Tanpa min-width: 0, kolom grid ikut melebar sebesar tabelnya, sehingga
+   .table-scroll di dalamnya tidak pernah menggulir dan kolom paling kanan
+   ("Perubahan") terpotong di luar kartu pada layar ponsel. */
+.lab-history__grid > * {
+  min-width: 0;
+}
+
 .lab-history__title {
   margin: 0 0 8px;
   font-size: 15px;
@@ -3672,6 +3679,20 @@
     padding: var(--ds-3) var(--ds-4);
   }
 
+  /* Tablet: topbar satu baris memuat logo, perangkat, Bluetooth, bahasa,
+     koneksi, dan akun — yang tidak muat adalah teks keterangannya (ID
+     perangkat, jam pembaruan). Tanpa ini, nama perangkat patah jadi empat
+     baris di dalam kotak sempit. Jam pembaruan tetap ada di spanduk status
+     halaman Ringkasan. */
+  .device-picker__label small,
+  .connection-pill__time {
+    display: none;
+  }
+
+  .device-picker__label strong {
+    white-space: nowrap;
+  }
+
   .app-main {
     padding: var(--ds-6) var(--ds-4) var(--ds-8);
   }
@@ -3682,9 +3703,19 @@
 }
 
 @media (max-width: 640px) {
-  .point-grid,
-  .temp-compare {
-    grid-template-columns: 1fr;
+  /* .point-grid (Tumit · Metatarsal · Jari) TETAP tiga kolom. Isinya
+     pendek, dan ditumpuk jadi tiga baris membuat tiap kartu metrik dua kali
+     lebih panjang tanpa menambah keterbacaan. */
+  .point-grid {
+    gap: 6px;
+  }
+
+  .point-grid__item {
+    padding: 8px 4px;
+  }
+
+  .point-grid__item strong {
+    font-size: 13px;
   }
 
   .activity-panel__grid {
@@ -3695,6 +3726,42 @@
     padding: 22px 20px;
   }
 
+  /* Kotak chat mengatur padding tiap bagiannya sendiri (header, thread,
+     composer). Aturan .panel di atas sempat menimpanya dan memberi bingkai
+     ganda: gelembung pesan jadi sempit dan header tidak lagi menempel ke
+     tepi kartu. */
+  .panel.chatbot-shell {
+    padding: 0;
+  }
+
+  /* Fakta di kartu Profil: grid dua kolom tanpa garis pemisah. Dengan flex
+     yang membungkus, butir ketiga turun ke baris baru tapi tetap membawa
+     garis kirinya, jadi terlihat seperti tertinggal di tengah kartu. */
+  .profile-hero__facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ds-3) var(--ds-4);
+  }
+
+  .profile-hero__facts > div,
+  .profile-hero__facts > div:first-child {
+    padding: 0;
+    border-left: none;
+  }
+
+  .profile-hero__facts dd {
+    white-space: normal;
+  }
+
+  .chatbot-suggestions {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .chatbot-chip {
+    text-align: left;
+  }
+
   .device-picker__label small {
     display: none;
   }
@@ -3703,41 +3770,186 @@
     display: none;
   }
 
-  .alerts-list__item {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .alerts-list__time {
-    align-self: flex-start;
-  }
-}
-
-/* Satu-satunya breakpoint di luar skala 640/768/1024/1280, disengaja:
-   ponsel selebar 360–400px tidak muat menampilkan wordmark, label
-   koneksi, dan pemilih perangkat sekaligus di satu baris topbar. */
-@media (max-width: 480px) {
-  .app-topbar {
-    gap: 8px;
+  /* Sel tabel lebih rapat di ponsel. Padding 16px di kedua sisi tiap sel
+     membuat tabel tiga kolom (hasil lab) sudah lebih lebar dari kartunya. */
+  .data-table th,
+  .data-table td {
     padding: 10px 12px;
   }
 
-  .app-topbar__brand span {
+  /* Penanda "dikoreksi" pindah ke bawah tanggal alih-alih memperlebar
+     kolom tanggal. */
+  .lab-history__corrected {
+    display: table;
+    margin: 4px 0 0;
+  }
+
+  /* Ikon di kiri, teks di kanan, waktu di bawah teks. Sebelumnya ikonnya
+     menempati satu baris sendiri, jadi tiap peringatan setinggi dua kali
+     isinya. */
+  .alerts-list__item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 12px;
+    row-gap: 4px;
+    padding: 14px;
+  }
+
+  .alerts-list__time {
+    grid-column: 2;
+  }
+
+  /* Tiga kartu ringkasan halaman Peringatan: satu baris tiga kolom, bukan
+     tiga kartu besar bertumpuk yang mendorong daftar peringatannya ke layar
+     kedua. Keterangan kecilnya disembunyikan — judulnya sudah cukup. */
+  .metrics-grid--stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .metrics-grid--stats .metric-card {
+    padding: 12px 10px;
+  }
+
+  .metrics-grid--stats .metric-card__icon,
+  .metrics-grid--stats .metric-card__detail {
     display: none;
   }
 
-  .connection-pill__label {
+  .metrics-grid--stats .metric-card__title {
+    font-size: 12px;
+    line-height: 1.3;
+    margin-bottom: 6px;
+  }
+
+  .metrics-grid--stats .metric-card__value {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .metrics-grid--stats .metric-card__value strong {
+    font-size: 1.6rem;
+  }
+}
+
+/* TOPBAR PONSEL: DUA BARIS.
+   Sebelumnya satu baris berisi logo, pemilih perangkat, tombol Bluetooth,
+   pemilih bahasa, status koneksi, dan tombol akun. Di layar 390px isinya
+   ~476px, jadi pemilih bahasa, status koneksi, dan tombol akun terdorong
+   keluar layar dan SELURUH halaman bisa digeser ke samping.
+
+   Kini (tanpa mengubah JSX, lewat grid-template-areas):
+     baris 1 — logo · · · bahasa · akun
+     baris 2 — perangkat (melebar) · Bluetooth · layar aktif · koneksi
+   Baris kedua adalah status sesi pemantauan, jadi dikelompokkan sendiri. */
+@media (max-width: 640px) {
+  .app-topbar {
+    display: grid;
+    grid-template-areas:
+      'brand  brand brand lang   user'
+      'device ble   wake  status status';
+    grid-template-columns: minmax(0, 1fr) auto auto auto auto;
+    align-items: center;
+    gap: 8px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .app-topbar > .app-topbar__brand {
+    grid-area: brand;
+  }
+
+  .app-topbar > .device-picker {
+    grid-area: device;
+    min-width: 0;
+  }
+
+  .app-topbar > .app-topbar__spacer {
     display: none;
+  }
+
+  .app-topbar > .ble-button {
+    grid-area: ble;
+  }
+
+  .app-topbar > .wakelock-pill {
+    grid-area: wake;
+  }
+
+  .app-topbar > .lang-switch {
+    grid-area: lang;
+  }
+
+  .app-topbar > .connection-pill {
+    grid-area: status;
+    justify-self: end;
+  }
+
+  .app-topbar > .app-topbar__user {
+    grid-area: user;
+  }
+
+  /* Ukuran tombol di baris kedua disamakan, supaya barisnya rata. */
+  .app-topbar .device-picker__trigger,
+  .app-topbar .ble-button,
+  .app-topbar .connection-pill {
+    min-height: 36px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  /* Aturan lama di atas menyembunyikan label ini di ≤640px karena topbar
+     satu baris tidak muat. Di baris kedua ruangnya ada. */
+  .app-topbar .ble-button__label {
+    display: inline;
+    white-space: nowrap;
+  }
+
+  /* Rantai min-width: 0 / max-width: 100% dari sel grid sampai teksnya.
+     Satu mata rantai saja yang lepas, isi pemilih perangkat tetap selebar
+     nama perangkat dan menimpa tombol Bluetooth di sebelahnya. */
+  .app-topbar > .device-picker .device-picker__trigger {
+    min-width: 0;
+    max-width: 100%;
   }
 
   .device-picker__label {
-    max-width: 96px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .device-picker__label strong {
+    max-width: 100%;
   }
 
   .device-picker__label strong {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+}
+
+/* Satu-satunya breakpoint di luar skala 640/768/1024/1280, disengaja:
+   di ponsel 360px baris kedua topbar tidak muat menampilkan label
+   Bluetooth dan label koneksi sekaligus. Yang dikorbankan label koneksi —
+   ikon Wi-Fi-nya sudah menyatakan status — bukan "Sambungkan BLE", satu-
+   satunya petunjuk bahwa tombol itu yang memulai pemantauan. */
+@media (max-width: 400px) {
+  .connection-pill__label {
+    display: none;
+  }
+
+  /* Dengan SATU perangkat, pemilihnya hanya label nama tanpa fungsi. Di
+     360px ruangnya menyusut sampai tinggal titiknya saja, jadi disembunyikan
+     dan tombol Bluetooth mengambil tempatnya. Dengan dua perangkat atau
+     lebih (bukan varian statis), pemilihnya tetap tampil. */
+  .app-topbar > .device-picker:has(.device-picker__trigger--static) {
+    display: none;
+  }
+
+  .app-topbar > .device-picker:has(.device-picker__trigger--static) ~ .ble-button {
+    grid-column: 1 / 3;
+    justify-self: start;
   }
 }
 

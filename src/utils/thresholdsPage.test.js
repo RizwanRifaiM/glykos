@@ -16,6 +16,7 @@ import * as riskProfile from './riskProfile'
 import * as temperatureRise from './temperatureRise'
 import * as temperatureTrend from './temperatureTrend'
 import * as alertRules from './alertRules'
+import * as notifications from './notifications'
 import { BASELINE_SAMPLES } from '../hooks/useTemperatureRise'
 
 const html = readFileSync(new URL('../../public/ambang-batas.html', import.meta.url), 'utf8')
@@ -28,6 +29,7 @@ const SOURCES = {
   ...temperatureRise,
   ...temperatureTrend,
   ...alertRules,
+  ...notifications,
   BASELINE_SAMPLES,
 }
 
@@ -82,6 +84,8 @@ const REQUIRED = [
   'LDL_VALID_DAYS',
   'ALERT_COOLDOWN_MS',
   'HIGH_RISK_COOLDOWN_MS',
+  'NOTIFY_MIN_GAP_MS',
+  'NOTIFY_DANGER_MIN_GAP_MS',
   'SYNC_INTERVAL_MS',
   'STALE_AFTER_MS',
 ]
@@ -124,6 +128,32 @@ describe('public/ambang-batas.html', () => {
         const left = Number(/left:\s*([\d.]+)%/.exec(tag)?.[1])
         const expected = ((value - min) / (max - min)) * 100
         return Math.abs(left - expected) < 0.01 ? null : `${name}: ${left}% ≠ ${expected.toFixed(3)}%`
+      })
+      .filter(Boolean)
+    expect(wrong).toEqual([])
+  })
+
+  // Potongan kode di halaman disalin APA ADANYA dari sumbernya. Tanpa
+  // pemeriksaan ini, kode yang diubah membuat halaman memamerkan versi lama —
+  // lebih menyesatkan daripada tidak menampilkan kode sama sekali.
+  it('setiap potongan kode sama persis dengan berkas sumbernya', () => {
+    const unescape = (text) =>
+      text.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
+    const snippets = [
+      ...html.matchAll(
+        /<pre[^>]*\bdata-source="([^"]+)"[^>]*\bdata-line="(\d+)"[^>]*><code>([\s\S]*?)<\/code><\/pre>/g,
+      ),
+    ]
+    expect(snippets.length).toBeGreaterThan(0)
+
+    const lines = (text) => text.replace(/\r\n/g, '\n').split('\n')
+    const wrong = snippets
+      .map(([, file, line, body]) => {
+        const source = lines(readFileSync(new URL(`../../${file}`, import.meta.url), 'utf8'))
+        const expected = lines(unescape(body))
+        const start = Number(line) - 1
+        const actual = source.slice(start, start + expected.length)
+        return actual.join('\n') === expected.join('\n') ? null : `${file}:${line}`
       })
       .filter(Boolean)
     expect(wrong).toEqual([])
