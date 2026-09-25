@@ -26,6 +26,7 @@ import { useFatigueMonitor } from '../hooks/useFatigueMonitor'
 import { useStepCounter } from '../hooks/useStepCounter'
 import { useFirestoreSync } from '../hooks/useFirestoreSync'
 import { useTemperatureTrendAlert } from '../hooks/useTemperatureTrendAlert'
+import { useConnectionLostAlert } from '../hooks/useConnectionLostAlert'
 import { useRiskProfile } from '../hooks/useRiskProfile'
 import { useLabHistory } from '../hooks/useLabHistory'
 import { useWakeLock } from '../hooks/useWakeLock'
@@ -34,6 +35,7 @@ import { useTemperatureRise } from '../hooks/useTemperatureRise'
 import { useDayKey } from '../hooks/useDayKey'
 import { evaluateTemperatureTrend } from '../utils/temperatureTrend'
 import { resolveReadingSource, todayActivity } from '../utils/dailyReading'
+import { countEventsOnDay } from '../utils/alertEvents'
 import { useAuth } from '../contexts/auth-context'
 import {
   IconLayoutDashboard,
@@ -316,6 +318,9 @@ export default function DashboardLayout() {
   const historyLoading = demoMode ? false : realHistoryLoading
   const alerts = demoMode ? DEMO_ALERTS : realAlerts
   const alertsLoading = demoMode ? false : realAlertsLoading
+  // Angka di ikon Peringatan pada menu: KEJADIAN hari ini, bukan seluruh
+  // catatan yang dimuat. Lihat utils/alertEvents.js.
+  const todayAlertEvents = useMemo(() => countEventsOnDay(alerts, todayKey), [alerts, todayKey])
   const labs = demoMode ? DEMO_LABS : realLabs
   const labsLoading = demoMode ? false : realLabsLoading
 
@@ -328,6 +333,10 @@ export default function DashboardLayout() {
   // seperti useAlertMonitor di atas: angka contoh tidak boleh mengendap di
   // Firestore sebagai peringatan sungguhan.
   useTemperatureTrendAlert(demoMode ? null : uid, deviceId, temperatureTrend)
+
+  // Putus Bluetooth yang tidak diminta = pemantauan berhenti diam-diam.
+  // Pengguna diberi tahu lewat notifikasi HP. Lihat useConnectionLostAlert.js.
+  useConnectionLostAlert(ble.lostAt, !demoMode)
   // Ditandai live supaya banner onboarding "belum ada data" tidak menutupi
   // kartu metrik yang justru ingin ditinjau. Ajakan menyambungkan perangkat
   // tidak hilang — pindah ke DemoModeBanner yang membawa tombol Bluetooth-nya.
@@ -363,8 +372,8 @@ export default function DashboardLayout() {
             >
               <span className="app-sidebar__icon">
                 <ItemIcon size={20} />
-                {to === '/dashboard/alerts' && alerts.length > 0 && (
-                  <span className="app-sidebar__badge">{alerts.length}</span>
+                {to === '/dashboard/alerts' && todayAlertEvents > 0 && (
+                  <span className="app-sidebar__badge">{todayAlertEvents}</span>
                 )}
               </span>
               <span>{i18n._(label)}</span>
@@ -504,8 +513,8 @@ export default function DashboardLayout() {
           >
             <span className="app-bottom-nav__icon">
               <ItemIcon size={20} />
-              {to === '/dashboard/alerts' && alerts.length > 0 && (
-                <span className="app-bottom-nav__badge">{alerts.length}</span>
+              {to === '/dashboard/alerts' && todayAlertEvents > 0 && (
+                <span className="app-bottom-nav__badge">{todayAlertEvents}</span>
               )}
             </span>
             <span>{i18n._(label)}</span>

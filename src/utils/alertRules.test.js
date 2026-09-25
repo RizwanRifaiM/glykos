@@ -171,10 +171,10 @@ describe('decideAlert — jeda per metrik', () => {
     expect(dangerLagi.shouldLog).toBe(false)
   })
 
-  it('jedanya 30 menit', () => {
+  it('jedanya 60 menit', () => {
     // Nilainya bagian dari perilaku yang disepakati, bukan detail bebas ubah:
-    // sesi 2–3 jam berarti paling banyak 4–6 peringatan per metrik.
-    expect(ALERT_COOLDOWN_MS).toBe(menit(30))
+    // sesi 2–3 jam berarti paling banyak 2–3 peringatan per metrik.
+    expect(ALERT_COOLDOWN_MS).toBe(menit(60))
   })
 })
 
@@ -195,17 +195,17 @@ describe('decideAlert — tingkat pemantauan pasien', () => {
     }
   })
 
-  it('Tinggi mengulang kondisi yang bertahan setelah 15 menit, bukan 30', () => {
+  it('Tinggi mengulang kondisi yang bertahan setelah 30 menit, bukan 60', () => {
     const policy = alertPolicy('high')
     const awal = decideAlert(undefined, 'warning', now, policy)
-    expect(decideAlert(awal.entry, 'warning', now + menit(14), policy).shouldLog).toBe(false)
+    expect(decideAlert(awal.entry, 'warning', now + menit(29), policy).shouldLog).toBe(false)
     const ulang = decideAlert(awal.entry, 'warning', now + HIGH_RISK_COOLDOWN_MS, policy)
     expect(ulang.shouldLog).toBe(true)
     expect(ulang.shouldNotify).toBe(true)
-    expect(HIGH_RISK_COOLDOWN_MS).toBe(menit(15))
+    expect(HIGH_RISK_COOLDOWN_MS).toBe(menit(30))
   })
 
-  it('Meningkat tetap memakai jeda 30 menit', () => {
+  it('Meningkat tetap memakai jeda 60 menit', () => {
     expect(alertPolicy('elevated').cooldownMs).toBe(ALERT_COOLDOWN_MS)
   })
 

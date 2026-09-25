@@ -152,7 +152,12 @@ ${described.riskNote}`
           // `metric` menentukan tag notifikasinya (utils/notifications.js):
           // peringatan tekanan dan suhu harus berdiri sendiri di shade HP, tidak
           // saling menimpa.
-          notify(riskTitle(i18n, item.metric), body, { metric: item.metric })
+          // `priority` dipakai jeda global di utils/notifications.js: danger
+          // sesudah warning boleh berbunyi lebih cepat, sisanya ditahan.
+          notify(riskTitle(i18n, item.metric), body, {
+            metric: item.metric,
+            priority: STATUS_RANK[item.status] ?? 2,
+          })
         }
       }
 

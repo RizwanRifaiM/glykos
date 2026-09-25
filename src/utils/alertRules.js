@@ -42,18 +42,19 @@ export const STATUS_RANK = { safe: 0, warning: 1, danger: 2 }
 // tercatat, metrik itu diam selama jeda ini apa pun yang terjadi pada statusnya
 // — KECUALI kondisinya memburuk (lihat decideAlert).
 //
-// 30 menit dipilih dengan sesi pemakaian nyata sebagai ukuran: 2–3 jam berarti
-// paling banyak 4–6 peringatan per metrik. Cukup untuk melihat kondisi yang
-// bertahan atau memburuk, tanpa menenggelamkan halaman Peringatan — dan
-// notifikasi yang terlalu sering adalah notifikasi yang mulai diabaikan, yang
-// pada aplikasi pemantauan sama merugikannya dengan tidak ada notifikasi.
-export const ALERT_COOLDOWN_MS = 30 * 60 * 1000
+// 60 menit. Semula 30, dinaikkan karena halaman Peringatan terasa terlalu
+// ramai: 2–3 jam pemakaian kini menghasilkan paling banyak 2–3 catatan per
+// metrik, bukan 4–6. Kondisi yang bertahan tetap terlihat, dan perburukan
+// (warning → danger) tetap tercatat seketika tanpa menunggu jeda ini.
+// Peringatan yang terlalu sering adalah peringatan yang mulai diabaikan, yang
+// pada aplikasi pemantauan sama merugikannya dengan tidak ada peringatan.
+export const ALERT_COOLDOWN_MS = 60 * 60 * 1000
 
 // Jeda untuk pasien berisiko TINGGI (utils/riskProfile.js): kondisi yang
 // bertahan diingatkan dua kali lebih sering. Tidak lebih pendek dari ini —
-// 15 menit masih memberi waktu untuk benar-benar duduk dan mengurangi beban
-// sebelum HP berbunyi lagi.
-export const HIGH_RISK_COOLDOWN_MS = 15 * 60 * 1000
+// 30 menit memberi waktu untuk benar-benar duduk dan mengurangi beban sebelum
+// peringatan berikutnya.
+export const HIGH_RISK_COOLDOWN_MS = 30 * 60 * 1000
 
 // Cara peringatan diperlakukan per tingkat risiko pasien.
 //

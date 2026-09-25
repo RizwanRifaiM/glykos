@@ -197,7 +197,7 @@ export default function ProfilePage() {
     const delivered = await notify(
       t(i18n)`Glykos — Notifikasi Uji`,
       t(i18n)`Notifikasi berhasil dikirim. Peringatan sungguhan akan tampil seperti ini.`,
-      { tag: 'glykos-test' },
+      { tag: 'glykos-test', force: true },
     )
     setTestResult(delivered ? TEST_DELIVERED : TEST_FAILED)
   }

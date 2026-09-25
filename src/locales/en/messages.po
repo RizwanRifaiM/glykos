@@ -492,6 +492,19 @@ msgstr "Ambient air temperature: {airText}°C"
 msgid "Modul sensor Bluetooth Glykos berputar pelan, dengan LED indikator pengiriman data"
 msgstr "The Glykos Bluetooth sensor module rotating slowly, with an LED indicating data transmission"
 
+#: src/components/NotificationPromptBanner.jsx
+msgid "Nyalakan notifikasi di HP ini"
+msgstr "Turn on notifications on this phone"
+
+#: src/components/NotificationPromptBanner.jsx
+msgid "Supaya peringatan tekanan dan suhu kaki, serta pemberitahuan saat sepatu terputus, muncul di HP walaupun layar tidak sedang dilihat."
+msgstr "So foot pressure and temperature alerts, and a notice when the shoe disconnects, reach your phone even when you are not looking at the screen."
+
+#: src/components/NotificationPromptBanner.jsx
+#: src/pages/ProfilePage.jsx
+msgid "Aktifkan notifikasi"
+msgstr "Enable notifications"
+
 #: src/components/ProtectedRoute.jsx
 msgid "Memeriksa sesi…"
 msgstr "Checking your session…"
@@ -770,6 +783,14 @@ msgstr "Glykos — {label} at Risk"
 msgid "Web Bluetooth tidak didukung di browser ini. Gunakan Chrome/Edge lewat http://localhost atau HTTPS."
 msgstr "Web Bluetooth is not supported in this browser. Use Chrome or Edge over http://localhost or HTTPS."
 
+#: src/hooks/useConnectionLostAlert.js
+msgid "Glykos — Sepatu Terputus"
+msgstr "Glykos — Shoe Disconnected"
+
+#: src/hooks/useConnectionLostAlert.js
+msgid "Pemantauan kaki berhenti. Buka Glykos dan sambungkan ulang sepatu supaya peringatan tetap sampai."
+msgstr "Foot monitoring has stopped. Open Glykos and reconnect the shoe so alerts keep coming through."
+
 #: src/hooks/useTemperatureTrendAlert.js
 msgid "Glykos — Selisih Suhu Menetap"
 msgstr "Glykos — Persistent Temperature Spread"
@@ -813,8 +834,8 @@ msgid "Total Peringatan"
 msgstr "Total Alerts"
 
 #: src/pages/AlertsPage.jsx
-msgid "entri"
-msgstr "entries"
+msgid "kejadian"
+msgstr "events"
 
 #: src/pages/AlertsPage.jsx
 msgid "Peringatan terakhir: {lastAlertAt}"
@@ -841,8 +862,8 @@ msgid "Memuat riwayat peringatan…"
 msgstr "Loading alert history…"
 
 #: src/pages/AlertsPage.jsx
-msgid "{shownCount} dari {totalCount} entri"
-msgstr "{shownCount} of {totalCount} entries"
+msgid "{shownCount} dari {totalCount} kejadian"
+msgstr "{shownCount} of {totalCount} events"
 
 #: src/pages/AlertsPage.jsx
 msgid "Filter tingkat keparahan"
@@ -857,8 +878,16 @@ msgid "Tidak ada peringatan dengan filter ini."
 msgstr "No alerts match this filter."
 
 #: src/pages/AlertsPage.jsx
+msgid "{repeatCount}× tercatat"
+msgstr "logged {repeatCount}×"
+
+#: src/pages/AlertsPage.jsx
 msgid "Lokasi: {areaName}"
 msgstr "Location: {areaName}"
+
+#: src/pages/AlertsPage.jsx
+msgid "Lihat {repeatCount} catatan"
+msgstr "Show {repeatCount} records"
 
 #: src/pages/AlertsPage.jsx
 msgid "Catatan hanya dibuat saat dashboard sedang dibuka di browser. Untuk peringatan yang tetap terkirim saat aplikasi tertutup, diperlukan pemantauan sisi server (Cloud Function + push notification) yang belum diaktifkan pada proyek ini."
@@ -1686,10 +1715,6 @@ msgid "Notifikasi diblokir. Aktifkan lewat pengaturan izin situs pada browser An
 msgstr "Notifications are blocked. Enable them through your browser’s site permission settings."
 
 #: src/pages/ProfilePage.jsx
-msgid "Aktifkan notifikasi"
-msgstr "Enable notifications"
-
-#: src/pages/ProfilePage.jsx
 msgid "Bantuan & pertanyaan umum"
 msgstr "Help & FAQ"
 
@@ -1880,16 +1905,16 @@ msgid "Meningkat"
 msgstr "Elevated"
 
 #: src/utils/alertMessages.js
-msgid "Notifikasi berbunyi sejak status Perlu Perhatian, dan kondisi yang bertahan diingatkan lagi setiap 15 menit."
-msgstr "Notifications sound from the Needs Attention status, and ongoing conditions are repeated every 15 minutes."
+msgid "Notifikasi berbunyi sejak status Perlu Perhatian, dan kondisi yang bertahan diingatkan lagi setiap 30 menit."
+msgstr "Notifications sound from the Needs Attention status, and ongoing conditions are repeated every 30 minutes."
 
 #: src/utils/alertMessages.js
 msgid "Notifikasi berbunyi sejak status Perlu Perhatian, bukan hanya saat Risiko."
 msgstr "Notifications sound from the Needs Attention status, not only at Risk."
 
 #: src/utils/alertMessages.js
-msgid "Notifikasi berbunyi saat status Risiko; kondisi yang bertahan diingatkan lagi setiap 30 menit."
-msgstr "Notifications sound at the Risk status; ongoing conditions are repeated every 30 minutes."
+msgid "Notifikasi berbunyi saat status Risiko; kondisi yang bertahan diingatkan lagi setiap 1 jam."
+msgstr "Notifications sound at the Risk status; ongoing conditions are repeated every hour."
 
 #: src/utils/alertMessages.js
 msgid "riwayat ulkus"

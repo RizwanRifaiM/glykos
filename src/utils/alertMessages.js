@@ -219,12 +219,12 @@ export function riskTierLabel(i18n, tier) {
 // supaya pengguna tahu persis akibat dari angka yang ia isi.
 export function riskTierEffect(i18n, tier) {
   if (tier === 'high') {
-    return t(i18n)`Notifikasi berbunyi sejak status Perlu Perhatian, dan kondisi yang bertahan diingatkan lagi setiap 15 menit.`
+    return t(i18n)`Notifikasi berbunyi sejak status Perlu Perhatian, dan kondisi yang bertahan diingatkan lagi setiap 30 menit.`
   }
   if (tier === 'elevated') {
     return t(i18n)`Notifikasi berbunyi sejak status Perlu Perhatian, bukan hanya saat Risiko.`
   }
-  return t(i18n)`Notifikasi berbunyi saat status Risiko; kondisi yang bertahan diingatkan lagi setiap 30 menit.`
+  return t(i18n)`Notifikasi berbunyi saat status Risiko; kondisi yang bertahan diingatkan lagi setiap 1 jam.`
 }
 
 function labMonth(i18n, date) {

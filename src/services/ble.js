@@ -126,8 +126,14 @@ export class BleSensor {
 
   _handleDisconnected() {
     // Dipicu firmware/OS saat koneksi hilang tak terduga.
+    //
+    // Ditandai `unexpected` supaya bisa dibedakan dari putus yang DIMINTA
+    // pengguna (disconnect() di atas melepas listener ini lebih dulu, jadi
+    // jalurnya tidak pernah sampai sini). Bedanya penting: putus tak terduga
+    // berarti pemantauan berhenti tanpa sepengetahuan pengguna, dan itu yang
+    // diberitahukan lewat notifikasi (hooks/useConnectionLostAlert.js).
     this.characteristic = null
-    this._emitStatus('disconnected')
+    this.onStatus?.({ status: 'disconnected', unexpected: true })
   }
 
   _handleValueChanged(event) {

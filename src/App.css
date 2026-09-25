@@ -2415,6 +2415,42 @@
   white-space: nowrap;
 }
 
+/* Kejadian gabungan (utils/alertEvents.js): berapa kali tercatat, dan daftar
+   catatan aslinya yang bisa dibuka. */
+.alerts-list__count {
+  font-size: 12px;
+  color: var(--blue);
+}
+
+.alerts-list__details {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--blue);
+}
+
+.alerts-list__details summary {
+  cursor: pointer;
+  width: fit-content;
+}
+
+.alerts-list__details ul {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+.alerts-list__details li {
+  display: flex;
+  gap: 8px;
+}
+
+.alerts-list__details time {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
 /* History table */
 
 .table-scroll {
@@ -3383,7 +3419,8 @@
    Sengaja lebih tenang dari spanduk tren suhu: ini ajakan memperbarui data,
    bukan tanda bahaya pada kaki. */
 
-.lab-reminder {
+.lab-reminder,
+.notify-prompt {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -3393,7 +3430,8 @@
   border: 1px dashed var(--border-strong);
 }
 
-.lab-reminder__icon {
+.lab-reminder__icon,
+.notify-prompt__icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3405,35 +3443,43 @@
   color: var(--navy);
 }
 
-.lab-reminder__body {
+.lab-reminder__body,
+.notify-prompt__body {
   flex: 1;
   min-width: 0;
 }
 
-.lab-reminder__body strong {
+.lab-reminder__body strong,
+.notify-prompt__body strong {
   display: block;
   font-size: 14px;
   color: var(--navy);
 }
 
-.lab-reminder__body p {
+.lab-reminder__body p,
+.notify-prompt__body p {
   margin: 2px 0 0;
   font-size: 13px;
   line-height: 1.5;
   color: var(--blue);
 }
 
-.lab-reminder .glykos-btn {
+.lab-reminder .glykos-btn,
+.notify-prompt .glykos-btn {
   flex-shrink: 0;
   text-decoration: none;
 }
 
 @media (max-width: 640px) {
-  .lab-reminder {
+  .lab-reminder,
+  .notify-prompt {
     flex-direction: column;
     align-items: flex-start;
   }
 }
+
+/* .notify-prompt (components/NotificationPromptBanner.jsx) sengaja berbagi
+   gaya dengan .lab-reminder di atas: sama-sama ajakan, bukan tanda bahaya. */
 
 /* Riwayat hasil lab (components/LabHistoryPanel.jsx) */
 

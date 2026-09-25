@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseCsvLine } from './ble'
+import { BleSensor, parseCsvLine } from './ble'
 
 // Parser ini adalah satu-satunya penjaga antara firmware dan seluruh dashboard:
 // apa pun yang lolos dari sini dipakai apa adanya sebagai pembacaan sensor.
@@ -41,5 +41,31 @@ describe('parseCsvLine', () => {
   it('menerima nilai negatif dari akselerometer', () => {
     // AX/AY/AZ memang bisa negatif tergantung orientasi pemasangan.
     expect(parseCsvLine('AX:-0.42').AX).toBe(-0.42)
+  })
+})
+
+// Membedakan dua cara putus inilah yang menentukan apakah HP berbunyi
+// (hooks/useConnectionLostAlert.js). Tertukar ke satu arah, pengguna yang
+// menekan tombol putus sendiri ikut mendapat notifikasi; tertukar ke arah
+// lain, sepatu yang benar-benar hilang sambungan tidak memberi tahu siapa pun.
+describe('BleSensor — cara putus', () => {
+  it('menandai putus dari firmware/OS sebagai tak terduga', () => {
+    const events = []
+    const sensor = new BleSensor({ onStatus: (event) => events.push(event) })
+
+    sensor._handleDisconnected()
+
+    expect(events).toEqual([{ status: 'disconnected', unexpected: true }])
+  })
+
+  it('tidak menandai putus yang diminta pengguna', async () => {
+    const events = []
+    const sensor = new BleSensor({ onStatus: (event) => events.push(event) })
+
+    await sensor.disconnect()
+
+    expect(events).toHaveLength(1)
+    expect(events[0].status).toBe('disconnected')
+    expect(events[0].unexpected).toBeUndefined()
   })
 })

@@ -28,6 +28,63 @@ export function notificationTag(metric) {
   return metric ? `glykos-${metric}` : 'glykos-alert'
 }
 
+// BATAS FREKUENSI NOTIFIKASI — LINTAS SEMUA METRIK.
+//
+// Jeda di utils/alertRules.js berlaku PER METRIK. Itu cukup untuk satu metrik,
+// tapi tidak untuk HP-nya: tekanan, suhu, kelembapan, kelelahan, dan sepatu
+// terputus masing-masing boleh berbunyi, sehingga dalam satu jam HP bisa
+// berbunyi berkali-kali. Chrome Android menilai situs yang terlalu sering
+// mengirim notifikasi sebagai spam — memberi label peringatan, lalu bisa
+// MENCABUT izinnya. Kalau itu terjadi, peringatan yang benar-benar penting pun
+// tidak akan sampai lagi.
+//
+// Jadi di sini ada satu jeda untuk SEMUA notifikasi otomatis. Yang ditahan
+// hanya bunyi di HP — peringatannya tetap tercatat di halaman Peringatan.
+//
+// PENGECUALIAN: status RISIKO (danger — ambang tinggi terlampaui) TIDAK
+// menunggu jeda 30 menit. Kondisi yang sudah melewati ambang tinggi adalah
+// alasan aplikasi ini ada; menahannya setengah jam demi menghindari label spam
+// sama saja dengan tidak memberi tahu. Yang tersisa hanya jeda pendek
+// NOTIFY_DANGER_MIN_GAP_MS antara dua notifikasi apa pun, supaya tekanan dan
+// suhu yang melampaui ambang di detik yang sama tidak membunyikan HP beruntun.
+// Pengulangan danger pada metrik yang SAMA tetap dibatasi jeda per metrik di
+// utils/alertRules.js.
+//
+// Status Perlu Perhatian (warning) tetap ikut jeda 30 menit penuh.
+export const NOTIFY_MIN_GAP_MS = 30 * 60 * 1000
+export const NOTIFY_DANGER_MIN_GAP_MS = 5 * 60 * 1000
+
+// Prioritas: 1 = perlu perhatian (warning), 2 = berisiko (danger).
+export function shouldDeliverNotification(last, priority, now) {
+  if (!last || typeof last.at !== 'number') return true
+  const elapsed = now - last.at
+  const gap = priority >= 2 ? NOTIFY_DANGER_MIN_GAP_MS : NOTIFY_MIN_GAP_MS
+  return elapsed >= gap
+}
+
+// Disimpan di localStorage, bukan di memori: tanpa itu, memuat ulang halaman
+// mengosongkan jeda dan HP langsung boleh berbunyi lagi.
+const LAST_KEY = 'glykos:notify-last'
+
+function loadLast() {
+  try {
+    const stored = window.localStorage.getItem(LAST_KEY)
+    return stored ? JSON.parse(stored) : null
+  } catch {
+    return null
+  }
+}
+
+function saveLast(value) {
+  try {
+    window.localStorage.setItem(LAST_KEY, JSON.stringify(value))
+  } catch {
+    // Mode privat / storage penuh — jeda hanya berlaku sampai halaman dimuat ulang.
+  }
+}
+
+let lastInMemory = null
+
 export function isNotificationSupported() {
   return typeof window !== 'undefined' && 'Notification' in window
 }
@@ -61,6 +118,22 @@ async function swRegistration() {
 export async function notify(title, body, options = {}) {
   if (!isNotificationSupported() || Notification.permission !== 'granted') return false
 
+  // `force` hanya untuk notifikasi yang DIMINTA pengguna (tombol uji di
+  // Profil) — itu bukan notifikasi yang tak diminta, jadi tidak ikut dijeda
+  // dan tidak memakai jatah jeda.
+  //
+  // Diperiksa dan dicatat SEBELUM await pertama: dua peringatan yang dipicu
+  // pada pembacaan yang sama (tekanan dan suhu sekaligus) harus melihat jeda
+  // yang sama, bukan sama-sama lolos.
+  if (!options.force) {
+    const now = Date.now()
+    const priority = options.priority ?? 2
+    const last = loadLast() ?? lastInMemory
+    if (!shouldDeliverNotification(last, priority, now)) return false
+    lastInMemory = { at: now, priority }
+    saveLast(lastInMemory)
+  }
+
   const payload = {
     body,
     icon: ICON,
@@ -90,7 +163,7 @@ export async function notify(title, body, options = {}) {
     // WAJIB menyertai `tag`. Di Android, notifikasi yang menimpa notifikasi
     // ber-tag sama DEFAULT-NYA SENYAP: tidak ada suara, getar, maupun banner —
     // entri di shade hanya diperbarui diam-diam. Tanpa baris ini, peringatan
-    // `danger` kedua pada metrik yang sama (setelah cooldown 10 menit di
+    // `danger` kedua pada metrik yang sama (setelah jeda di
     // utils/alertRules.js) sampai ke HP tanpa memberi tahu siapa pun, dan
     // `notify()` tetap mengembalikan true — jadi kegagalannya tidak terlihat
     // dari sisi mana pun.

@@ -14,7 +14,8 @@ import {
 import PageHeader from '../components/PageHeader'
 import { SkeletonAlertList } from '../components/Skeleton'
 import { describeStoredAlert } from '../utils/alertMessages'
-import { formatDateTime, formatLongDate, formatNumber } from '../utils/locale'
+import { alertDate, groupAlertEvents } from '../utils/alertEvents'
+import { formatDateTime, formatLongDate, formatNumber, formatTimeOfDay } from '../utils/locale'
 
 const STATUS_LABELS = { warning: msg`Perhatian`, danger: msg`Risiko` }
 
@@ -35,16 +36,19 @@ const SEVERITY_FILTERS = [
   { key: 'warning', label: msg`Perhatian` },
 ]
 
-function toDate(ts) {
-  if (!ts) return null
-  const date = typeof ts.toDate === 'function' ? ts.toDate() : new Date(ts)
-  return isNaN(date.getTime()) ? null : date
-}
-
 function formatTimestamp(ts) {
-  const date = toDate(ts)
+  const date = alertDate(ts)
   if (!date) return '—'
   return formatDateTime(date) ?? '—'
+}
+
+// Rentang jam satu kejadian gabungan, mis. "13.05–15.40". Kejadian dengan satu
+// catatan tetap menampilkan tanggal & jam lengkap seperti sebelumnya.
+function formatEventTime(event) {
+  if (event.count === 1 || !event.firstAt || !event.lastAt) {
+    return formatTimestamp(event.latest.createdAt)
+  }
+  return `${formatTimeOfDay(event.firstAt)}–${formatTimeOfDay(event.lastAt)}`
 }
 
 // Label kelompok per hari. Dikelompokkan berdasarkan KUNCI stabil ('today',
@@ -78,36 +82,40 @@ export default function AlertsPage() {
   const { i18n } = useLingui()
   const [severityFilter, setSeverityFilter] = useState('all')
 
+  // Yang dihitung dan ditampilkan adalah KEJADIAN, bukan catatan mentah —
+  // catatan yang berulang untuk kondisi yang sama pada hari yang sama
+  // digabung. Lihat utils/alertEvents.js.
+  const events = useMemo(() => groupAlertEvents(alerts), [alerts])
+
   const counts = useMemo(() => {
     let danger = 0
     let warning = 0
-    alerts.forEach((alert) => {
-      if (alert.status === 'danger') danger += 1
-      else if (alert.status === 'warning') warning += 1
+    events.forEach((event) => {
+      if (event.status === 'danger') danger += 1
+      else if (event.status === 'warning') warning += 1
     })
-    return { total: alerts.length, danger, warning }
-  }, [alerts])
+    return { total: events.length, danger, warning }
+  }, [events])
 
-  const filteredAlerts = useMemo(() => {
-    if (severityFilter === 'all') return alerts
-    return alerts.filter((alert) => alert.status === severityFilter)
-  }, [alerts, severityFilter])
+  const filteredEvents = useMemo(() => {
+    if (severityFilter === 'all') return events
+    return events.filter((event) => event.status === severityFilter)
+  }, [events, severityFilter])
 
   const groups = useMemo(() => {
     const map = new Map()
-    filteredAlerts.forEach((alert) => {
-      const date = toDate(alert.createdAt)
-      const key = date ? dayGroupKey(date) : { kind: 'unknown' }
+    filteredEvents.forEach((event) => {
+      const key = event.lastAt ? dayGroupKey(event.lastAt) : { kind: 'unknown' }
       const id = key.kind === 'date' ? `date:${key.time}` : key.kind
       if (!map.has(id)) map.set(id, { key, items: [] })
-      map.get(id).items.push(alert)
+      map.get(id).items.push(event)
     })
     return [...map.entries()]
-  }, [filteredAlerts])
+  }, [filteredEvents])
 
   const lastAlertAt = alerts.length > 0 ? formatTimestamp(alerts[0].createdAt) : '—'
-  const shownCount = formatNumber(filteredAlerts.length)
-  const totalCount = formatNumber(alerts.length)
+  const shownCount = formatNumber(filteredEvents.length)
+  const totalCount = formatNumber(events.length)
 
   return (
     <div className="alerts-page">
@@ -131,7 +139,7 @@ export default function AlertsPage() {
           <div className="metric-card__value">
             <strong>{formatNumber(counts.total)}</strong>
             <span>
-              <Trans>entri</Trans>
+              <Trans>kejadian</Trans>
             </span>
           </div>
           <p className="metric-card__detail">
@@ -153,7 +161,7 @@ export default function AlertsPage() {
           <div className="metric-card__value">
             <strong>{formatNumber(counts.warning)}</strong>
             <span>
-              <Trans>entri</Trans>
+              <Trans>kejadian</Trans>
             </span>
           </div>
           <p className="metric-card__detail">
@@ -175,7 +183,7 @@ export default function AlertsPage() {
           <div className="metric-card__value">
             <strong>{formatNumber(counts.danger)}</strong>
             <span>
-              <Trans>entri</Trans>
+              <Trans>kejadian</Trans>
             </span>
           </div>
           <p className="metric-card__detail">
@@ -195,7 +203,7 @@ export default function AlertsPage() {
                 <Trans>Memuat riwayat peringatan…</Trans>
               ) : (
                 <Trans>
-                  {shownCount} dari {totalCount} entri
+                  {shownCount} dari {totalCount} kejadian
                 </Trans>
               )}
             </p>
@@ -215,7 +223,7 @@ export default function AlertsPage() {
 
         {alertsLoading ? (
           <SkeletonAlertList items={4} />
-        ) : filteredAlerts.length === 0 ? (
+        ) : filteredEvents.length === 0 ? (
           <div className="alerts-panel__empty">
             <IconShieldAlert size={32} />
             <p>
@@ -233,7 +241,8 @@ export default function AlertsPage() {
             <div key={groupId} className="alerts-group">
               <h3 className="alerts-group__label">{dayGroupLabel(i18n, group.key)}</h3>
               <ul className="alerts-list">
-                {group.items.map((alert) => {
+                {group.items.map((event) => {
+                  const alert = event.latest
                   const MetricIcon = METRIC_ICONS[alert.metric] ?? IconShieldAlert
                   // Catatan BARU tersimpan sebagai data terstruktur dan
                   // kalimatnya dirakit di sini, jadi ikut bahasa aktif. Catatan
@@ -245,9 +254,10 @@ export default function AlertsPage() {
                   // Variabel dulu — `view.location` di dalam <Trans> ditolak
                   // rule lingui/no-expression-in-message.
                   const areaName = view.location
+                  const repeatCount = formatNumber(event.count)
                   return (
                     <li
-                      key={alert.id}
+                      key={event.id}
                       className={`alerts-list__item alerts-list__item--${alert.status}`}
                     >
                       <span
@@ -264,6 +274,11 @@ export default function AlertsPage() {
                               ? i18n._(STATUS_LABELS[alert.status])
                               : alert.status}
                           </span>
+                          {event.count > 1 && (
+                            <span className="alerts-list__count">
+                              <Trans>{repeatCount}× tercatat</Trans>
+                            </span>
+                          )}
                         </div>
                         <p>{view.message}</p>
                         {view.location && (
@@ -271,8 +286,25 @@ export default function AlertsPage() {
                             <Trans>Lokasi: {areaName}</Trans>
                           </span>
                         )}
+                        {/* Catatan aslinya tetap bisa dilihat satu per satu —
+                            yang digabung hanya tampilannya. */}
+                        {event.count > 1 && (
+                          <details className="alerts-list__details">
+                            <summary>
+                              <Trans>Lihat {repeatCount} catatan</Trans>
+                            </summary>
+                            <ul>
+                              {event.items.map((item) => (
+                                <li key={item.id}>
+                                  <time>{formatTimestamp(item.createdAt)}</time>
+                                  <span>{describeStoredAlert(i18n, item).message}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </details>
+                        )}
                       </div>
-                      <time className="alerts-list__time">{formatTimestamp(alert.createdAt)}</time>
+                      <time className="alerts-list__time">{formatEventTime(event)}</time>
                     </li>
                   )
                 })}

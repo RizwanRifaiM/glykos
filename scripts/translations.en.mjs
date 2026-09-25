@@ -298,14 +298,16 @@ export default {
   'Dipicu saat tekanan, suhu, atau kelembapan memasuki status Perhatian/Risiko':
     'Triggered when pressure, temperature, or humidity enters Attention/Risk status',
   'Total Peringatan': 'Total Alerts',
-  entri: 'entries',
   'Peringatan terakhir: {lastAlertAt}': 'Last alert: {lastAlertAt}',
   'Status mendekati ambang risiko': 'Status approaching the risk threshold',
   'Risiko Terdeteksi': 'Risk Detected',
   'Melewati ambang aman — perlu tindakan': 'Past the safe threshold — action needed',
   'Riwayat Peringatan': 'Alert History',
   'Memuat riwayat peringatan…': 'Loading alert history…',
-  '{shownCount} dari {totalCount} entri': '{shownCount} of {totalCount} entries',
+  '{shownCount} dari {totalCount} kejadian': '{shownCount} of {totalCount} events',
+  kejadian: 'events',
+  '{repeatCount}× tercatat': 'logged {repeatCount}×',
+  'Lihat {repeatCount} catatan': 'Show {repeatCount} records',
   'Filter tingkat keparahan': 'Filter by severity',
   'Belum ada peringatan tercatat. Semua parameter masih dalam batas aman.':
     'No alerts recorded yet. All parameters are still within safe limits.',
@@ -692,12 +694,12 @@ export default {
     'General target for people with diabetes: below 100 mg/dL',
   'Standar': 'Standard',
   'Meningkat': 'Elevated',
-  'Notifikasi berbunyi sejak status Perlu Perhatian, dan kondisi yang bertahan diingatkan lagi setiap 15 menit.':
-    'Notifications sound from the Needs Attention status, and ongoing conditions are repeated every 15 minutes.',
+  'Notifikasi berbunyi sejak status Perlu Perhatian, dan kondisi yang bertahan diingatkan lagi setiap 30 menit.':
+    'Notifications sound from the Needs Attention status, and ongoing conditions are repeated every 30 minutes.',
   'Notifikasi berbunyi sejak status Perlu Perhatian, bukan hanya saat Risiko.':
     'Notifications sound from the Needs Attention status, not only at Risk.',
-  'Notifikasi berbunyi saat status Risiko; kondisi yang bertahan diingatkan lagi setiap 30 menit.':
-    'Notifications sound at the Risk status; ongoing conditions are repeated every 30 minutes.',
+  'Notifikasi berbunyi saat status Risiko; kondisi yang bertahan diingatkan lagi setiap 1 jam.':
+    'Notifications sound at the Risk status; ongoing conditions are repeated every hour.',
   'riwayat ulkus': 'ulcer history',
   'neuropati': 'neuropathy',
   'HbA1c {valueText} % ({month})': 'HbA1c {valueText} % ({month})',
@@ -776,4 +778,12 @@ export default {
   'Tubuh tidak memakai insulin dengan efektif; tipe paling umum':
     'The body does not use insulin effectively; the most common type',
   'Muncul selama kehamilan': 'Develops during pregnancy',
+
+  // ------------------------------------------ notifikasi: sepatu terputus
+  'Glykos — Sepatu Terputus': 'Glykos — Shoe Disconnected',
+  'Pemantauan kaki berhenti. Buka Glykos dan sambungkan ulang sepatu supaya peringatan tetap sampai.':
+    'Foot monitoring has stopped. Open Glykos and reconnect the shoe so alerts keep coming through.',
+  'Nyalakan notifikasi di HP ini': 'Turn on notifications on this phone',
+  'Supaya peringatan tekanan dan suhu kaki, serta pemberitahuan saat sepatu terputus, muncul di HP walaupun layar tidak sedang dilihat.':
+    'So foot pressure and temperature alerts, and a notice when the shoe disconnects, reach your phone even when you are not looking at the screen.',
 }
