@@ -10,6 +10,8 @@ import SensorFootMap from '../components/SensorFootMap'
 import PageHeader from '../components/PageHeader'
 import StatusBanner from '../components/StatusBanner'
 import TemperatureTrendBanner from '../components/TemperatureTrendBanner'
+import LabReminderBanner from '../components/LabReminderBanner'
+import NotificationPromptBanner from '../components/NotificationPromptBanner'
 import Button, { LinkButton } from '../components/Button'
 import { IconDownload, IconFileText, IconRefreshCw } from '../components/icons'
 import { exportToCsv, exportToPdf } from '../utils/exportData'
@@ -27,6 +29,7 @@ export default function DashboardOverview() {
     ble,
     hasReading,
     hadDataBefore,
+    riskProfile,
   } = useOutletContext()
   const { t } = useLingui()
   // exportToCsv/exportToPdf menerima i18n: laporan yang keluar dari aplikasi
@@ -71,6 +74,13 @@ export default function DashboardOverview() {
           daripada angka satu detik terakhir, dan komponennya sendiri tidak
           merender apa pun selama kondisinya normal. */}
       <TemperatureTrendBanner trend={temperatureTrend} />
+
+      {/* Hanya muncul bila hasil lab kosong/kedaluwarsa — saat itu tingkat
+          pemantauan jatuh ke Standar, dan pengguna perlu tahu kenapa. */}
+      <LabReminderBanner risk={riskProfile} />
+
+      {/* Hanya muncul selama izin notifikasi belum pernah diminta. */}
+      <NotificationPromptBanner />
 
       {/* Urutan mengikuti bobot klinis, bukan urutan sensor di firmware.
           Selisih suhu antar area adalah prediktor pre-ulkus terkuat dari

@@ -8,6 +8,7 @@ import HistoryChart from '../components/HistoryChart'
 import HistorySummaryCards from '../components/HistorySummaryCards'
 import PageHeader from '../components/PageHeader'
 import TemperatureTrendBanner from '../components/TemperatureTrendBanner'
+import LabHistoryPanel from '../components/LabHistoryPanel'
 import { SkeletonTableRows } from '../components/Skeleton'
 import { IconDownload, IconFileText, IconHistory } from '../components/icons'
 import { exportToCsv, exportToPdf } from '../utils/exportData'
@@ -80,8 +81,17 @@ function RiseCell({ row, hasEntry }) {
 const riseCell = (row, hasEntry) => <RiseCell row={row} hasEntry={hasEntry} />
 
 export default function HistoryPage() {
-  const { data, history, historyLoading, historyRange, setHistoryRange, alerts, temperatureTrend } =
-    useOutletContext()
+  const {
+    data,
+    history,
+    historyLoading,
+    historyRange,
+    setHistoryRange,
+    alerts,
+    temperatureTrend,
+    labs,
+    labsLoading,
+  } = useOutletContext()
   const { i18n } = useLingui()
   const [visibleMetrics, setVisibleMetrics] = useState(METRIC_KEYS)
   const [sortDesc, setSortDesc] = useState(true)
@@ -350,6 +360,8 @@ export default function HistoryPage() {
           </table>
         </div>
       </section>
+
+      <LabHistoryPanel labs={labs} isLoading={labsLoading} />
     </div>
   )
 }

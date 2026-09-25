@@ -11,6 +11,25 @@ rules_version = '2';
 // Path lama `devices/{deviceId}/...` (dipakai sebelum scoping ini ada) sengaja
 // TIDAK diberi aturan apa pun, jadi otomatis ditolak. Data lama di sana perlu
 // dipindahkan manual lewat console/skrip admin bila masih dibutuhkan.
+//
+// KENAPA TIAP KOLEKSI DITULIS TERPISAH, BUKAN SATU `{documents=**}`
+// Versi sebelumnya memakai satu wildcard rekursif untuk seluruh subtree
+// perangkat, dengan `create, update` diizinkan di mana-mana dan `delete`
+// ditolak. Niatnya benar — catatan medis tidak boleh dihapus — tapi
+// penjagaannya bocor: `update` yang diizinkan pada `history/{id}` dan
+// `alerts/{id}` berarti catatan yang SUDAH ADA bisa DITIMPA di tempat.
+// Efeknya sama dengan menghapus, hanya lebih sulit terlihat karena
+// dokumennya tetap ada dengan jumlah yang sama.
+//
+// Append-only karena itu tidak cukup dinyatakan dengan menolak `delete`; ia
+// menuntut `update` ikut ditolak. Dan itu hanya bisa dinyatakan per koleksi,
+// karena dua koleksi lain di subtree yang sama JUSTRU harus bisa ditimpa.
+//
+// Konsekuensi yang harus diingat saat menambah koleksi baru: path yang tidak
+// punya blok `match` di sini DITOLAK, bukan diizinkan. Itu arah gagal yang
+// benar untuk data kesehatan, tapi berarti koleksi baru harus didaftarkan di
+// sini — berpasangan dengan `services/paths.js`, seperti yang sudah dicatat di
+// berkas itu.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -18,23 +37,141 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == uid;
     }
 
+    // ---------------------------------------------------------------------
+    // VALIDASI DATA KESEHATAN
+    //
+    // Sampai sini aturan hanya memeriksa SIAPA yang menulis. Sejak HbA1c,
+    // LDL, riwayat ulkus, dan neuropati menentukan tingkat pemantauan
+    // (src/utils/riskProfile.js), ISINYA juga diperiksa: formulir di
+    // aplikasi sudah menolak nilai aneh, tapi formulir bukan satu-satunya
+    // jalan menulis ke Firestore.
+    //
+    // Rentang di bawah HARUS sama dengan HBA1C_RANGE / LDL_RANGE di
+    // src/utils/riskProfile.js. Kalau berbeda, aplikasi menerima nilai yang
+    // lalu ditolak di sini — dan batch penyimpanan profil gagal seluruhnya.
+    // ---------------------------------------------------------------------
+
+    function isDateKey(value) {
+      return value is string && value.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    // Kosong ('' atau null) selalu boleh: field yang tidak diisi.
+    function isBlank(value) {
+      return value == null || value == '';
+    }
+
+    function optionalNumberIn(value, lo, hi) {
+      return isBlank(value) || (value is number && value >= lo && value <= hi);
+    }
+
+    function optionalDateKey(value) {
+      return isBlank(value) || isDateKey(value);
+    }
+
+    // Field lain di profil (tipe diabetes, kontak darurat, catatan) sengaja
+    // tidak dibatasi — mereka tidak dibaca sistem, dan membatasi kunci
+    // dokumen akan menolak profil lama yang menyimpan field tambahan.
+    function validProfile(data) {
+      return optionalNumberIn(data.get('hba1c', null), 4, 20)
+        && optionalNumberIn(data.get('ldl', null), 20, 400)
+        && optionalDateKey(data.get('hba1cDate', null))
+        && optionalDateKey(data.get('ldlDate', null))
+        && data.get('ulcerHistory', '') in [null, '', 'yes', 'no']
+        && data.get('neuropathy', '') in [null, '', 'yes', 'no', 'unknown'];
+    }
+
+    // Satu hasil lab di riwayat. Kuncinya DIBATASI persis — catatan medis
+    // tidak boleh membawa field yang tidak dikenal siapa pun.
+    //
+    // `createdAt == request.time` memaksa waktu server: urutan koreksi
+    // (catatan mana yang lebih baru untuk tanggal pemeriksaan yang sama)
+    // bergantung padanya, jadi jam perangkat tidak boleh menentukannya.
+    function validLabEntry(data) {
+      return data.keys().hasOnly(['type', 'value', 'unit', 'testedAt', 'createdAt'])
+        && data.keys().hasAll(['type', 'value', 'unit', 'testedAt', 'createdAt'])
+        && data.value is number
+        && isDateKey(data.testedAt)
+        && data.createdAt == request.time
+        && (
+          (data.type == 'hba1c' && data.unit == '%' && data.value >= 4 && data.value <= 20)
+          || (data.type == 'ldl' && data.unit == 'mg/dL' && data.value >= 20 && data.value <= 400)
+        );
+    }
+
     // Profil pasien: users/{uid} — ditulis ProfilePage.jsx
     match /users/{uid} {
       allow read: if isOwner(uid);
       // Hanya create/update; penghapusan akun ditangani di luar klien.
-      allow create, update: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validProfile(request.resource.data);
       allow delete: if false;
 
-      // Seluruh data perangkat milik pengguna ini:
-      //   devices/{deviceId}/live/current   — snapshot terbaru (useSensorData)
-      //   devices/{deviceId}/history/{id}   — log per menit (useHistoryData)
-      //   devices/{deviceId}/alerts/{id}    — peringatan (useAlerts)
-      match /devices/{deviceId}/{documents=**} {
+      // labs/{id} — riwayat hasil lab (HbA1c, LDL). APPEND-ONLY, alasan yang
+      // sama dengan `alerts`: hasil pemeriksaan adalah catatan medis. Salah
+      // ketik diperbaiki dengan catatan BARU untuk tanggal yang sama; yang
+      // lama tetap ada (lihat summariseLabHistory di src/utils/labResults.js).
+      //
+      // Letaknya di bawah pengguna, bukan perangkat: HbA1c milik pasien dan
+      // tidak berubah karena sepatunya diganti.
+      match /labs/{labId} {
         allow read: if isOwner(uid);
-        allow create, update: if isOwner(uid);
-        // History & alerts bersifat append-only: catatan medis tidak boleh
-        // dihapus diam-diam dari sisi klien.
-        allow delete: if false;
+        allow create: if isOwner(uid) && validLabEntry(request.resource.data);
+        allow update, delete: if false;
+      }
+
+      // Dokumen perangkatnya sendiri tidak pernah dibaca maupun ditulis klien
+      // (tidak ada `deviceDoc` di services/paths.js) — ia hanya induk implisit
+      // dari keempat koleksi di bawah. Bacanya tetap diizinkan supaya metadata
+      // perangkat bisa ditambahkan nanti tanpa menabrak aturan; menulisnya
+      // TIDAK, karena belum ada yang perlu menulisnya.
+      //
+      // Aturan Firestore tidak menurun ke subkoleksi: tiap koleksi di bawah
+      // menyatakan izinnya sendiri, dan itu memang yang diinginkan di sini.
+      match /devices/{deviceId} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+
+        // live/current — kondisi SEKARANG. Ditimpa tiap 60 detik oleh
+        // useFirestoreSync, jadi `update` memang harus ada. Ini satu-satunya
+        // dokumen yang sifatnya "nilai terakhir", bukan catatan.
+        match /live/{docId} {
+          allow read: if isOwner(uid);
+          allow create, update: if isOwner(uid);
+          allow delete: if false;
+        }
+
+        // daily/{tanggal} — rangkuman harian yang dibaca halaman Riwayat.
+        // Turunan, bukan catatan asli: tiap sinkronisasi menggabungkan sampel
+        // baru ke dalamnya lewat transaksi (baca lalu tulis), jadi butuh
+        // `update` DAN `read` sekaligus. Yang asli tetap ada di `history`.
+        match /daily/{dateKey} {
+          allow read: if isOwner(uid);
+          allow create, update: if isOwner(uid);
+          allow delete: if false;
+        }
+
+        // history/{id} — APPEND-ONLY. Catatan mentah per menit, ditulis hanya
+        // lewat addDoc() yang selalu memakai ID baru. Tidak ada satu pun jalur
+        // di aplikasi yang perlu mengubah catatan yang sudah tertulis, jadi
+        // `update` ditolak — bukan sekadar tidak dipakai, tapi tidak mungkin.
+        match /history/{docId} {
+          allow read: if isOwner(uid);
+          allow create: if isOwner(uid);
+          allow update, delete: if false;
+        }
+
+        // alerts/{id} — APPEND-ONLY, dengan alasan yang lebih kuat lagi.
+        //
+        // Peringatan adalah catatan bahwa sesuatu pernah terdeteksi pada kaki
+        // pengguna. Mengubahnya setelah tertulis berarti mengubah riwayat
+        // klinis. Yang tersimpan pun sengaja hanya metrik + status + ANGKA,
+        // tanpa kalimat: teksnya dirakit utils/alertMessages.js saat DIBACA,
+        // jadi tidak pernah ada alasan menyentuh dokumen lama — bahkan untuk
+        // memperbaiki bahasa atau kalimatnya.
+        match /alerts/{docId} {
+          allow read: if isOwner(uid);
+          allow create: if isOwner(uid);
+          allow update, delete: if false;
+        }
       }
     }
   }

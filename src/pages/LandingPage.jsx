@@ -6,13 +6,13 @@ import { LinkButton } from '../components/Button'
 import { variantProps } from '../components/button-variants'
 import { useAuth } from '../contexts/auth-context'
 import InsoleIllustration from '../components/InsoleIllustration'
+import BrandMark from '../components/BrandMark'
 import ShoeViewer from '../components/ShoeViewer'
 import DeviceExplodedViewer from '../components/DeviceExplodedViewer'
 import FloatingModuleViewer from '../components/FloatingModuleViewer'
 import SensorInsoleViewer from '../components/SensorInsoleViewer'
 import ModuleShowcaseViewer from '../components/ModuleShowcaseViewer'
 import { DEMO_PRESSURE_POINTS } from '../three/sensorPoints'
-import { COLORS } from '../constants/theme'
 import {
   IconGauge,
   IconThermometer,
@@ -109,18 +109,19 @@ const THRESHOLDS = [
   },
 ]
 
-// `photo` kosong dulu — begitu foto anggota tersedia, isi dengan path
-// gambarnya (mis. '/team/arkanara.jpg') dan kartu otomatis menampilkan
-// foto tersebut menggantikan avatar inisial.
+// `photo` menunjuk ke public/team/ — potongan kepala-bahu 240×240 dari foto
+// seluruh badan aslinya (4000×6000, ~4 MB). Avatarnya hanya 76 px, jadi 240
+// sudah cukup tajam di layar 3× dan tiap berkas tinggal ~10 KB. Tanpa `photo`
+// kartu jatuh ke avatar inisial.
 // Nama orang dan singkatan jabatan (CEO/CFO/CTO/COO/CMO) TIDAK diterjemahkan:
 // keduanya sama di kedua bahasa, dan nama orang bukan teks yang boleh diubah
 // penerjemah.
 const TEAM = [
-  { name: 'Arkanara Romanza Andiwa', role: 'CEO', photo: null, accent: 'green' },
-  { name: 'Anya Parisya Rivendra', role: 'CFO', photo: null, accent: 'rose' },
-  { name: 'Khadijah Subagyo', role: 'CTO', photo: null, accent: 'green' },
-  { name: 'Radinka Danastria Ramadhanti Bima Puteri', role: 'COO', photo: null, accent: 'rose' },
-  { name: 'Raiqa Mazaya Fatin Muqofa', role: 'CMO', photo: null, accent: 'mixed' },
+  { name: 'Arkanara Romanza Andiwa', role: 'CEO', photo: '/team/arkanara.jpg', accent: 'green' },
+  { name: 'Anya Parisya Rivendra', role: 'CFO', photo: '/team/anya.jpg', accent: 'rose' },
+  { name: 'Khadijah Subagyo', role: 'CTO', photo: '/team/khadijah.jpg', accent: 'green' },
+  { name: 'Radinka Danastria Ramadhanti Bima Puteri', role: 'COO', photo: '/team/radinka.jpg', accent: 'rose' },
+  { name: 'Raiqa Mazaya Fatin Muqofa', role: 'CMO', photo: '/team/raiqa.jpg', accent: 'mixed' },
 ]
 
 function initials(name) {
@@ -174,22 +175,6 @@ const NAV_LINKS = [
   { href: '#cara-kerja', label: msg`Cara Kerja` },
   { href: '#tim', label: msg`Tim` },
 ]
-
-function BrandMark() {
-  return (
-    <svg viewBox="0 0 48 48" width="32" height="32" aria-hidden="true">
-      <circle cx="24" cy="24" r="22" fill={COLORS.navy} />
-      <path d="M24 8c-2 6-8 10-8 16a8 8 0 0016 0c0-6-6-10-8-16z" fill={COLORS.lightBlue} />
-      <path
-        d="M18 32c2 4 6 6 6 6s4-2 6-6"
-        stroke={COLORS.cream}
-        strokeWidth="2"
-        fill="none"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
 
 // Kepala section: nomor, label, judul, kalimat pengantar. Dijadikan komponen
 // karena lima section memakainya dan penomorannya harus konsisten — nomor
@@ -371,7 +356,7 @@ export default function LandingPage() {
       <header className="landing-nav">
         <div className="landing-nav__inner">
           <a className="landing-nav__brand" href="#top">
-            <BrandMark />
+            <BrandMark size={32} />
             <span>Glykos</span>
           </a>
 
@@ -415,7 +400,7 @@ export default function LandingPage() {
           <div className="landing-nav__mobile">
             <div className="landing-nav__mobile-header">
               <div className="landing-nav__brand">
-                <BrandMark />
+                <BrandMark size={32} />
                 <span>Glykos</span>
               </div>
               <button
@@ -784,7 +769,7 @@ export default function LandingPage() {
         <div className="landing-footer__top">
           <div className="landing-footer__brand">
             <div className="landing-nav__brand">
-              <BrandMark />
+              <BrandMark size={32} />
               <span>Glykos</span>
             </div>
             <p>

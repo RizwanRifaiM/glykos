@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
 import { lingui, linguiTransformerBabelPreset } from '@lingui/vite-plugin'
+import glykosPwa from './scripts/vite-plugin-glykos-pwa.mjs'
 
 // Tidak ada proxy dev di sini: konfigurasi lama meneruskan `/api` ke
 // http://localhost:4000 padahal tidak ada backend di repo ini sama sekali —
@@ -27,6 +28,11 @@ export default defineConfig(({ command }) => ({
     // sengaja tidak diaktifkan — saat sedang menulis fitur baru, pesan yang
     // belum diterjemahkan adalah keadaan normal sementara.
     lingui({ failOnMissing: command === 'build', failOnCompileError: true }),
+    // Menstempel public/sw.js dengan identitas build + daftar precache shell.
+    // Tanpa ini, nama cache service worker terkunci pada nilai cadangan 'dev'
+    // dan cache lama tidak pernah dibersihkan antar rilis. Alasan lengkapnya
+    // ada di berkas pluginnya.
+    glykosPwa(),
   ],
   test: {
     // Util murni memakai macro `t`/`plural` yang membaca instance i18n global.

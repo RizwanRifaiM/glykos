@@ -22,10 +22,6 @@ msgid "Memuat halaman…"
 msgstr "Loading page…"
 
 #: src/components/ActivityPanel.jsx
-#~ msgid "Waktu Aktif"
-#~ msgstr "Active Time"
-
-#: src/components/ActivityPanel.jsx
 msgid "Indikasi Kelelahan"
 msgstr "Fatigue Indication"
 
@@ -76,6 +72,60 @@ msgstr "Wear Time"
 #: src/components/ActivityPanel.jsx
 msgid "Jumlah langkah adalah estimasi dari data gerak kaki, bisa terhitung lebih sedikit saat berjalan cepat atau berlari."
 msgstr "The step count is estimated from foot motion data and may undercount when you walk fast or run."
+
+#: src/components/AppInstallPanel.jsx
+msgid "Aplikasi"
+msgstr "App"
+
+#: src/components/AppInstallPanel.jsx
+msgid "Pasang Glykos ke layar utama supaya bisa dibuka sekali ketuk, tetap terbuka saat tidak ada internet, dan menerima peringatan seperti notifikasi aplikasi biasa."
+msgstr "Install Glykos on your home screen so it opens in one tap, stays usable without an internet connection, and delivers alerts like any other app notification."
+
+#: src/components/AppInstallPanel.jsx
+msgid "Terpasang — sedang berjalan sebagai aplikasi."
+msgstr "Installed — currently running as an app."
+
+#: src/components/AppInstallPanel.jsx
+msgid "Belum terpasang — sedang berjalan di dalam browser."
+msgstr "Not installed — currently running inside the browser."
+
+#: src/components/AppInstallPanel.jsx
+msgid "Pasang Aplikasi"
+msgstr "Install App"
+
+#: src/components/AppInstallPanel.jsx
+#: src/components/InstallPrompt.jsx
+msgid "Ketuk tombol Bagikan di bilah bawah Safari."
+msgstr "Tap the Share button in the Safari bottom bar."
+
+#: src/components/AppInstallPanel.jsx
+#: src/components/InstallPrompt.jsx
+msgid "Pilih Tambahkan ke Layar Utama, lalu ketuk Tambah."
+msgstr "Choose Add to Home Screen, then tap Add."
+
+#: src/components/AppInstallPanel.jsx
+msgid "Browser ini belum menawarkan pemasangan. Buka Glykos di Chrome atau Edge pada Android, atau Safari pada iPhone, untuk memasangnya ke layar utama."
+msgstr "This browser has not offered installation yet. Open Glykos in Chrome or Edge on Android, or Safari on iPhone, to add it to your home screen."
+
+#: src/components/AppInstallPanel.jsx
+msgid "Versi baru sudah diunduh dan siap dipasang."
+msgstr "A new version has been downloaded and is ready to install."
+
+#: src/components/AppInstallPanel.jsx
+msgid "Muat Ulang ke Versi Baru"
+msgstr "Reload Into the New Version"
+
+#: src/components/AppInstallPanel.jsx
+msgid "Memeriksa…"
+msgstr "Checking…"
+
+#: src/components/AppInstallPanel.jsx
+msgid "Periksa Pembaruan"
+msgstr "Check for Updates"
+
+#: src/components/AppInstallPanel.jsx
+msgid "Sudah versi terbaru."
+msgstr "Already on the latest version."
 
 #: src/components/AppLoader.jsx
 msgid "Menyiapkan dashboard…"
@@ -160,10 +210,6 @@ msgstr "Exploded view of the Glykos shoe: the shoe body on the top layer, the se
 #: src/components/DeviceExplodedViewer.jsx
 msgid "Sepatu Glykos terdiri dari tiga bagian: badan sepatunya, insole bersensor berisi tiga titik tekanan, dan modul sensor Bluetooth di sisi luar."
 msgstr "The Glykos shoe has three parts: the shoe body, the sensor insole with three pressure points, and the Bluetooth sensor module on the outer side."
-
-#: src/components/DeviceOnboardingBanner.jsx
-#~ msgid "Sambungkan perangkat Glykos Anda lewat Bluetooth untuk mulai memantau tekanan, suhu, dan kelembapan kaki secara real-time. Angka 0 di bawah ini bukan hasil pembacaan sensor — hanya belum ada data yang tercatat."
-#~ msgstr "Connect your Glykos device over Bluetooth to start monitoring foot pressure, temperature, and humidity in real time. The zeros below are not sensor readings — there is simply no data recorded yet."
 
 #: src/components/DeviceOnboardingBanner.jsx
 msgid "Belum ada pembacaan hari ini"
@@ -270,6 +316,83 @@ msgstr "Average Skin Temperature — {rangeLabel}"
 msgid "Rata-rata Kelembapan — {rangeLabel}"
 msgstr "Average Humidity — {rangeLabel}"
 
+#: src/components/InstallPrompt.jsx
+msgid "Pasang Glykos di layar utama"
+msgstr "Install Glykos on your home screen"
+
+#: src/components/InstallPrompt.jsx
+msgid "Terbuka sekali ketuk, tetap bisa dibuka saat tidak ada internet, dan peringatan suhu masuk seperti notifikasi aplikasi biasa."
+msgstr "Opens in one tap, still works without an internet connection, and temperature alerts arrive like any other app notification."
+
+#: src/components/InstallPrompt.jsx
+msgid "Pasang"
+msgstr "Install"
+
+#: src/components/InstallPrompt.jsx
+msgid "Sembunyikan Cara"
+msgstr "Hide Steps"
+
+#: src/components/InstallPrompt.jsx
+msgid "Lihat Caranya"
+msgstr "Show Me How"
+
+#: src/components/InstallPrompt.jsx
+msgid "Tutup ajakan memasang aplikasi"
+msgstr "Dismiss the install prompt"
+
+#: src/components/LabHistoryPanel.jsx
+msgid "Belum ada hasil {labName} tercatat."
+msgstr "No {labName} results recorded yet."
+
+#: src/components/LabHistoryPanel.jsx
+msgid "Tanggal Pemeriksaan"
+msgstr "Test Date"
+
+#: src/components/LabHistoryPanel.jsx
+#: src/pages/ProfilePage.jsx
+msgid "Nilai"
+msgstr "Value"
+
+#: src/components/LabHistoryPanel.jsx
+msgid "Perubahan"
+msgstr "Change"
+
+#: src/components/LabHistoryPanel.jsx
+msgid "Nilai untuk tanggal ini pernah dikoreksi. Catatan sebelumnya tetap tersimpan."
+msgstr "The value for this date was corrected. The earlier record is still kept."
+
+#: src/components/LabHistoryPanel.jsx
+msgid "dikoreksi"
+msgstr "corrected"
+
+#: src/components/LabHistoryPanel.jsx
+msgid "Riwayat Hasil Lab"
+msgstr "Lab Result History"
+
+#: src/components/LabHistoryPanel.jsx
+msgid "Setiap hasil HbA1c dan LDL yang disimpan di Profil, dari yang terbaru. Tidak dibatasi rentang 7/30 hari."
+msgstr "Every HbA1c and LDL result saved in your Profile, newest first. Not limited to the 7/30-day range."
+
+#: src/components/LabHistoryPanel.jsx
+msgid "Tambah Hasil Baru"
+msgstr "Add a New Result"
+
+#: src/components/LabHistoryPanel.jsx
+msgid "Isi di Profil"
+msgstr "Enter in Profile"
+
+#: src/components/LabHistoryPanel.jsx
+msgid "Angka bertanda adalah nilai yang memperketat pemantauan (HbA1c ≥ 8 %, LDL ≥ 100 mg/dL). Riwayat ini tidak bisa diubah atau dihapus — koreksi tersimpan sebagai catatan baru."
+msgstr "Highlighted values are the ones that tighten monitoring (HbA1c ≥ 8 %, LDL ≥ 100 mg/dL). This history cannot be edited or deleted — corrections are saved as new records."
+
+#: src/components/LabReminderBanner.jsx
+msgid "Data kesehatan perlu diperbarui"
+msgstr "Health data needs updating"
+
+#: src/components/LabReminderBanner.jsx
+msgid "Buka Profil"
+msgstr "Open Profile"
+
 #: src/components/MetricCards.jsx
 #: src/components/StatusBanner.jsx
 #: src/constants/thresholds.js
@@ -369,9 +492,70 @@ msgstr "Ambient air temperature: {airText}°C"
 msgid "Modul sensor Bluetooth Glykos berputar pelan, dengan LED indikator pengiriman data"
 msgstr "The Glykos Bluetooth sensor module rotating slowly, with an LED indicating data transmission"
 
+#: src/components/NotificationPromptBanner.jsx
+msgid "Nyalakan notifikasi di HP ini"
+msgstr "Turn on notifications on this phone"
+
+#: src/components/NotificationPromptBanner.jsx
+msgid "Supaya peringatan tekanan dan suhu kaki, serta pemberitahuan saat sepatu terputus, muncul di HP walaupun layar tidak sedang dilihat."
+msgstr "So foot pressure and temperature alerts, and a notice when the shoe disconnects, reach your phone even when you are not looking at the screen."
+
+#: src/components/NotificationPromptBanner.jsx
+#: src/pages/ProfilePage.jsx
+msgid "Aktifkan notifikasi"
+msgstr "Enable notifications"
+
 #: src/components/ProtectedRoute.jsx
 msgid "Memeriksa sesi…"
 msgstr "Checking your session…"
+
+#: src/components/PwaLayer.jsx
+msgid "Tidak ada internet"
+msgstr "No internet connection"
+
+#: src/components/PwaLayer.jsx
+msgid "Data terakhir tetap ditampilkan dan sepatu tetap terbaca lewat Bluetooth. Penyimpanan ke server dilanjutkan otomatis saat koneksi kembali."
+msgstr "The last readings stay on screen and the shoe is still read over Bluetooth. Saving to the server resumes automatically once the connection returns."
+
+#: src/components/PwaUpdateBanner.jsx
+msgid "Versi baru Glykos siap"
+msgstr "A new version of Glykos is ready"
+
+#: src/components/PwaUpdateBanner.jsx
+msgid "Pembaruan sudah diunduh dan akan aktif setelah aplikasi dimuat ulang. Sambungan Bluetooth ke sepatu akan terputus sebentar."
+msgstr "The update has been downloaded and takes effect once the app reloads. The Bluetooth connection to the shoe will drop briefly."
+
+#: src/components/PwaUpdateBanner.jsx
+msgid "Memuat ulang…"
+msgstr "Reloading…"
+
+#: src/components/PwaUpdateBanner.jsx
+msgid "Muat Ulang"
+msgstr "Reload"
+
+#: src/components/PwaUpdateBanner.jsx
+msgid "Tutup pemberitahuan pembaruan"
+msgstr "Dismiss the update notice"
+
+#: src/components/RiskProfilePanel.jsx
+msgid "Tingkat pemantauan"
+msgstr "Monitoring level"
+
+#: src/components/RiskProfilePanel.jsx
+msgid "Yang memperketat pemantauan"
+msgstr "What tightens monitoring"
+
+#: src/components/RiskProfilePanel.jsx
+msgid "Belum ada faktor yang memperketat pemantauan. Tingkat ini dipakai juga saat data kesehatan kosong atau kedaluwarsa."
+msgstr "No factors are tightening monitoring yet. This level is also used when health data is empty or out of date."
+
+#: src/components/RiskProfilePanel.jsx
+msgid "Perlu dilengkapi"
+msgstr "Needs completing"
+
+#: src/components/RiskProfilePanel.jsx
+msgid "Angka ambang sensor tidak berubah — yang disesuaikan hanya kapan dan seberapa sering Anda diingatkan. Ini penyesuaian pemantauan, bukan diagnosis."
+msgstr "Sensor thresholds do not change — only when and how often you are reminded is adjusted. This is a monitoring adjustment, not a diagnosis."
 
 #: src/components/SensorInsoleViewer.jsx
 msgid "Insole Glykos dengan tiga titik tekanan pada tiga status berbeda: 150 kPa aman, 225 kPa perlu perhatian, dan 300 kPa risiko ulkus"
@@ -546,6 +730,7 @@ msgid "Sedang"
 msgstr "Moderate"
 
 #: src/constants/fatigue.js
+#: src/utils/alertMessages.js
 msgid "Tinggi"
 msgstr "High"
 
@@ -598,6 +783,14 @@ msgstr "Glykos — {label} at Risk"
 msgid "Web Bluetooth tidak didukung di browser ini. Gunakan Chrome/Edge lewat http://localhost atau HTTPS."
 msgstr "Web Bluetooth is not supported in this browser. Use Chrome or Edge over http://localhost or HTTPS."
 
+#: src/hooks/useConnectionLostAlert.js
+msgid "Glykos — Sepatu Terputus"
+msgstr "Glykos — Shoe Disconnected"
+
+#: src/hooks/useConnectionLostAlert.js
+msgid "Pemantauan kaki berhenti. Buka Glykos dan sambungkan ulang sepatu supaya peringatan tetap sampai."
+msgstr "Foot monitoring has stopped. Open Glykos and reconnect the shoe so alerts keep coming through."
+
 #: src/hooks/useTemperatureTrendAlert.js
 msgid "Glykos — Selisih Suhu Menetap"
 msgstr "Glykos — Persistent Temperature Spread"
@@ -641,8 +834,8 @@ msgid "Total Peringatan"
 msgstr "Total Alerts"
 
 #: src/pages/AlertsPage.jsx
-msgid "entri"
-msgstr "entries"
+msgid "kejadian"
+msgstr "events"
 
 #: src/pages/AlertsPage.jsx
 msgid "Peringatan terakhir: {lastAlertAt}"
@@ -669,8 +862,8 @@ msgid "Memuat riwayat peringatan…"
 msgstr "Loading alert history…"
 
 #: src/pages/AlertsPage.jsx
-msgid "{shownCount} dari {totalCount} entri"
-msgstr "{shownCount} of {totalCount} entries"
+msgid "{shownCount} dari {totalCount} kejadian"
+msgstr "{shownCount} of {totalCount} events"
 
 #: src/pages/AlertsPage.jsx
 msgid "Filter tingkat keparahan"
@@ -685,8 +878,16 @@ msgid "Tidak ada peringatan dengan filter ini."
 msgstr "No alerts match this filter."
 
 #: src/pages/AlertsPage.jsx
+msgid "{repeatCount}× tercatat"
+msgstr "logged {repeatCount}×"
+
+#: src/pages/AlertsPage.jsx
 msgid "Lokasi: {areaName}"
 msgstr "Location: {areaName}"
+
+#: src/pages/AlertsPage.jsx
+msgid "Lihat {repeatCount} catatan"
+msgstr "Show {repeatCount} records"
 
 #: src/pages/AlertsPage.jsx
 msgid "Catatan hanya dibuat saat dashboard sedang dibuka di browser. Untuk peringatan yang tetap terkirim saat aplikasi tertutup, diperlukan pemantauan sisi server (Cloud Function + push notification) yang belum diaktifkan pada proyek ini."
@@ -764,6 +965,7 @@ msgid "Profil"
 msgstr "Profile"
 
 #: src/pages/DashboardLayout.jsx
+#: src/pages/ProfilePage.jsx
 msgid "Pengguna"
 msgstr "User"
 
@@ -1251,6 +1453,11 @@ msgid "Sepatu pintar untuk pemantauan kaki diabetes"
 msgstr "A smart shoe for diabetic foot monitoring"
 
 #: src/pages/LoginPage.jsx
+#: src/pages/RegisterPage.jsx
+msgid "Kembali ke Beranda"
+msgstr "Back to Home"
+
+#: src/pages/LoginPage.jsx
 msgid "Masuk ke akun Anda"
 msgstr "Sign in to your account"
 
@@ -1295,16 +1502,52 @@ msgid "Gagal dikirim. Periksa izin notifikasi di pengaturan browser atau sistem.
 msgstr "Failed to send. Check notification permissions in your browser or system settings."
 
 #: src/pages/ProfilePage.jsx
+msgid "Profil gagal disimpan. Periksa isian dan koneksi internet, lalu coba lagi."
+msgstr "Your profile could not be saved. Check the entries and your internet connection, then try again."
+
+#: src/pages/ProfilePage.jsx
 msgid "Tipe 1"
 msgstr "Type 1"
+
+#: src/pages/ProfilePage.jsx
+msgid "Tubuh tidak memproduksi insulin; biasanya butuh suntik insulin"
+msgstr "The body does not make insulin; usually needs insulin injections"
 
 #: src/pages/ProfilePage.jsx
 msgid "Tipe 2"
 msgstr "Type 2"
 
 #: src/pages/ProfilePage.jsx
+msgid "Tubuh tidak memakai insulin dengan efektif; tipe paling umum"
+msgstr "The body does not use insulin effectively; the most common type"
+
+#: src/pages/ProfilePage.jsx
 msgid "Gestasional"
 msgstr "Gestational"
+
+#: src/pages/ProfilePage.jsx
+msgid "Muncul selama kehamilan"
+msgstr "Develops during pregnancy"
+
+#: src/pages/ProfilePage.jsx
+msgid "Ya, pernah"
+msgstr "Yes, I have"
+
+#: src/pages/ProfilePage.jsx
+msgid "Tidak pernah"
+msgstr "Never"
+
+#: src/pages/ProfilePage.jsx
+msgid "Ya"
+msgstr "Yes"
+
+#: src/pages/ProfilePage.jsx
+msgid "Tidak"
+msgstr "No"
+
+#: src/pages/ProfilePage.jsx
+msgid "Tidak tahu"
+msgstr "Not sure"
 
 #: src/pages/ProfilePage.jsx
 msgid "Glykos — Notifikasi Uji"
@@ -1315,60 +1558,141 @@ msgid "Notifikasi berhasil dikirim. Peringatan sungguhan akan tampil seperti ini
 msgstr "Notification sent successfully. Real alerts will look like this."
 
 #: src/pages/ProfilePage.jsx
-msgid "Profil Pasien"
-msgstr "Patient Profile"
+msgid "Data kesehatan, tingkat pemantauan, dan pengaturan aplikasi"
+msgstr "Health data, monitoring level, and app settings"
 
 #: src/pages/ProfilePage.jsx
-msgid "Perangkat terpasang: {deviceName}"
-msgstr "Device in use: {deviceName}"
+msgid "Ringkasan profil"
+msgstr "Profile summary"
 
 #: src/pages/ProfilePage.jsx
-msgid "Tipe Diabetes"
-msgstr "Diabetes Type"
+#: src/utils/exportData.js
+msgid "Perangkat"
+msgstr "Device"
+
+#: src/pages/ProfilePage.jsx
+msgid "Tipe diabetes"
+msgstr "Diabetes type"
+
+#: src/pages/ProfilePage.jsx
+msgid "Pemantauan"
+msgstr "Monitoring"
+
+#: src/pages/ProfilePage.jsx
+msgid "Data pasien"
+msgstr "Patient details"
+
+#: src/pages/ProfilePage.jsx
+msgid "Dipakai untuk konteks laporan dan saat keadaan darurat."
+msgstr "Used as context for reports and in an emergency."
 
 #: src/pages/ProfilePage.jsx
 msgid "Pilih tipe"
 msgstr "Select a type"
 
 #: src/pages/ProfilePage.jsx
-msgid "HbA1c Terakhir (%)"
-msgstr "Latest HbA1c (%)"
-
-#: src/pages/ProfilePage.jsx
-msgid "mis. 7.2"
-msgstr "e.g. 7.2"
-
-#: src/pages/ProfilePage.jsx
-msgid "Riwayat Luka / Ulkus"
-msgstr "Wound / Ulcer History"
-
-#: src/pages/ProfilePage.jsx
-msgid "Catatan riwayat luka kaki, operasi, atau amputasi sebelumnya"
-msgstr "Notes on previous foot wounds, surgery, or amputation"
-
-#: src/pages/ProfilePage.jsx
-msgid "Kontak Darurat"
-msgstr "Emergency Contact"
+msgid "Kontak darurat"
+msgstr "Emergency contact"
 
 #: src/pages/ProfilePage.jsx
 msgid "Nama & nomor telepon"
 msgstr "Name & phone number"
 
 #: src/pages/ProfilePage.jsx
+msgid "Hasil laboratorium"
+msgstr "Lab results"
+
+#: src/pages/ProfilePage.jsx
+msgid "Nilai terakhir menentukan tingkat pemantauan. Setiap hasil baru juga tercatat di halaman Riwayat."
+msgstr "The latest values set your monitoring level. Every new result is also recorded on the History page."
+
+#: src/pages/ProfilePage.jsx
+msgid "HbA1c"
+msgstr "HbA1c"
+
+#: src/pages/ProfilePage.jsx
+msgid "Target umum penderita diabetes: di bawah 7 %"
+msgstr "General target for people with diabetes: below 7 %"
+
+#: src/pages/ProfilePage.jsx
+msgid "mis. 7.2"
+msgstr "e.g. 7.2"
+
+#: src/pages/ProfilePage.jsx
+msgid "Tanggal pemeriksaan"
+msgstr "Test date"
+
+#: src/pages/ProfilePage.jsx
+msgid "Kolesterol LDL"
+msgstr "LDL cholesterol"
+
+#: src/pages/ProfilePage.jsx
+msgid "Target umum penderita diabetes: di bawah 100 mg/dL"
+msgstr "General target for people with diabetes: below 100 mg/dL"
+
+#: src/pages/ProfilePage.jsx
+msgid "mis. 110"
+msgstr "e.g. 110"
+
+#: src/pages/ProfilePage.jsx
+msgid "Riwayat kaki"
+msgstr "Foot history"
+
+#: src/pages/ProfilePage.jsx
+msgid "Riwayat ulkus dan neuropati adalah faktor risiko terkuat untuk luka kaki baru."
+msgstr "Ulcer history and neuropathy are the strongest risk factors for a new foot wound."
+
+#: src/pages/ProfilePage.jsx
+msgid "Pernah ulkus atau amputasi kaki?"
+msgstr "Ever had a foot ulcer or amputation?"
+
+#: src/pages/ProfilePage.jsx
+msgid "Neuropati, dinyatakan dokter?"
+msgstr "Neuropathy, diagnosed by a doctor?"
+
+#: src/pages/ProfilePage.jsx
+msgid "Berkurangnya rasa pada telapak kaki, misalnya dari pemeriksaan monofilamen. Pilih Tidak tahu bila belum pernah diperiksa."
+msgstr "Reduced feeling in the soles of the feet, e.g. found by a monofilament test. Choose Not sure if you have never been tested."
+
+#: src/pages/ProfilePage.jsx
+msgid "Catatan riwayat luka"
+msgstr "Wound history notes"
+
+#: src/pages/ProfilePage.jsx
+msgid "opsional"
+msgstr "optional"
+
+#: src/pages/ProfilePage.jsx
+msgid "Catatan riwayat luka kaki, operasi, atau amputasi sebelumnya"
+msgstr "Notes on previous foot wounds, surgery, or amputation"
+
+#: src/pages/ProfilePage.jsx
 msgid "Menyimpan…"
 msgstr "Saving…"
 
 #: src/pages/ProfilePage.jsx
-msgid "Simpan Profil"
-msgstr "Save Profile"
+msgid "Ada perubahan yang belum disimpan"
+msgstr "You have unsaved changes"
 
 #: src/pages/ProfilePage.jsx
 msgid "Tersimpan {savedTime}"
 msgstr "Saved at {savedTime}"
 
 #: src/pages/ProfilePage.jsx
-msgid "Notifikasi Peringatan"
-msgstr "Alert Notifications"
+msgid "Semua perubahan sudah tersimpan"
+msgstr "All changes saved"
+
+#: src/pages/ProfilePage.jsx
+msgid "Batalkan"
+msgstr "Discard"
+
+#: src/pages/ProfilePage.jsx
+msgid "Simpan perubahan"
+msgstr "Save changes"
+
+#: src/pages/ProfilePage.jsx
+msgid "Notifikasi peringatan"
+msgstr "Alert notifications"
 
 #: src/pages/ProfilePage.jsx
 msgid "Izinkan notifikasi browser untuk mendapat peringatan instan saat status berubah menjadi Risiko."
@@ -1383,20 +1707,16 @@ msgid "Notifikasi aktif di browser ini."
 msgstr "Notifications are enabled in this browser."
 
 #: src/pages/ProfilePage.jsx
-msgid "Kirim Notifikasi Uji"
-msgstr "Send Test Notification"
+msgid "Kirim notifikasi uji"
+msgstr "Send a test notification"
 
 #: src/pages/ProfilePage.jsx
 msgid "Notifikasi diblokir. Aktifkan lewat pengaturan izin situs pada browser Anda."
 msgstr "Notifications are blocked. Enable them through your browser’s site permission settings."
 
 #: src/pages/ProfilePage.jsx
-msgid "Aktifkan Notifikasi"
-msgstr "Enable Notifications"
-
-#: src/pages/ProfilePage.jsx
-msgid "Bantuan & Pertanyaan Umum"
-msgstr "Help & Frequently Asked Questions"
+msgid "Bantuan & pertanyaan umum"
+msgstr "Help & FAQ"
 
 #: src/pages/ProfilePage.jsx
 msgid "Masalah yang sering dialami pengguna seputar koneksi perangkat dan fitur aplikasi."
@@ -1576,6 +1896,98 @@ msgstr "{maxDeltaText} °C · {daysText} days"
 msgid "Selisih suhu antar area bertahan di atas {thresholdText} °C selama {daysText} hari berturut-turut (tertinggi {maxDeltaText} °C)."
 msgstr "The temperature spread between areas has stayed above {thresholdText} °C for {daysText} consecutive days (peak {maxDeltaText} °C)."
 
+#: src/utils/alertMessages.js
+msgid "Standar"
+msgstr "Standard"
+
+#: src/utils/alertMessages.js
+msgid "Meningkat"
+msgstr "Elevated"
+
+#: src/utils/alertMessages.js
+msgid "Notifikasi berbunyi sejak status Perlu Perhatian, dan kondisi yang bertahan diingatkan lagi setiap 30 menit."
+msgstr "Notifications sound from the Needs Attention status, and ongoing conditions are repeated every 30 minutes."
+
+#: src/utils/alertMessages.js
+msgid "Notifikasi berbunyi sejak status Perlu Perhatian, bukan hanya saat Risiko."
+msgstr "Notifications sound from the Needs Attention status, not only at Risk."
+
+#: src/utils/alertMessages.js
+msgid "Notifikasi berbunyi saat status Risiko; kondisi yang bertahan diingatkan lagi setiap 1 jam."
+msgstr "Notifications sound at the Risk status; ongoing conditions are repeated every hour."
+
+#: src/utils/alertMessages.js
+msgid "riwayat ulkus"
+msgstr "ulcer history"
+
+#: src/utils/alertMessages.js
+msgid "neuropati"
+msgstr "neuropathy"
+
+#: src/utils/alertMessages.js
+msgid "HbA1c {valueText} % ({month})"
+msgstr "HbA1c {valueText} % ({month})"
+
+#: src/utils/alertMessages.js
+msgid "HbA1c {valueText} %"
+msgstr "HbA1c {valueText} %"
+
+#: src/utils/alertMessages.js
+msgid "LDL {valueText} mg/dL ({month})"
+msgstr "LDL {valueText} mg/dL ({month})"
+
+#: src/utils/alertMessages.js
+msgid "LDL {valueText} mg/dL"
+msgstr "LDL {valueText} mg/dL"
+
+#: src/utils/alertMessages.js
+msgid "Pemantauan diperketat: {reasons}."
+msgstr "Monitoring tightened: {reasons}."
+
+#: src/utils/alertMessages.js
+msgid "Pemantauan diperketat sesuai profil kesehatan Anda."
+msgstr "Monitoring tightened based on your health profile."
+
+#: src/utils/alertMessages.js
+msgid "Bila kondisi ini berulang, konsultasikan dengan tenaga kesehatan."
+msgstr "If this keeps happening, consult a healthcare professional."
+
+#: src/utils/alertMessages.js
+msgid "{lab} belum diisi."
+msgstr "{lab} has not been entered."
+
+#: src/utils/alertMessages.js
+msgid "Nilai {lab} di luar rentang wajar ({minText}–{maxText} {unit}) — periksa kembali angkanya."
+msgstr "The {lab} value is outside the plausible range ({minText}–{maxText} {unit}) — please check the number."
+
+#: src/utils/alertMessages.js
+msgid "Tanggal pemeriksaan {lab} belum diisi — nilainya belum dipakai."
+msgstr "The {lab} test date is missing — the value is not being used yet."
+
+#: src/utils/alertMessages.js
+msgid "{lab} terakhir diperiksa {monthsText} bulan lalu — perbarui supaya pemantauan sesuai kondisi Anda sekarang."
+msgstr "{lab} was last tested {monthsText} months ago — update it so monitoring matches your current condition."
+
+#: src/utils/alertMessages.js
+msgid "Berlaku · bulan ini"
+msgstr "Valid · this month"
+
+#: src/utils/alertMessages.js
+msgid "Berlaku · {monthsText} bln lalu"
+msgstr "Valid · {monthsText} mo ago"
+
+#: src/utils/alertMessages.js
+msgid "Kedaluwarsa"
+msgstr "Out of date"
+
+#: src/utils/alertMessages.js
+msgid "Perlu tanggal"
+msgstr "Needs a date"
+
+#: src/utils/alertMessages.js
+msgid "Di luar rentang"
+msgstr "Out of range"
+
 #: src/utils/authErrors.js
 msgid "Format email tidak valid."
 msgstr "That email address is not valid."
@@ -1609,20 +2021,12 @@ msgid "Terjadi kesalahan. Silakan coba lagi."
 msgstr "Something went wrong. Please try again."
 
 #: src/utils/exportData.js
-#~ msgid "Waktu Aktif (menit)"
-#~ msgstr "Active Time (minutes)"
-
-#: src/utils/exportData.js
 msgid "Glykos — Laporan Monitoring Kaki Diabetes"
 msgstr "Glykos — Diabetic Foot Monitoring Report"
 
 #: src/utils/exportData.js
 msgid "Diekspor"
 msgstr "Exported"
-
-#: src/utils/exportData.js
-msgid "Perangkat"
-msgstr "Device"
 
 #: src/utils/exportData.js
 msgid "Parameter Saat Ini"
@@ -1683,14 +2087,6 @@ msgstr "{hours, plural, one {# hour ago} other {# hours ago}}"
 #: src/utils/formatTime.js
 msgid "{days, plural, one {# hari lalu} other {# hari lalu}}"
 msgstr "{days, plural, one {# day ago} other {# days ago}}"
-
-#: src/utils/sensorContext.js
-#~ msgid "- Aktivitas sesi ini: {stepsText} langkah, {minutesText} menit aktif"
-#~ msgstr "- This session: {stepsText} steps, {minutesText} active minutes"
-
-#: src/utils/sensorContext.js
-#~ msgid "- Aktivitas hari ini: {stepsText} langkah, {minutesText} menit aktif"
-#~ msgstr "- Today: {stepsText} steps, {minutesText} active minutes"
 
 #: src/utils/sensorContext.js
 msgid "aman"

@@ -15,6 +15,7 @@ import {
   buildDemoHistory,
   buildDemoReading,
   DEMO_ALERTS,
+  DEMO_LABS,
   DEMO_FATIGUE,
 } from '../constants/demoData'
 import { emptyReading, useSensorData } from '../hooks/useSensorData'
@@ -25,12 +26,16 @@ import { useFatigueMonitor } from '../hooks/useFatigueMonitor'
 import { useStepCounter } from '../hooks/useStepCounter'
 import { useFirestoreSync } from '../hooks/useFirestoreSync'
 import { useTemperatureTrendAlert } from '../hooks/useTemperatureTrendAlert'
+import { useConnectionLostAlert } from '../hooks/useConnectionLostAlert'
+import { useRiskProfile } from '../hooks/useRiskProfile'
+import { useLabHistory } from '../hooks/useLabHistory'
 import { useWakeLock } from '../hooks/useWakeLock'
 import { useWearTime } from '../hooks/useWearTime'
 import { useTemperatureRise } from '../hooks/useTemperatureRise'
 import { useDayKey } from '../hooks/useDayKey'
 import { evaluateTemperatureTrend } from '../utils/temperatureTrend'
 import { resolveReadingSource, todayActivity } from '../utils/dailyReading'
+import { countEventsOnDay } from '../utils/alertEvents'
 import { useAuth } from '../contexts/auth-context'
 import {
   IconLayoutDashboard,
@@ -143,6 +148,7 @@ export default function DashboardLayout() {
     historyRange,
   )
   const { alerts: realAlerts, isLoading: realAlertsLoading } = useAlerts(uid, deviceId)
+  const { labs: realLabs, isLoading: realLabsLoading } = useLabHistory(uid)
 
   // Saat perangkat BLE terhubung dan sudah mengirim paket, datanya jadi sumber
   // live yang meng-override data Firestore/cadangan.
@@ -297,7 +303,12 @@ export default function DashboardLayout() {
   // warning/danger. Di mode demo `null` dioper supaya hook-nya no-op —
   // tanpa ini, angka contoh akan mencatat peringatan palsu ke basis data
   // sungguhan dan muncul lagi nanti sebagai riwayat asli.
-  useAlertMonitor(uid, deviceId, demoMode ? null : liveData, liveFatigue)
+  //
+  // Tingkat risiko dari profil (HbA1c, LDL, riwayat ulkus, neuropati) hanya
+  // mengatur kapan notifikasi berbunyi dan berapa lama jedanya — angka ambang
+  // sensornya tetap. Lihat utils/riskProfile.js.
+  const riskProfile = useRiskProfile(uid, todayKey)
+  useAlertMonitor(uid, deviceId, demoMode ? null : liveData, liveFatigue, riskProfile)
 
   // Penggantian data demo dilakukan SETELAH semua hook di atas, supaya jalur
   // data sungguhan (termasuk penulisan Firestore) tidak terpengaruh sama sekali.
@@ -307,6 +318,11 @@ export default function DashboardLayout() {
   const historyLoading = demoMode ? false : realHistoryLoading
   const alerts = demoMode ? DEMO_ALERTS : realAlerts
   const alertsLoading = demoMode ? false : realAlertsLoading
+  // Angka di ikon Peringatan pada menu: KEJADIAN hari ini, bukan seluruh
+  // catatan yang dimuat. Lihat utils/alertEvents.js.
+  const todayAlertEvents = useMemo(() => countEventsOnDay(alerts, todayKey), [alerts, todayKey])
+  const labs = demoMode ? DEMO_LABS : realLabs
+  const labsLoading = demoMode ? false : realLabsLoading
 
   // Aturan "selisih suhu bertahan berhari-hari" dihitung dari rangkuman
   // HARIAN, bukan pembacaan live — jadi sumbernya `history`, bukan `data`.
@@ -317,6 +333,10 @@ export default function DashboardLayout() {
   // seperti useAlertMonitor di atas: angka contoh tidak boleh mengendap di
   // Firestore sebagai peringatan sungguhan.
   useTemperatureTrendAlert(demoMode ? null : uid, deviceId, temperatureTrend)
+
+  // Putus Bluetooth yang tidak diminta = pemantauan berhenti diam-diam.
+  // Pengguna diberi tahu lewat notifikasi HP. Lihat useConnectionLostAlert.js.
+  useConnectionLostAlert(ble.lostAt, !demoMode)
   // Ditandai live supaya banner onboarding "belum ada data" tidak menutupi
   // kartu metrik yang justru ingin ditinjau. Ajakan menyambungkan perangkat
   // tidak hilang — pindah ke DemoModeBanner yang membawa tombol Bluetooth-nya.
@@ -352,8 +372,8 @@ export default function DashboardLayout() {
             >
               <span className="app-sidebar__icon">
                 <ItemIcon size={20} />
-                {to === '/dashboard/alerts' && alerts.length > 0 && (
-                  <span className="app-sidebar__badge">{alerts.length}</span>
+                {to === '/dashboard/alerts' && todayAlertEvents > 0 && (
+                  <span className="app-sidebar__badge">{todayAlertEvents}</span>
                 )}
               </span>
               <span>{i18n._(label)}</span>
@@ -458,6 +478,12 @@ export default function DashboardLayout() {
                 alertsLoading,
                 fatigue,
                 temperatureTrend,
+                // Tingkat pemantauan & pengingat hasil lab — dibaca Ringkasan
+                // dan Profil. `null` selama profil belum terbaca.
+                riskProfile,
+                // Riwayat hasil lab (HbA1c, LDL) untuk halaman Riwayat.
+                labs,
+                labsLoading,
                 // Dibutuhkan ChatbotPage: angka contoh harus ditandai sebagai
                 // contoh sebelum dikirim ke model, bukan disajikan sebagai
                 // kondisi kaki pengguna. Lihat utils/sensorContext.js.
@@ -487,8 +513,8 @@ export default function DashboardLayout() {
           >
             <span className="app-bottom-nav__icon">
               <ItemIcon size={20} />
-              {to === '/dashboard/alerts' && alerts.length > 0 && (
-                <span className="app-bottom-nav__badge">{alerts.length}</span>
+              {to === '/dashboard/alerts' && todayAlertEvents > 0 && (
+                <span className="app-bottom-nav__badge">{todayAlertEvents}</span>
               )}
             </span>
             <span>{i18n._(label)}</span>

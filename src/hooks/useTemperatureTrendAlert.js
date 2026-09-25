@@ -76,7 +76,9 @@ export function useTemperatureTrendAlert(uid, deviceId, trend) {
     // Judulnya TIDAK memakai riskTitle(): pola "… Berisiko" cocok untuk metrik
     // sesaat ("Tekanan Berisiko"), tapi janggal untuk temuan yang namanya
     // sudah berupa keterangan sendiri — "Selisih Suhu Menetap Berisiko".
-    notify(t(i18n)`Glykos — Selisih Suhu Menetap`, describeAlert(i18n, item).message)
+    notify(t(i18n)`Glykos — Selisih Suhu Menetap`, describeAlert(i18n, item).message, {
+      metric: item.metric,
+    })
 
     const next = { date: latestDate, streakDays: trend.streakDays }
     lastRef.current = next

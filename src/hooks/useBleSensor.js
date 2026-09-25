@@ -155,6 +155,9 @@ export function useBleSensor() {
   const [errorState, setErrorState] = useState(null)
   const [raw, setRaw] = useState(null)
   const [updatedAt, setUpdatedAt] = useState(null)
+  // Waktu sambungan terakhir PUTUS SENDIRI (bukan lewat tombol). Dikosongkan
+  // lagi begitu tersambung ulang. Lihat hooks/useConnectionLostAlert.js.
+  const [lostAt, setLostAt] = useState(null)
   const sensorRef = useRef(null)
   const { i18n } = useLingui()
 
@@ -164,8 +167,10 @@ export function useBleSensor() {
         setRaw(merged)
         setUpdatedAt(Date.now())
       },
-      onStatus: ({ status: next, deviceName: name, error: err }) => {
+      onStatus: ({ status: next, deviceName: name, error: err, unexpected }) => {
         setStatus(next)
+        if (unexpected) setLostAt(Date.now())
+        else if (next === 'connected') setLostAt(null)
         if (name) setDeviceName(name)
         if (err) {
           setErrorState(err.code ? { code: err.code } : { text: err.message || String(err) })
@@ -229,6 +234,7 @@ export function useBleSensor() {
     isConnected,
     deviceName,
     error,
+    lostAt,
     reading,
     connect,
     disconnect,

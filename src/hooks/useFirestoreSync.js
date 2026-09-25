@@ -5,11 +5,9 @@ import { db } from '../services/firestore'
 import { dailyDoc, historyCollection, liveDoc } from '../services/paths'
 import { emptyRollup, mergeDailyRollup } from '../utils/dailyRollup'
 import { analyseHumidity } from '../utils/humidity'
+import { SYNC_INTERVAL_MS } from '../constants/timing'
 
-// Cukup untuk membentuk tren harian di halaman Riwayat, sekaligus menghindari
-// kuota write Firestore membengkak (firmware kirim BLE tiap ~300ms — jelas
-// terlalu sering untuk ditulis satu-satu ke Firestore).
-const SYNC_INTERVAL_MS = 60000
+// Alasan angkanya: lihat constants/timing.js.
 
 // Firestore menolak `undefined`, jadi area yang tidak terbaca disimpan `null`
 // — bukan 0, supaya "sensor tidak mengirim" bisa dibedakan dari "0 °C".

@@ -26,11 +26,56 @@ import { analyseHumidity, coolestSkinTemp } from './humidity'
 
 export const STATUS_RANK = { safe: 0, warning: 1, danger: 2 }
 
-// Jeda minimum sebelum metrik yang SAMA boleh mencatat status yang SAMA lagi.
-// Tanpa ini, nilai yang berosilasi tepat di sekitar ambang (mis. tekanan
-// 199↔201 kPa) menghasilkan deretan peringatan identik yang membanjiri
-// halaman Peringatan dan menenggelamkan kejadian yang benar-benar baru.
-export const ALERT_COOLDOWN_MS = 10 * 60 * 1000
+// Jeda minimum sebelum satu METRIK boleh memicu peringatan lagi.
+//
+// Perhatikan kata "metrik", bukan "metrik dengan status yang sama". Versi
+// sebelumnya menjaga pasangan (metrik, status) dan justru karena itu bocor:
+// syaratnya `loggedStatus === status`, sehingga nilai yang berosilasi ANTARA DUA
+// STATUS TIDAK AMAN melewatinya seluruhnya. Urutan warning → danger → warning
+// → danger tidak pernah mengulang status yang sama dua kali berurutan, jadi
+// tidak ada satu pun kejadian yang tertahan — dan effect-nya berjalan tiap paket
+// BLE, sekitar tiga kali per detik. Nilai yang menggantung tepat di ambang
+// karena itu bisa mengirim notifikasi berkali-kali dalam satu menit, persis
+// kebalikan dari maksud cooldown ini.
+//
+// Sekarang jedanya murni berbasis WAKTU per metrik: setelah satu peringatan
+// tercatat, metrik itu diam selama jeda ini apa pun yang terjadi pada statusnya
+// — KECUALI kondisinya memburuk (lihat decideAlert).
+//
+// 60 menit. Semula 30, dinaikkan karena halaman Peringatan terasa terlalu
+// ramai: 2–3 jam pemakaian kini menghasilkan paling banyak 2–3 catatan per
+// metrik, bukan 4–6. Kondisi yang bertahan tetap terlihat, dan perburukan
+// (warning → danger) tetap tercatat seketika tanpa menunggu jeda ini.
+// Peringatan yang terlalu sering adalah peringatan yang mulai diabaikan, yang
+// pada aplikasi pemantauan sama merugikannya dengan tidak ada peringatan.
+export const ALERT_COOLDOWN_MS = 60 * 60 * 1000
+
+// Jeda untuk pasien berisiko TINGGI (utils/riskProfile.js): kondisi yang
+// bertahan diingatkan dua kali lebih sering. Tidak lebih pendek dari ini —
+// 30 menit memberi waktu untuk benar-benar duduk dan mengurangi beban sebelum
+// peringatan berikutnya.
+export const HIGH_RISK_COOLDOWN_MS = 30 * 60 * 1000
+
+// Cara peringatan diperlakukan per tingkat risiko pasien.
+//
+//   notifyFrom — status TERENDAH yang membunyikan notifikasi. Semua status
+//                non-aman tetap DICATAT di tingkat mana pun; yang berubah
+//                hanya apakah HP ikut berbunyi.
+//   cooldownMs — jeda sebelum metrik yang sama boleh memicu lagi.
+//
+// Angka ambang sensor SENGAJA tidak ada di sini — lihat alasannya di kepala
+// utils/riskProfile.js.
+const ALERT_POLICIES = {
+  standard: { notifyFrom: 'danger', cooldownMs: ALERT_COOLDOWN_MS },
+  elevated: { notifyFrom: 'warning', cooldownMs: ALERT_COOLDOWN_MS },
+  high: { notifyFrom: 'warning', cooldownMs: HIGH_RISK_COOLDOWN_MS },
+}
+
+// Tingkat yang tidak dikenal jatuh ke Standar — arah gagal yang sama dengan
+// data profil yang tidak sah.
+export function alertPolicy(tier) {
+  return ALERT_POLICIES[tier] ?? ALERT_POLICIES.standard
+}
 
 export function evaluateMetrics(data) {
   const peak = data.pressure?.peak ?? 0
@@ -146,11 +191,18 @@ export function evaluateMetrics(data) {
 // Dua aturan:
 //   1. Hanya transisi ke status baru yang dicatat (bukan tiap pembacaan).
 //   2. Status yang sama pada metrik yang sama tidak boleh dicatat ulang
-//      sebelum ALERT_COOLDOWN_MS lewat, sekalipun sempat kembali ke `safe`.
-export function decideAlert(prevEntry, status, now, cooldownMs = ALERT_COOLDOWN_MS) {
-  const prevStatus = prevEntry?.status ?? 'safe'
+//      sebelum jeda lewat, sekalipun sempat kembali ke `safe`.
+//
+// `policy` berasal dari tingkat risiko pasien (alertPolicy di atas); tanpanya
+// berlaku kebijakan Standar.
+export function decideAlert(prevEntry, status, now, policy = alertPolicy('standard')) {
+  const { cooldownMs, notifyFrom } = policy
   const currRank = STATUS_RANK[status] ?? 0
-  const prevRank = STATUS_RANK[prevStatus] ?? 0
+  // Dibandingkan dengan status yang TERAKHIR TERCATAT, bukan dengan status
+  // pembacaan sebelumnya. Itu bedanya dengan versi lama, dan itu yang menutup
+  // osilasi: status pembacaan berganti tiap 300 ms, sementara yang TERCATAT
+  // hanya berganti saat benar-benar ada peringatan baru.
+  const loggedRank = STATUS_RANK[prevEntry?.loggedStatus] ?? 0
 
   const unchanged = {
     status,
@@ -158,22 +210,44 @@ export function decideAlert(prevEntry, status, now, cooldownMs = ALERT_COOLDOWN_
     loggedAt: prevEntry?.loggedAt,
   }
 
-  if (currRank === 0 || status === prevStatus) {
+  // 'safe' bukan peringatan. Pemulihan sengaja TIDAK mencatat apa pun, dan juga
+  // TIDAK mengosongkan jeda: kaki yang kembali aman lalu melampaui ambang lagi
+  // lima menit kemudian adalah pola berjalan yang normal, bukan kejadian baru
+  // yang perlu membunyikan HP sekali lagi.
+  if (currRank === 0) {
     return { shouldLog: false, shouldNotify: false, entry: unchanged }
   }
 
-  const withinCooldown =
-    prevEntry?.loggedStatus === status &&
-    typeof prevEntry?.loggedAt === 'number' &&
-    now - prevEntry.loggedAt < cooldownMs
+  const neverLogged = typeof prevEntry?.loggedAt !== 'number'
 
-  if (withinCooldown) {
+  // PERBURUKAN SELALU LOLOS, tanpa menunggu jeda. warning yang sudah tercatat
+  // lalu menjadi danger dua menit kemudian adalah kejadian yang berbeda dan
+  // lebih buruk — menahannya 28 menit lagi berarti menahan justru peringatan
+  // yang paling perlu didengar.
+  const worsened = currRank > loggedRank
+
+  // KONDISI YANG BERTAHAN mengulang setelah jeda. Tanpa cabang ini, danger yang
+  // menetap sepanjang sore hanya berbunyi sekali di awal lalu senyap — padahal
+  // yang bertahan berjam-jam di atas ambang justru yang paling mengkhawatirkan.
+  const cooldownPassed = !neverLogged && now - prevEntry.loggedAt >= cooldownMs
+
+  if (!neverLogged && !worsened && !cooldownPassed) {
     return { shouldLog: false, shouldNotify: false, entry: unchanged }
   }
 
   return {
     shouldLog: true,
-    shouldNotify: status === 'danger' && currRank > prevRank,
+    // SETIAP danger yang tercatat ikut memberi notifikasi, termasuk pengulangan
+    // setelah jeda. Dulu syaratnya `currRank > prevRank` — hanya saat status
+    // NAIK — sehingga danger yang bertahan tidak pernah memberi tahu lagi meski
+    // catatannya terus bertambah. Pengulangannya benar-benar terdengar di HP
+    // karena tag notifikasinya per metrik dan `renotify` aktif (lihat
+    // utils/notifications.js); tanpa keduanya, notifikasi kedua hanya menimpa
+    // yang pertama dalam diam.
+    //
+    // Batas bawahnya ditentukan tingkat risiko: Standar hanya berbunyi pada
+    // danger, Meningkat/Tinggi sudah berbunyi sejak warning.
+    shouldNotify: currRank >= (STATUS_RANK[notifyFrom] ?? STATUS_RANK.danger),
     entry: { status, loggedStatus: status, loggedAt: now },
   }
 }

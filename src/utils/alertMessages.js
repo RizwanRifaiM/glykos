@@ -38,7 +38,8 @@ import {
   TEMP_RANGE,
 } from '../constants/thresholds'
 import { FATIGUE_LABELS } from '../constants/fatigue'
-import { formatDecimal, formatNumber } from './locale'
+import { formatDecimal, formatMonthYear, formatNumber } from './locale'
+import { HBA1C_RANGE, LDL_RANGE, parseLabDate } from './riskProfile'
 
 // Nama metrik. Dipakai sebagai judul baris di halaman Peringatan dan sebagai
 // judul notifikasi, jadi harus sama persis di keduanya.
@@ -198,8 +199,138 @@ const DESCRIBERS = {
   temperatureTrend: describeTrend,
 }
 
+// ---------------------------------------------------------------------------
+// Tingkat risiko pasien (utils/riskProfile.js)
+// ---------------------------------------------------------------------------
+
+const RISK_TIER_LABELS = {
+  standard: msg`Standar`,
+  elevated: msg`Meningkat`,
+  high: msg`Tinggi`,
+}
+
+// Petanya tidak diekspor — lihat catatan "PETA DESKRIPTOR TIDAK BOLEH KELUAR
+// DARI utils/" di eslint.config.js.
+export function riskTierLabel(i18n, tier) {
+  return i18n._(RISK_TIER_LABELS[tier] ?? RISK_TIER_LABELS.standard)
+}
+
+// Apa yang BERUBAH pada pemantauan di tiap tingkat — ditampilkan di Profil
+// supaya pengguna tahu persis akibat dari angka yang ia isi.
+export function riskTierEffect(i18n, tier) {
+  if (tier === 'high') {
+    return t(i18n)`Notifikasi berbunyi sejak status Perlu Perhatian, dan kondisi yang bertahan diingatkan lagi setiap 30 menit.`
+  }
+  if (tier === 'elevated') {
+    return t(i18n)`Notifikasi berbunyi sejak status Perlu Perhatian, bukan hanya saat Risiko.`
+  }
+  return t(i18n)`Notifikasi berbunyi saat status Risiko; kondisi yang bertahan diingatkan lagi setiap 1 jam.`
+}
+
+function labMonth(i18n, date) {
+  const parsed = parseLabDate(date)
+  return parsed ? formatMonthYear(parsed, i18n.locale) : null
+}
+
+// Satu faktor sebagai frasa pendek: "HbA1c 8,4 % (Jun 2026)".
+export function describeRiskFactor(i18n, factor) {
+  switch (factor?.code) {
+    case 'ulcerHistory':
+      return t(i18n)`riwayat ulkus`
+    case 'neuropathy':
+      return t(i18n)`neuropati`
+    case 'hba1c': {
+      const valueText = formatDecimal(factor.value, 1, i18n.locale)
+      const month = labMonth(i18n, factor.date)
+      return month ? t(i18n)`HbA1c ${valueText} % (${month})` : t(i18n)`HbA1c ${valueText} %`
+    }
+    case 'ldl': {
+      const valueText = formatNumber(factor.value, { locale: i18n.locale })
+      const month = labMonth(i18n, factor.date)
+      return month ? t(i18n)`LDL ${valueText} mg/dL (${month})` : t(i18n)`LDL ${valueText} mg/dL`
+    }
+    default:
+      return null
+  }
+}
+
+// Kalimat tambahan pada peringatan yang dicatat saat pemantauan diperketat.
+// Null untuk tingkat Standar dan untuk catatan yang ditulis sebelum fitur ini
+// ada — keduanya memang tidak punya alasan tambahan untuk disebut.
+//
+// Membaca `alert.risk` yang TERSIMPAN, bukan profil sekarang: alasan pada
+// catatan lama harus tetap alasan saat catatan itu dibuat.
+export function describeRiskNote(i18n, risk) {
+  if (!risk || (risk.tier !== 'elevated' && risk.tier !== 'high')) return null
+
+  const reasons = (risk.factors ?? [])
+    .map((factor) => describeRiskFactor(i18n, factor))
+    .filter(Boolean)
+    .join(', ')
+
+  const note = reasons
+    ? t(i18n)`Pemantauan diperketat: ${reasons}.`
+    : t(i18n)`Pemantauan diperketat sesuai profil kesehatan Anda.`
+
+  if (risk.tier !== 'high') return note
+  const advice = t(i18n)`Bila kondisi ini berulang, konsultasikan dengan tenaga kesehatan.`
+  return `${note} ${advice}`
+}
+
+// Pengingat hasil lab (reminders dari assessRiskProfile).
+export function describeLabReminder(i18n, reminder) {
+  // Nama pemeriksaan tidak diterjemahkan — HbA1c dan LDL sama di kedua bahasa.
+  // eslint-disable-next-line lingui/no-unlocalized-strings
+  const lab = reminder?.code === 'ldl' ? 'LDL' : 'HbA1c'
+  const range = reminder?.code === 'ldl' ? LDL_RANGE : HBA1C_RANGE
+  const unit = reminder?.code === 'ldl' ? 'mg/dL' : '%'
+
+  switch (reminder?.status) {
+    case 'missing':
+      return t(i18n)`${lab} belum diisi.`
+    case 'invalid': {
+      const minText = formatNumber(range.min, { locale: i18n.locale })
+      const maxText = formatNumber(range.max, { locale: i18n.locale })
+      return t(i18n)`Nilai ${lab} di luar rentang wajar (${minText}–${maxText} ${unit}) — periksa kembali angkanya.`
+    }
+    case 'noDate':
+      return t(i18n)`Tanggal pemeriksaan ${lab} belum diisi — nilainya belum dipakai.`
+    case 'stale': {
+      const monthsText = formatNumber(Math.floor(reminder.ageDays / 30.44), { locale: i18n.locale })
+      return t(i18n)`${lab} terakhir diperiksa ${monthsText} bulan lalu — perbarui supaya pemantauan sesuai kondisi Anda sekarang.`
+    }
+    default:
+      return null
+  }
+}
+
+// Status satu hasil lab untuk penanda di samping kolomnya (Profil). `lab`
+// adalah keluaran readLab() di utils/riskProfile.js. Null untuk kolom kosong —
+// kolom yang belum diisi tidak perlu diberi label apa pun.
+//
+//   tone: 'ok'   — dipakai untuk tingkat pemantauan
+//         'warn' — ada nilai, tapi TIDAK dipakai (dan kenapa)
+export function describeLabStatus(i18n, lab) {
+  switch (lab?.status) {
+    case 'valid': {
+      const months = Math.floor((lab.ageDays ?? 0) / 30.44)
+      if (months < 1) return { tone: 'ok', text: t(i18n)`Berlaku · bulan ini` }
+      const monthsText = formatNumber(months, { locale: i18n.locale })
+      return { tone: 'ok', text: t(i18n)`Berlaku · ${monthsText} bln lalu` }
+    }
+    case 'stale':
+      return { tone: 'warn', text: t(i18n)`Kedaluwarsa` }
+    case 'noDate':
+      return { tone: 'warn', text: t(i18n)`Perlu tanggal` }
+    case 'invalid':
+      return { tone: 'warn', text: t(i18n)`Di luar rentang` }
+    default:
+      return null
+  }
+}
+
 // Bentuk siap tampil dari satu item peringatan terstruktur:
-//   { label, location, value, message }
+//   { label, location, value, message, riskNote }
 //
 // Dipakai untuk peringatan LIVE (dari evaluateMetrics) maupun catatan
 // tersimpan dari Firestore — keduanya berbentuk sama, jadi halaman Peringatan
@@ -213,6 +344,7 @@ export function describeAlert(i18n, item) {
     location: locationLabel(i18n, item?.location),
     value: base.value,
     message: base.message,
+    riskNote: describeRiskNote(i18n, item?.risk),
   }
 }
 

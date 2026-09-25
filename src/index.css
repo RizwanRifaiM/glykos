@@ -567,3 +567,268 @@ a {
   padding: 6px 9px;
   letter-spacing: 0.04em;
 }
+
+/* ==========================================================================
+   Lapisan PWA — status jaringan, tawaran pembaruan, ajakan memasang
+   --------------------------------------------------------------------------
+   Sengaja di index.css, bukan App.css: PwaLayer dipasang di App.jsx dan ikut
+   tampil di HALAMAN DEPAN, sementara App.css baru ikut terunduh bersama chunk
+   dashboard. Gaya di sana berarti kartu tanpa gaya sama sekali bagi pengunjung
+   yang belum masuk — dan pemberitahuan "tidak ada internet" justru paling
+   mungkin muncul pada koneksi yang chunk-nya belum sempat sampai.
+
+   Karena alasan yang sama, seluruh blok ini hanya memakai token dari :root di
+   berkas ini (--navy, --surface, --glass-*, --radius-*), bukan token --ds-*
+   yang hidup di App.css.
+   ========================================================================== */
+
+.pwa-layer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  /* Di bawah 1024px navigasi bawah menempel di dasar layar (App.css). Menaruh
+     kartu tepat di dasar akan menutupi menunya — jadi tumpukan ini berhenti di
+     atas navigasi itu, dan safe-area sudah ikut diperhitungkan di sana. */
+  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 0 max(12px, env(safe-area-inset-left, 0px)) 0 max(12px, env(safe-area-inset-right, 0px));
+  /* Wadahnya membentang selebar layar hanya untuk menengahkan isinya; klik di
+     ruang kosongnya harus tetap sampai ke halaman di bawahnya. */
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .pwa-layer {
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    align-items: flex-end;
+    padding-right: max(20px, env(safe-area-inset-right, 0px));
+  }
+}
+
+.pwa-card {
+  pointer-events: auto;
+  position: relative;
+  width: min(440px, 100%);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  padding: 14px 40px 14px 14px;
+  border-radius: var(--radius-md);
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-lg);
+  color: var(--navy);
+  animation: pwa-card-in 260ms var(--ease) both;
+}
+
+@keyframes pwa-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.pwa-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--surface-sunken);
+  color: var(--navy);
+  flex-shrink: 0;
+}
+
+/* Lambang merek sudah berwarna sendiri, jadi kotaknya dibuat netral supaya
+   tidak ada dua warna latar yang bertabrakan di petak sekecil ini. */
+.pwa-card__icon--brand {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.pwa-card--offline .pwa-card__icon {
+  background: rgba(150, 96, 14, 0.12);
+  color: #8a5a0d;
+}
+
+.pwa-card--update .pwa-card__icon {
+  background: rgba(68, 106, 69, 0.12);
+  color: var(--navy);
+}
+
+.pwa-card__body {
+  min-width: 0;
+}
+
+.pwa-card__title {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  line-height: 1.35;
+}
+
+.pwa-card__text {
+  margin-top: 3px;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.pwa-card__actions {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.pwa-card__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 32px: sasaran sentuh terkecil yang masih nyaman. Tombol tutup yang meleset
+     pada kartu melayang berarti pengguna menekan halaman di baliknya. */
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  transition: background 160ms var(--ease), color 160ms var(--ease);
+}
+
+.pwa-card__close:hover {
+  background: var(--surface-sunken);
+  color: var(--navy);
+}
+
+/* --- Petunjuk pemasangan manual iOS --- */
+
+.pwa-ios-steps {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--navy);
+}
+
+.pwa-ios-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.pwa-ios-steps__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--surface-sunken);
+  color: var(--navy);
+}
+
+/* --- Panel "Aplikasi" di halaman Profil --- */
+
+.app-install {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.app-install__status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  font-size: 0.875rem;
+}
+
+.app-install__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--navy);
+}
+
+.app-install__note {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.app-install__update {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 420px) {
+  /* Di layar sempit ikon memakan lebar yang lebih dibutuhkan teksnya, dan
+     tombol yang berdampingan dengan ikon jadi terlalu sempit untuk dibaca. */
+  .pwa-card {
+    grid-template-columns: 1fr;
+    padding-right: 44px;
+  }
+
+  .pwa-card__icon {
+    display: none;
+  }
+
+  .pwa-card__actions {
+    grid-column: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pwa-card {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   Mode terpasang (dipasang oleh markDisplayMode di utils/pwa.js)
+   ========================================================================== */
+
+/* Tanpa bilah alamat, gestur geser-dari-tepi milik browser tidak ada lagi —
+   dan tarik-untuk-menyegarkan justru berubah jadi jebakan: satu tarikan tak
+   sengaja saat menggulir peta tekanan akan MEMUAT ULANG aplikasi dan memutus
+   sambungan Bluetooth ke sepatu. Di dalam tab biasa gestur itu dibiarkan,
+   karena di sana pengguna memang mengharapkannya. */
+html[data-display-mode='standalone'] body {
+  overscroll-behavior-y: contain;
+}
+
+/* Kilatan abu-abu saat menyentuh tombol adalah penanda khas "ini halaman web"
+   yang tidak ada padanannya di aplikasi native. Hanya dimatikan pada mode
+   terpasang: :focus-visible dan state :hover tetap utuh, jadi umpan balik
+   sentuhannya tidak hilang — hanya kilatan bawaannya. */
+html[data-display-mode='standalone'] {
+  -webkit-tap-highlight-color: transparent;
+}

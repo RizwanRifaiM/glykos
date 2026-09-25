@@ -18,8 +18,15 @@ import './index.css'
 import App from './App.jsx'
 import { i18n, initI18n } from './i18n'
 import { registerServiceWorker } from './utils/registerServiceWorker'
+import { markDisplayMode } from './utils/pwa'
 
 registerServiceWorker()
+
+// Menandai <html data-display-mode> sebelum render pertama, bukan di dalam
+// effect: padding safe-area untuk mode terpasang bergantung padanya, dan
+// menyusulkannya satu frame kemudian membuat seluruh tata letak melompat
+// tepat di bawah notch.
+markDisplayMode()
 
 // Bahasa diaktifkan SEBELUM render pertama, bukan di dalam effect.
 //

@@ -96,3 +96,15 @@ export function formatDateTime(value, locale) {
 export function formatLongDate(value, locale) {
   return formatWith(value, { weekday: 'long', day: 'numeric', month: 'long' }, locale)
 }
+
+// "Jun 2026" — tanggal pemeriksaan lab. Harinya sengaja dibuang: yang penting
+// bagi pembaca kalimat peringatan adalah seberapa baru hasilnya, bukan tanggal
+// persisnya.
+export function formatMonthYear(value, locale) {
+  return formatWith(value, { month: 'short', year: 'numeric' }, locale)
+}
+
+// "10 Jun 2026" — tanggal pemeriksaan pada riwayat hasil lab.
+export function formatDate(value, locale) {
+  return formatWith(value, { day: 'numeric', month: 'short', year: 'numeric' }, locale)
+}

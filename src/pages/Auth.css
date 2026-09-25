@@ -146,3 +146,30 @@
   justify-content: center;
   margin-bottom: 18px;
 }
+
+/* Jalan pulang ke halaman depan. Halaman masuk/daftar bisa dibuka langsung
+   (tautan, PWA), jadi tombol Back browser belum tentu mengarah ke sana. */
+.auth-card__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease;
+}
+
+.auth-card__back:hover {
+  color: var(--navy);
+}
+
+.auth-card__back:hover .icon {
+  transform: translateX(-2px);
+}
+
+.auth-card__back .icon {
+  transition: transform 0.15s ease;
+}

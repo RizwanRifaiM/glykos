@@ -1,20 +1,23 @@
-import { COLORS } from '../constants/theme'
+// Lambang Glykos. Dipisah jadi komponen sendiri karena dipakai di banyak
+// tempat yang tidak boleh berbeda: topbar/sidebar dashboard, layar pemuatan,
+// halaman depan, dan kartu masuk/daftar. Menyalin gambarnya berarti cepat atau
+// lambat salah satunya melenceng — itu persis yang terjadi pada lambang lama.
+//
+// `size` di sini adalah TINGGI, bukan sisi kotak. Lambangnya berbentuk telapak
+// kaki yang lebih lebar daripada tingginya, jadi memaksanya ke kotak persegi
+// menyisakan ruang kosong atas-bawah dan membuatnya tampak kekecilan.
+const ASPECT = 235 / 160
 
-// Lambang Glykos. Dipisah jadi komponen sendiri karena sekarang dipakai di dua
-// tempat yang tidak boleh berbeda: topbar/sidebar dashboard dan layar
-// pemuatan. Menyalin SVG-nya berarti cepat atau lambat keduanya melenceng.
 export default function BrandMark({ size = 26, className }) {
   return (
-    <svg viewBox="0 0 48 48" width={size} height={size} className={className} aria-hidden="true">
-      <circle cx="24" cy="24" r="22" fill={COLORS.navy} />
-      <path d="M24 8c-2 6-8 10-8 16a8 8 0 0016 0c0-6-6-10-8-16z" fill={COLORS.lightBlue} />
-      <path
-        d="M18 32c2 4 6 6 6 6s4-2 6-6"
-        stroke={COLORS.cream}
-        strokeWidth="2"
-        fill="none"
-        strokeLinecap="round"
-      />
-    </svg>
+    <img
+      src="/brand-mark.png"
+      alt=""
+      aria-hidden="true"
+      width={Math.round(size * ASPECT)}
+      height={size}
+      className={className}
+      draggable="false"
+    />
   )
 }

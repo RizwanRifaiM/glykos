@@ -5,9 +5,10 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/auth-context'
 import Button from '../components/Button'
 import GoogleIcon from '../components/GoogleIcon'
+import BrandMark from '../components/BrandMark'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import { IconArrowLeft } from '../components/icons'
 import { getAuthErrorMsg } from '../utils/authErrors'
-import { COLORS } from '../constants/theme'
 import './Auth.css'
 
 export default function LoginPage() {
@@ -60,21 +61,13 @@ export default function LoginPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
+        <Link to="/" className="auth-card__back">
+          <IconArrowLeft size={16} />
+          <Trans>Kembali ke Beranda</Trans>
+        </Link>
+
         <div className="auth-card__brand">
-          <svg viewBox="0 0 48 48" width="36" height="36" aria-hidden="true">
-            <circle cx="24" cy="24" r="22" fill={COLORS.navy} />
-            <path
-              d="M24 8c-2 6-8 10-8 16a8 8 0 0016 0c0-6-6-10-8-16z"
-              fill={COLORS.lightBlue}
-            />
-            <path
-              d="M18 32c2 4 6 6 6 6s4-2 6-6"
-              stroke={COLORS.cream}
-              strokeWidth="2"
-              fill="none"
-              strokeLinecap="round"
-            />
-          </svg>
+          <BrandMark size={36} />
           <h1>Glykos</h1>
         </div>
 

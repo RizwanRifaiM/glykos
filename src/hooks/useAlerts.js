@@ -5,8 +5,9 @@ import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
 import { alertsCollection } from '../services/paths'
 import { notify } from '../utils/notifications'
-import { decideAlert, evaluateMetrics, STATUS_RANK } from '../utils/alertRules'
+import { alertPolicy, decideAlert, evaluateMetrics, STATUS_RANK } from '../utils/alertRules'
 import { describeAlert, metricLabel } from '../utils/alertMessages'
+import { riskSnapshot } from '../utils/riskProfile'
 
 // Aturannya sendiri ada di utils/alertRules.js (fungsi murni, bisa diuji tanpa
 // Firestore). Diekspor ulang di sini karena StatusBanner sudah mengimpornya
@@ -88,6 +89,9 @@ export async function logAlert(uid, deviceId, item) {
       status: item.status,
       location: item.location ?? null,
       values: item.values ?? {},
+      // Tingkat risiko pasien SAAT peringatan ini dibuat (utils/riskProfile.js).
+      // Hanya ada pada peringatan live; tren suhu harian tidak memakainya.
+      ...(item.risk ? { risk: item.risk } : {}),
       createdAt: serverTimestamp(),
     })
   } catch (err) {
@@ -101,7 +105,12 @@ export async function logAlert(uid, deviceId, item) {
 // ini berjalan di sisi klien selama dashboard terbuka — untuk peringatan saat
 // aplikasi tertutup diperlukan pemantauan sisi server (Cloud Function + push),
 // yang belum diaktifkan pada proyek ini.
-export function useAlertMonitor(uid, deviceId, data, fatigue) {
+//
+// `risk` adalah hasil useRiskProfile: tingkat risiko pasien menentukan kapan
+// notifikasi berbunyi dan berapa lama jedanya (alertPolicy), dan ikut
+// tersimpan di setiap catatan. `null` berarti profil belum terbaca — pemantauan
+// menunggu sebentar alih-alih mencatat dengan tingkat yang belum diketahui.
+export function useAlertMonitor(uid, deviceId, data, fatigue, risk) {
   const stateRef = useRef({})
   // Notifikasi dikirim dalam bahasa yang sedang aktif. Diambil dari konteks,
   // bukan dari instance global, supaya teks notifikasi ikut bahasa yang dipilih
@@ -113,8 +122,10 @@ export function useAlertMonitor(uid, deviceId, data, fatigue) {
   }, [uid, deviceId])
 
   useEffect(() => {
-    if (!uid || !deviceId || !data) return
+    if (!uid || !deviceId || !data || !risk) return
 
+    const policy = alertPolicy(risk.tier)
+    const snapshot = riskSnapshot(risk)
     const items = evaluateMetrics(data)
     const fatigueItem = fatigueMetricItem(fatigue)
     if (fatigueItem) items.push(fatigueItem)
@@ -124,13 +135,29 @@ export function useAlertMonitor(uid, deviceId, data, fatigue) {
 
     items.forEach((item) => {
       const prevEntry = stateRef.current[item.metric]
-      const { shouldLog, shouldNotify, entry } = decideAlert(prevEntry, item.status, now)
+      const { shouldLog, shouldNotify, entry } = decideAlert(prevEntry, item.status, now, policy)
 
       if (shouldLog) {
-        logAlert(uid, deviceId, item)
+        const record = { ...item, risk: snapshot }
+        logAlert(uid, deviceId, record)
         if (shouldNotify) {
-          const described = describeAlert(i18n, item)
-          notify(riskTitle(i18n, item.metric), described.message)
+          const described = describeAlert(i18n, record)
+          // Alasan pemantauan diperketat ikut di badan notifikasi: tanpanya,
+          // pengguna yang tiba-tiba mendapat notifikasi di status Perlu
+          // Perhatian tidak tahu kenapa HP-nya lebih cerewet dari biasanya.
+          const body = described.riskNote
+            ? `${described.message}
+${described.riskNote}`
+            : described.message
+          // `metric` menentukan tag notifikasinya (utils/notifications.js):
+          // peringatan tekanan dan suhu harus berdiri sendiri di shade HP, tidak
+          // saling menimpa.
+          // `priority` dipakai jeda global di utils/notifications.js: danger
+          // sesudah warning boleh berbunyi lebih cepat, sisanya ditahan.
+          notify(riskTitle(i18n, item.metric), body, {
+            metric: item.metric,
+            priority: STATUS_RANK[item.status] ?? 2,
+          })
         }
       }
 
@@ -141,7 +168,7 @@ export function useAlertMonitor(uid, deviceId, data, fatigue) {
     })
 
     if (changed) saveState(uid, deviceId, stateRef.current)
-  }, [uid, deviceId, data, fatigue, i18n])
+  }, [uid, deviceId, data, fatigue, risk, i18n])
 }
 
 // Judul notifikasi: "Glykos — Tekanan Berisiko".
